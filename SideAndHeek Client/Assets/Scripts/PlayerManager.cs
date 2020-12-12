@@ -9,19 +9,30 @@ public class PlayerManager : MonoBehaviour
     public string username;
     public int itemCount = 0;
     public bool isReady = false;
+    public bool hasAuthority = false;
 
     [SerializeField] private TMP_Text name;
 
-    public Transform root;
-    public Transform head;
-    public Transform leftLeg;
-    public Transform rightLeg;
-    public Transform leftFoot;
-    public Transform rightFoot;
+    [SerializeField] private Transform root;
+    [SerializeField] private Transform head;
+    [SerializeField] private Transform leftLeg;
+    [SerializeField] private Transform rightLeg;
+    [SerializeField] private Transform leftFoot;
+    [SerializeField] private Transform rightFoot;
 
     public GameObject[] layersToChange;
     public Behaviour[] baseComponentsToDisable;
     public Behaviour[] extraComponentsToDisable;
+    
+    [SerializeField] private Color unreadyColour;
+    [SerializeField] private Color readyColour;
+
+    public Camera camera;
+
+    private void Awake()
+    {
+        DontDestroyOnLoad(this);
+    }
 
     private void FixedUpdate()
     {
@@ -33,6 +44,8 @@ public class PlayerManager : MonoBehaviour
     {
         id = _id;
         username = _username;
+        hasAuthority = _hasAuthority;
+
         if (username == "")
         {
             username = $"Player {id}";
@@ -40,7 +53,7 @@ public class PlayerManager : MonoBehaviour
 
         name.text = username;
 
-        if (!_hasAuthority)
+        if (!hasAuthority)
         {
             DisableBaseComponents();
             if (!_isHunter)
@@ -56,6 +69,8 @@ public class PlayerManager : MonoBehaviour
         {
             ChangeLayers("LocalPlayer");
         }
+
+        SetPlayerReady(isReady);
     }
 
     private void ChangeLayers(string layer)
@@ -72,6 +87,7 @@ public class PlayerManager : MonoBehaviour
         {
             component.enabled = false;
         }
+        camera.enabled = false;
     }
 
     private void DisableExtraComponents()
@@ -82,6 +98,10 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    public void SetRootRotation(Quaternion _rootRotation)
+    {
+        root.rotation = _rootRotation;
+    }
     public void SetPlayerPositions(Vector3 _headPos, Vector3 _rightFootPos, Vector3 _leftFootPos, Vector3 _rightLegPos, Vector3 _leftLegPos)
     {
         root.position = _headPos;
@@ -102,7 +122,7 @@ public class PlayerManager : MonoBehaviour
     public void SetPlayerReady(bool _isReady)
     {
         isReady = _isReady;
-        ChangeBodyColour(isReady ? Color.green : Color.white);
+        ChangeBodyColour(isReady ? readyColour : unreadyColour);
         UIManager.instance.UpdateLobbyPanel();
     }
 

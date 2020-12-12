@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 5150086428917620104}
   - component: {fileID: 2881238837812540110}
   - component: {fileID: 8052469530713753092}
+  - component: {fileID: 8133409739190884358}
   m_Layer: 0
   m_Name: ItemSpawner
-  m_TagString: Untagged
+  m_TagString: ItemSpawner
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -48,6 +49,7 @@ MonoBehaviour:
   spawnerId: 0
   hasItem: 0
   itemModel: {fileID: 8052469530713753092}
+  collider: {fileID: 8133409739190884358}
   rotationSpeed: 100
   bobSpeed: 2
 --- !u!33 &2881238837812540110
@@ -97,3 +99,16 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!65 &8133409739190884358
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3525635656200039424}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1.0000001}
+  m_Center: {x: 0, y: 0, z: 0}

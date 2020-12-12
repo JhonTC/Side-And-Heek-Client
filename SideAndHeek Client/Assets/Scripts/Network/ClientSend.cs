@@ -56,5 +56,13 @@ public class ClientSend : MonoBehaviour
         }
     }
 
+    public static void TryStartGame()
+    {
+        using (Packet _packet = new Packet((int)ClientPackets.tryStartGame))
+        {
+            SendTCPData(_packet);
+        }
+    }
+
     #endregion
 }

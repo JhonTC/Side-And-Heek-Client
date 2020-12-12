@@ -715,9 +715,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   root: {fileID: 8487150222318174049}
   turnSpeed: 10
+  clickRange: 100
   rotation: {x: 0, y: 0, z: 0, w: 1}
   camera: {fileID: 0}
-  controllerEnabled: 0
+  legacyControls: 0
   playerManager: {fileID: 0}
 --- !u!1 &7949401870965953190
 GameObject:

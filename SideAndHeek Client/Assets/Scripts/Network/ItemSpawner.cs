@@ -7,7 +7,7 @@ public class ItemSpawner : MonoBehaviour
     public int spawnerId;
     public bool hasItem;
     public MeshRenderer itemModel;
-
+    public BoxCollider collider;
 
     public float rotationSpeed = 100f;
     public float bobSpeed = 2f;
@@ -36,11 +36,13 @@ public class ItemSpawner : MonoBehaviour
     {
         hasItem = true;
         itemModel.enabled = true;
+        collider.enabled = true;
     }
 
     public void ItemPickedUp()
     {
         hasItem = false;
         itemModel.enabled = false;
+        collider.enabled = false;
     }
 }

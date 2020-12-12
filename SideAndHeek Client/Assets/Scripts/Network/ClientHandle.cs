@@ -52,9 +52,9 @@ public class ClientHandle : MonoBehaviour
     public static void PlayerRotation(Packet _packet)
     {
         int _id = _packet.ReadInt();
-        Quaternion _headRotation = _packet.ReadQuaternion();
-
-        GameManager.players[_id].root.rotation = _headRotation;
+        Quaternion _rootRotation = _packet.ReadQuaternion();
+        
+        GameManager.players[_id].SetRootRotation(_rootRotation);
     }
 
     public static void PlayerDisconnected(Packet _packet)
@@ -98,5 +98,12 @@ public class ClientHandle : MonoBehaviour
         bool _isReady = _packet.ReadBool();
 
         GameManager.players[_playerId].SetPlayerReady(_isReady);
+    }
+
+    public static void ChangeScene(Packet _packet)
+    {
+        string _sceneToLoad = _packet.ReadString();
+
+        GameManager.instance.LoadScene(_sceneToLoad);
     }
 }

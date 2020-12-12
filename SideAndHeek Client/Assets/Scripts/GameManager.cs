@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -14,7 +15,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private GameObject sceneCamera;
 
-    public static bool gameStarted = false;
+    public bool gameStarted = false;
 
     private void Awake()
     {
@@ -26,6 +27,47 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("Instance already exists, destroying object!");
             Destroy(this);
+        }
+
+        DontDestroyOnLoad(this);
+    }
+
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnLevelFinishedLoading;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnLevelFinishedLoading;
+    }
+
+    private void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
+    {
+        if (players.Count > 0)
+        {
+            ResetLocalPlayerCamera();
+        }
+    }
+
+    public PlayerManager GetLocalPlayer()
+    {
+        foreach(PlayerManager player in players.Values)
+        {
+            if (player.hasAuthority)
+            {
+                return player;
+            }
+        }
+
+        throw new System.Exception("ERROR: No PlayerManager is marked as local (hasAuthority)");
+    }
+
+    public void LoadScene(string sceneName)
+    {
+        if (SceneManager.GetActiveScene().name == "Lobby")
+        {
+            SceneManager.LoadScene(sceneName, LoadSceneMode.Additive);
         }
     }
 
@@ -41,6 +83,20 @@ public class GameManager : MonoBehaviour
         }
         
         players.Add(_id, _player);
+
+        ResetLocalPlayerCamera();
+    }
+
+    private void ResetLocalPlayerCamera()
+    {
+        if (SceneManager.GetActiveScene().name.Contains("Lobby"))
+        {
+            GetLocalPlayer().camera.transform.position = new Vector3(-1000, 100, 0);
+        }
+        else
+        {
+            GetLocalPlayer().camera.transform.position = new Vector3(0, 100, 0);
+        }
     }
 
     public void CreateItemSpawner(int _spawnerId, Vector3 _position, bool _hasItem)

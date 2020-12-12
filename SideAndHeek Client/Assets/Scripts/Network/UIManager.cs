@@ -8,13 +8,16 @@ public class UIManager : MonoBehaviour
     public static UIManager instance;
 
     public GameObject startPanel;
-    [SerializeField] private GameObject lobbyPanel;
-    [SerializeField] private Transform playerReadyParentPanel;
-    [SerializeField] private Image playerReadyPanelPrefab;
+    //[SerializeField] private GameObject lobbyPanel;
     public InputField ipField;
     public InputField usernameField;
 
-    Dictionary<int, Image> playerReadyPanels = new Dictionary<int, Image>();
+    [SerializeField] private MeshRenderer[] readyGemRenderers;
+    [SerializeField] private Color unreadyColour;
+    [SerializeField] private Color readyColour;
+
+
+    Dictionary<int, int> playerReadyGemDictionary = new Dictionary<int, int>();
 
     private void Awake()
     {
@@ -34,26 +37,31 @@ public class UIManager : MonoBehaviour
     public void DisplayStartPanel()
     {
         startPanel.SetActive(true);
-        lobbyPanel.SetActive(false);
+        //lobbyPanel.SetActive(false);
     }
 
     public void DisplayLobbyPanel()
     {
-        lobbyPanel.SetActive(true);
+        //lobbyPanel.SetActive(true);
 
         foreach (PlayerManager player in GameManager.players.Values)
         {
-            playerReadyPanels.Add(player.id, Instantiate(playerReadyPanelPrefab, playerReadyParentPanel));
-            playerReadyPanels[player.id].color = player.isReady ? Color.green : Color.grey;
+            //playerReadyPanels.Add(player.id, Instantiate(playerReadyPanelPrefab, playerReadyParentPanel));
+            //playerReadyPanels[player.id].color = player.isReady ? Color.green : Color.grey;
         }
     }
 
     public void RemovePlayerReady(int _playerId)
     {
-        if (playerReadyPanels.ContainsKey(_playerId))
+        if (playerReadyGemDictionary.ContainsValue(_playerId))
         {
-            Destroy(playerReadyPanels[_playerId].gameObject);
-            playerReadyPanels.Remove(_playerId);
+            foreach (KeyValuePair<int, int> playerReadyGem in playerReadyGemDictionary)
+            {
+                if (playerReadyGem.Value == _playerId)
+                {
+                    playerReadyGemDictionary.Remove(playerReadyGem.Key);
+                }
+            }
 
             UpdateLobbyPanel();
         }
@@ -61,25 +69,43 @@ public class UIManager : MonoBehaviour
 
     public void AddPlayerReady(int _playerId)
     {
-        if (!playerReadyPanels.ContainsKey(_playerId))
+        if (!playerReadyGemDictionary.ContainsValue(_playerId))
         {
-            playerReadyPanels.Add(_playerId, Instantiate(playerReadyPanelPrefab, playerReadyParentPanel));
-
+            playerReadyGemDictionary.Add(GetNextAvaliableGemIndex(), _playerId);
             UpdateLobbyPanel();
         }
     }
 
     public void UpdateLobbyPanel()
     {
-        foreach (KeyValuePair<int, Image> playerReadyPanel in playerReadyPanels)
+        for (int i = 0; i < readyGemRenderers.Length; i++)
         {
-            playerReadyPanel.Value.color = GameManager.players[playerReadyPanel.Key].isReady ? Color.green : Color.grey;
+            if (playerReadyGemDictionary.ContainsKey(i)) {
+                readyGemRenderers[i].enabled = true;
+                readyGemRenderers[i].material.color = GameManager.players[playerReadyGemDictionary[i]].isReady ? readyColour : unreadyColour;
+            } else
+            {
+                readyGemRenderers[i].enabled = false;
+            }
         }
+    }
+
+    public int GetNextAvaliableGemIndex()
+    {
+        for (int i = 0; i < readyGemRenderers.Length; i++)
+        {
+            if (!playerReadyGemDictionary.ContainsKey(i))
+            {
+                return i;
+            }
+        }
+
+        throw new System.Exception("No player-ready Gem Avaliable, too many players have joined.");
     }
 
     public void DisplayGamePanel()
     {
-        lobbyPanel.SetActive(false);
+        //lobbyPanel.SetActive(false);
     }
 
 

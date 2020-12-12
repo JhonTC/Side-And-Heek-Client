@@ -30,6 +30,8 @@ public class Client : MonoBehaviour
             Debug.Log("Instance already exists, destroying object!");
             Destroy(this);
         }
+
+        DontDestroyOnLoad(this);
     }
 
     private void OnApplicationQuit()
@@ -296,7 +298,8 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.createItemSpawner, ClientHandle.CreateItemSpawner },
             { (int)ServerPackets.itemSpawned, ClientHandle.ItemSpawned },
             { (int)ServerPackets.itemPickedUp, ClientHandle.ItemPickedUp },
-            { (int)ServerPackets.playerReadyToggled, ClientHandle.PlayerReadyToggled }
+            { (int)ServerPackets.playerReadyToggled, ClientHandle.PlayerReadyToggled },
+            { (int)ServerPackets.changeScene, ClientHandle.ChangeScene }
         };
         Debug.Log("Initialised packets.");
     }
