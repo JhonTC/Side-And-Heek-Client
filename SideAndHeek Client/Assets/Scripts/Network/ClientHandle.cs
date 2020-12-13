@@ -23,10 +23,11 @@ public class ClientHandle : MonoBehaviour
     {
         int _id = _packet.ReadInt();
         string _username = _packet.ReadString();
+        bool _isReady = _packet.ReadBool();
         Vector3 _position = _packet.ReadVector3();
         Quaternion _rotation = _packet.ReadQuaternion();
 
-        GameManager.instance.SpawnPlayer(_id, _username, _position, _rotation);
+        GameManager.instance.SpawnPlayer(_id, _username, _isReady,_position, _rotation);
 
         UIManager.instance.AddPlayerReady(_id);
     }
@@ -106,4 +107,12 @@ public class ClientHandle : MonoBehaviour
 
         GameManager.instance.LoadScene(_sceneToLoad);
     }
+
+    public static void SetPlayerType(Packet _packet)
+    {
+        int _playerId = _packet.ReadInt();
+        PlayerType _playerType = (PlayerType)_packet.ReadInt();
+        
+        GameManager.players[_playerId].SetPlayerType(_playerType);
+   }
 }

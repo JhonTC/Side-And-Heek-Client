@@ -50,7 +50,7 @@ public class SimplePlayerController : MonoBehaviour
             }
         }
         
-        ray = playerManager.camera.ScreenPointToRay(Input.mousePosition);
+        ray = playerManager.playerCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit))
         {
             if (hit.collider.tag == "GameStartObject")
@@ -109,9 +109,9 @@ public class SimplePlayerController : MonoBehaviour
         } else
         {
             inputSpeed = vertical;
-            if (playerManager.camera)
+            if (playerManager.playerCamera)
             {
-                Vector3 pos = playerManager.camera.WorldToScreenPoint(root.position);
+                Vector3 pos = playerManager.playerCamera.WorldToScreenPoint(root.position);
                 Vector3 dir = Input.mousePosition - pos;
                 float angle = Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg;
 

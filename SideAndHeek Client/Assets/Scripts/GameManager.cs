@@ -71,31 +71,30 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void SpawnPlayer(int _id, string _username, Vector3 _position, Quaternion _rotation)
+    public void SpawnPlayer(int _id, string _username, bool _isReady, Vector3 _position, Quaternion _rotation)
     {
         PlayerManager _player;
         _player = Instantiate(playerPrefab, _position, _rotation);
-        _player.Init(_id, _username, _id == Client.instance.myId, players.Count == 0);
+        _player.Init(_id, _username, _isReady, _id == Client.instance.myId, players.Count == 0);
+        
+        players.Add(_id, _player);
 
         if (_id == Client.instance.myId)
         {
             sceneCamera.SetActive(false);
+            ResetLocalPlayerCamera();
         }
-        
-        players.Add(_id, _player);
-
-        ResetLocalPlayerCamera();
     }
 
     private void ResetLocalPlayerCamera()
     {
         if (SceneManager.GetActiveScene().name.Contains("Lobby"))
         {
-            GetLocalPlayer().camera.transform.position = new Vector3(-1000, 100, 0);
+            GetLocalPlayer().playerCamera.transform.position = new Vector3(-100, 100, 0);
         }
         else
         {
-            GetLocalPlayer().camera.transform.position = new Vector3(0, 100, 0);
+            GetLocalPlayer().playerCamera.transform.position = new Vector3(0, 100, 0);
         }
     }
 

@@ -299,7 +299,8 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.itemSpawned, ClientHandle.ItemSpawned },
             { (int)ServerPackets.itemPickedUp, ClientHandle.ItemPickedUp },
             { (int)ServerPackets.playerReadyToggled, ClientHandle.PlayerReadyToggled },
-            { (int)ServerPackets.changeScene, ClientHandle.ChangeScene }
+            { (int)ServerPackets.changeScene, ClientHandle.ChangeScene },
+            { (int)ServerPackets.setPlayerType, ClientHandle.SetPlayerType }
         };
         Debug.Log("Initialised packets.");
     }

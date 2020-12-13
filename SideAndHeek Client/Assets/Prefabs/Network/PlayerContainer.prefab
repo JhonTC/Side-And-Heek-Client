@@ -521,7 +521,8 @@ MonoBehaviour:
   itemCount: 0
   isReady: 0
   hasAuthority: 0
-  name: {fileID: 9177270361263510911}
+  playerType: 0
+  usernameText: {fileID: 9177270361263510911}
   root: {fileID: 8447523477001538934}
   head: {fileID: 3847072791083483012}
   leftLeg: {fileID: 2728018609124667718}
@@ -536,7 +537,8 @@ MonoBehaviour:
   extraComponentsToDisable: []
   unreadyColour: {r: 0.90588236, g: 0.8392157, b: 0.8, a: 1}
   readyColour: {r: 0.63755745, g: 0.9811321, b: 0.33784264, a: 1}
-  camera: {fileID: 6003354813549393778}
+  hunterColour: {r: 0.8207547, g: 0.2981043, b: 0.2981043, a: 1}
+  playerCamera: {fileID: 6003354813549393778}
 --- !u!1001 &68622656946434583
 PrefabInstance:
   m_ObjectHideFlags: 0

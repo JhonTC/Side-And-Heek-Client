@@ -10,8 +10,9 @@ public class PlayerManager : MonoBehaviour
     public int itemCount = 0;
     public bool isReady = false;
     public bool hasAuthority = false;
+    [SerializeField] private PlayerType playerType = PlayerType.Default;
 
-    [SerializeField] private TMP_Text name;
+    [SerializeField] private TMP_Text usernameText;
 
     [SerializeField] private Transform root;
     [SerializeField] private Transform head;
@@ -27,7 +28,9 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private Color unreadyColour;
     [SerializeField] private Color readyColour;
 
-    public Camera camera;
+    [SerializeField] private Color hunterColour;
+
+    public Camera playerCamera;
 
     private void Awake()
     {
@@ -40,10 +43,11 @@ public class PlayerManager : MonoBehaviour
         head.rotation = Quaternion.Lerp(head.rotation, root.rotation, 1f);
     }
 
-    public void Init(int _id, string _username, bool _hasAuthority, bool _isHunter)
+    public void Init(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHunter)
     {
         id = _id;
         username = _username;
+        isReady = _isReady;
         hasAuthority = _hasAuthority;
 
         if (username == "")
@@ -51,7 +55,7 @@ public class PlayerManager : MonoBehaviour
             username = $"Player {id}";
         }
 
-        name.text = username;
+        usernameText.text = username;
 
         if (!hasAuthority)
         {
@@ -87,7 +91,7 @@ public class PlayerManager : MonoBehaviour
         {
             component.enabled = false;
         }
-        camera.enabled = false;
+        playerCamera.enabled = false;
     }
 
     private void DisableExtraComponents()
@@ -136,4 +140,35 @@ public class PlayerManager : MonoBehaviour
             }
         }
     }
+
+    public void SetPlayerType(PlayerType _playerType)
+    {
+        playerType = _playerType;
+
+        switch(playerType)
+        {
+            case PlayerType.Default:
+                //gameStartFailed
+                break;
+            case PlayerType.Hunter:
+                ChangeBodyColour(hunterColour);
+                break;
+            case PlayerType.Hider:
+
+                break;
+            case PlayerType.Spectator:
+                //spectator controls
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+public enum PlayerType
+{
+    Default = 0,
+    Hunter,
+    Hider,
+    Spectator
 }
