@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using TMPro;
+using UnityEngine.UI;
 using UnityEngine;
+using TMPro;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -30,7 +31,12 @@ public class PlayerManager : MonoBehaviour
 
     [SerializeField] private Color hunterColour;
 
+    [SerializeField] private Text messageText;
+
     public Camera playerCamera;
+
+    private bool fadeOutMessageText = false;
+    private float fadeDuration = 1f;
 
     private void Awake()
     {
@@ -41,6 +47,19 @@ public class PlayerManager : MonoBehaviour
     {
         head.position = Vector3.Lerp(head.position, root.position, 1f);
         head.rotation = Quaternion.Lerp(head.rotation, root.rotation, 1f);
+
+        if (fadeOutMessageText)
+        {
+            float messageTextAlpha = messageText.color.a;
+            if (messageTextAlpha > 0)
+            {
+                messageTextAlpha -= Time.fixedDeltaTime / fadeDuration;
+                messageText.color = new Color(1, 1, 1, messageTextAlpha);
+            } else
+            {
+                fadeOutMessageText = false;
+            }
+        }
     }
 
     public void Init(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHunter)
@@ -162,6 +181,26 @@ public class PlayerManager : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    public void SetCountdown(int countdownValue)
+    {
+        SetMessage(countdownValue.ToString(), 0.9f);
+    }
+
+    public void SetSpecialMessage(string _message)
+    {
+        SetMessage(_message, 4f);
+    }
+    
+    private void SetMessage(string _message, float _duration = 1)
+    {
+        Debug.Log("SET MESSAGE");
+
+        messageText.text = _message;
+        messageText.color = new Color(1, 1, 1, 1);
+        fadeDuration = _duration;
+        fadeOutMessageText = true;
     }
 }
 

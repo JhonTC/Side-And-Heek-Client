@@ -114,5 +114,31 @@ public class ClientHandle : MonoBehaviour
         PlayerType _playerType = (PlayerType)_packet.ReadInt();
         
         GameManager.players[_playerId].SetPlayerType(_playerType);
-   }
+    }
+
+    private static bool lastIsCountdownActive = false;
+    public static void SetSpecialCountdown(Packet _packet)
+    {
+        int _specialId = _packet.ReadInt();
+        int _countdownValue = _packet.ReadInt();
+        bool _isCountdownActive = _packet.ReadBool();
+        
+        if (_specialId == Client.instance.myId)
+        {
+            GameManager.players[_specialId].SetCountdown(_countdownValue);
+        }
+        else if (lastIsCountdownActive != _isCountdownActive)
+        {
+            if (_isCountdownActive)
+            {
+                GameManager.players[Client.instance.myId].SetSpecialMessage($"{GameManager.players[_specialId].username} is the hunter... Hide!");
+            }
+            else
+            {
+                GameManager.players[Client.instance.myId].SetSpecialMessage($"{GameManager.players[_specialId].username} has been released");
+            }
+
+            lastIsCountdownActive = _isCountdownActive;
+        }
+    }
 }
