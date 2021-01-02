@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
     public PlayerManager playerPrefab;
     public ItemSpawner itemSpawnerPrefab;
 
-    [SerializeField] private GameObject sceneCamera;
+    public GameObject sceneCamera;
 
     public bool gameStarted = false;
 
@@ -46,7 +46,10 @@ public class GameManager : MonoBehaviour
     {
         if (players.Count > 0)
         {
-            ResetLocalPlayerCamera();
+            if (GetLocalPlayer().playerType == PlayerType.Hider) //TODO: Move this to PlayerManager, called when a player is teleported
+            {
+                ResetLocalPlayerCamera();
+            }
         }
     }
 
@@ -63,11 +66,11 @@ public class GameManager : MonoBehaviour
         throw new System.Exception("ERROR: No PlayerManager is marked as local (hasAuthority)");
     }
 
-    public void LoadScene(string sceneName)
+    public void LoadScene(string sceneName, LoadSceneMode loadSceneMode)
     {
-        if (SceneManager.GetActiveScene().name == "Lobby")
+        if (SceneManager.GetActiveScene().name != sceneName)
         {
-            SceneManager.LoadScene(sceneName, LoadSceneMode.Additive);
+            SceneManager.LoadScene(sceneName, loadSceneMode);
         }
     }
 
@@ -76,25 +79,32 @@ public class GameManager : MonoBehaviour
         PlayerManager _player;
         _player = Instantiate(playerPrefab, _position, _rotation);
         _player.Init(_id, _username, _isReady, _id == Client.instance.myId, players.Count == 0);
-        
+
         players.Add(_id, _player);
 
         if (_id == Client.instance.myId)
         {
+            ResetLocalPlayerCamera(sceneCamera.transform.position, true);
             sceneCamera.SetActive(false);
-            ResetLocalPlayerCamera();
         }
     }
 
-    private void ResetLocalPlayerCamera()
+    private void ResetLocalPlayerCamera() { ResetLocalPlayerCamera(Vector3.zero, false); }
+    private void ResetLocalPlayerCamera(Vector3 _position, bool _useSentPosition)
     {
-        if (SceneManager.GetActiveScene().name.Contains("Lobby"))
+        if (!_useSentPosition)
         {
-            GetLocalPlayer().playerCamera.transform.position = new Vector3(-100, 100, 0);
-        }
-        else
+            if (SceneManager.GetActiveScene().name.Contains("Lobby"))
+            {
+                GetLocalPlayer().playerCamera.transform.position = new Vector3(-100, 100, 0);
+            }
+            else
+            {
+                GetLocalPlayer().playerCamera.transform.position = new Vector3(0, 100, 0);
+            }
+        } else
         {
-            GetLocalPlayer().playerCamera.transform.position = new Vector3(0, 100, 0);
+            GetLocalPlayer().playerCamera.transform.position = _position;
         }
     }
 

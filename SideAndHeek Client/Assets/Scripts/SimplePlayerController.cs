@@ -12,9 +12,7 @@ public class SimplePlayerController : MonoBehaviour
     public float clickRange;
 
     [HideInInspector] public Quaternion rotation = Quaternion.identity;
-
     
-
     [SerializeField] private bool legacyControls = false;
 
     [SerializeField] private PlayerManager playerManager;
@@ -48,6 +46,11 @@ public class SimplePlayerController : MonoBehaviour
                 playerManager.SetPlayerReady();
                 ClientSend.PlayerReady(playerManager.isReady);
             }
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                UIManager.instance.DisplayOptionsPanel();
+            }
         }
         
         ray = playerManager.playerCamera.ScreenPointToRay(Input.mousePosition);
@@ -61,13 +64,12 @@ public class SimplePlayerController : MonoBehaviour
                     Debug.DrawLine(root.position, hit.point, Color.red, clickRange);
                     if (distance < clickRange)
                     {
-                        Debug.Log("Click-StartGame");
                         ClientSend.TryStartGame();
                     }
                 }
                 else
                 {
-                    Debug.Log("Hover-StartGame"); // replace with hoverStart&Stop
+                    //Debug.Log("Hover-StartGame"); // replace with hoverStart&Stop
                 }
             }
 
@@ -75,11 +77,11 @@ public class SimplePlayerController : MonoBehaviour
             {
                 if (Input.GetMouseButtonDown(0))
                 {
-                    Debug.Log("Click-ItemSpawner");
+                    //Debug.Log("Click-ItemSpawner");
                 }
                 else
                 {
-                    Debug.Log("Hover-ItemSpawner"); // replace with hoverStart&Stop
+                    //Debug.Log("Hover-ItemSpawner"); // replace with hoverStart&Stop
                 }
             }
         }

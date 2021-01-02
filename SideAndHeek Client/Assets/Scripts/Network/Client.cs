@@ -136,8 +136,8 @@ public class Client : MonoBehaviour
             }
             catch (Exception _e)
             {
-                Disconnect();
                 Console.WriteLine($"Error receiving TCP data: {_e}");
+                Disconnect();
             }
         }
 
@@ -189,6 +189,7 @@ public class Client : MonoBehaviour
 
         private void Disconnect()
         {
+            Debug.Log("TCP disconnection.");
             instance.Disconnect();
 
             stream = null;
@@ -254,6 +255,7 @@ public class Client : MonoBehaviour
             }
             catch (Exception _e)
             {
+                Console.WriteLine($"Error receiving UDP data: {_e}");
                 Disconnect();
             }
         }
@@ -278,14 +280,14 @@ public class Client : MonoBehaviour
 
         private void Disconnect()
         {
+            Debug.Log("UDP disconnection.");
             instance.Disconnect();
 
             endPoint = null;
             socket = null;
         }
     }
-
-
+    
     private void InitialiseClientData()
     {
         packetHandlers = new Dictionary<int, PacketHandler>()
@@ -306,13 +308,25 @@ public class Client : MonoBehaviour
         Debug.Log("Initialised packets.");
     }
 
-    private void Disconnect()
+    public void Disconnect()
     {
         if (isConnected)
         {
             isConnected = false;
             tcp.socket.Close();
             udp.socket.Close();
+            
+            //foreach (PlayerManager player in GameManager.players.Values)
+            //{
+            //    Destroy(player.gameObject);
+            //}
+            //GameManager.players.Clear();
+            //UIManager.instance.playerReadyGems.Clear();
+            
+            //GameManager.instance.LoadScene("Lobby", UnityEngine.SceneManagement.LoadSceneMode.Single);
+
+            //UIManager.instance.DisplayStartPanel();
+            //GameManager.instance.sceneCamera.SetActive(true);
 
             Debug.Log("Disconnected from server.");
         }

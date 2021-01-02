@@ -11,7 +11,7 @@ public class PlayerManager : MonoBehaviour
     public int itemCount = 0;
     public bool isReady = false;
     public bool hasAuthority = false;
-    [SerializeField] private PlayerType playerType = PlayerType.Default;
+    public PlayerType playerType = PlayerType.Default;
 
     [SerializeField] private TMP_Text usernameText;
 
@@ -195,8 +195,6 @@ public class PlayerManager : MonoBehaviour
     
     private void SetMessage(string _message, float _duration = 1)
     {
-        Debug.Log("SET MESSAGE");
-
         messageText.text = _message;
         messageText.color = new Color(1, 1, 1, 1);
         fadeDuration = _duration;

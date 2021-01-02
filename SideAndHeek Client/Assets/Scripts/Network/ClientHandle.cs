@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ClientHandle : MonoBehaviour
 {
@@ -26,7 +27,8 @@ public class ClientHandle : MonoBehaviour
         bool _isReady = _packet.ReadBool();
         Vector3 _position = _packet.ReadVector3();
         Quaternion _rotation = _packet.ReadQuaternion();
-
+        
+        Debug.Log($"Message from server: Spawn Player with id: {_id}");
         GameManager.instance.SpawnPlayer(_id, _username, _isReady,_position, _rotation);
 
         UIManager.instance.AddPlayerReady(_id);
@@ -61,7 +63,7 @@ public class ClientHandle : MonoBehaviour
     public static void PlayerDisconnected(Packet _packet)
     {
         int _id = _packet.ReadInt();
-
+        
         UIManager.instance.RemovePlayerReady(_id);
 
         Destroy(GameManager.players[_id].gameObject);
@@ -105,7 +107,7 @@ public class ClientHandle : MonoBehaviour
     {
         string _sceneToLoad = _packet.ReadString();
 
-        GameManager.instance.LoadScene(_sceneToLoad);
+        GameManager.instance.LoadScene(_sceneToLoad, LoadSceneMode.Additive);
     }
 
     public static void SetPlayerType(Packet _packet)

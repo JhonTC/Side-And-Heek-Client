@@ -1,13 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager instance;
 
-    public GameObject startPanel;
+    [SerializeField] private GameObject startPanel;
+    [SerializeField] private GameObject optionsPanel;
     //[SerializeField] private GameObject lobbyPanel;
     public InputField ipField;
     public InputField usernameField;
@@ -15,9 +17,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private MeshRenderer[] readyGemRenderers;
     [SerializeField] private Color unreadyColour;
     [SerializeField] private Color readyColour;
-
-
-    Dictionary<int, int> playerReadyGemDictionary = new Dictionary<int, int>();
+    
+    public Dictionary<int, int> playerReadyGems = new Dictionary<int, int>();
 
     private void Awake()
     {
@@ -37,7 +38,11 @@ public class UIManager : MonoBehaviour
     public void DisplayStartPanel()
     {
         startPanel.SetActive(true);
+        optionsPanel.SetActive(false);
         //lobbyPanel.SetActive(false);
+        
+        usernameField.interactable = true;
+        ipField.interactable = true;
     }
 
     public void DisplayLobbyPanel()
@@ -51,16 +56,27 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public void DisplayOptionsPanel()
+    {
+        optionsPanel.SetActive(!optionsPanel.activeSelf);
+    }
+
     public void RemovePlayerReady(int _playerId)
     {
-        if (playerReadyGemDictionary.ContainsValue(_playerId))
+        if (playerReadyGems.ContainsValue(_playerId))
         {
-            foreach (KeyValuePair<int, int> playerReadyGem in playerReadyGemDictionary)
+            List<int> readyPlayerGemKeysToRemove = new List<int>();
+            foreach (KeyValuePair<int, int> playerReadyGem in playerReadyGems)
             {
                 if (playerReadyGem.Value == _playerId)
                 {
-                    playerReadyGemDictionary.Remove(playerReadyGem.Key);
+                    readyPlayerGemKeysToRemove.Add(playerReadyGem.Key);
                 }
+            }
+
+            foreach (int key in readyPlayerGemKeysToRemove)
+            {
+                playerReadyGems.Remove(key);
             }
 
             UpdateLobbyPanel();
@@ -69,9 +85,9 @@ public class UIManager : MonoBehaviour
 
     public void AddPlayerReady(int _playerId)
     {
-        if (!playerReadyGemDictionary.ContainsValue(_playerId))
+        if (!playerReadyGems.ContainsValue(_playerId))
         {
-            playerReadyGemDictionary.Add(GetNextAvaliableGemIndex(), _playerId);
+            playerReadyGems.Add(GetNextAvaliableGemIndex(), _playerId);
             UpdateLobbyPanel();
         }
     }
@@ -80,9 +96,9 @@ public class UIManager : MonoBehaviour
     {
         for (int i = 0; i < readyGemRenderers.Length; i++)
         {
-            if (playerReadyGemDictionary.ContainsKey(i)) {
+            if (playerReadyGems.ContainsKey(i)) {
                 readyGemRenderers[i].enabled = true;
-                readyGemRenderers[i].material.color = GameManager.players[playerReadyGemDictionary[i]].isReady ? readyColour : unreadyColour;
+                readyGemRenderers[i].material.color = GameManager.players[playerReadyGems[i]].isReady ? readyColour : unreadyColour;
             } else
             {
                 readyGemRenderers[i].enabled = false;
@@ -94,7 +110,7 @@ public class UIManager : MonoBehaviour
     {
         for (int i = 0; i < readyGemRenderers.Length; i++)
         {
-            if (!playerReadyGemDictionary.ContainsKey(i))
+            if (!playerReadyGems.ContainsKey(i))
             {
                 return i;
             }
@@ -108,8 +124,6 @@ public class UIManager : MonoBehaviour
         //lobbyPanel.SetActive(false);
     }
 
-
-
     public void OnConnectButtonPressed()
     {
         startPanel.SetActive(false);
@@ -117,5 +131,19 @@ public class UIManager : MonoBehaviour
         ipField.interactable = false;
 
         Client.instance.ConnectToServer(ipField.text);
+    }
+
+    public void OnDisconnectButtonPressed()
+    {
+        Client.instance.Disconnect();
+        optionsPanel.SetActive(false);
+    }
+
+    private void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
+    {
+        if (_scene.name == "Lobby") //needs replacing with enum or int
+        {
+            DisplayStartPanel();
+        }
     }
 }
