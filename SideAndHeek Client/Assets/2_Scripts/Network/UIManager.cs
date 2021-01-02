@@ -15,8 +15,6 @@ public class UIManager : MonoBehaviour
     public InputField usernameField;
 
     [SerializeField] private MeshRenderer[] readyGemRenderers;
-    [SerializeField] private Color unreadyColour;
-    [SerializeField] private Color readyColour;
     
     public Dictionary<int, int> playerReadyGems = new Dictionary<int, int>();
 
@@ -98,7 +96,7 @@ public class UIManager : MonoBehaviour
         {
             if (playerReadyGems.ContainsKey(i)) {
                 readyGemRenderers[i].enabled = true;
-                readyGemRenderers[i].material.color = GameManager.players[playerReadyGems[i]].isReady ? readyColour : unreadyColour;
+                readyGemRenderers[i].material.color = GameManager.players[playerReadyGems[i]].isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyColour;
             } else
             {
                 readyGemRenderers[i].enabled = false;

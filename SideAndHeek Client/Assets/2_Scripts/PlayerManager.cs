@@ -25,11 +25,6 @@ public class PlayerManager : MonoBehaviour
     public GameObject[] layersToChange;
     public Behaviour[] baseComponentsToDisable;
     public Behaviour[] extraComponentsToDisable;
-    
-    [SerializeField] private Color unreadyColour;
-    [SerializeField] private Color readyColour;
-
-    [SerializeField] private Color hunterColour;
 
     [SerializeField] private Text messageText;
 
@@ -145,7 +140,7 @@ public class PlayerManager : MonoBehaviour
     public void SetPlayerReady(bool _isReady)
     {
         isReady = _isReady;
-        ChangeBodyColour(isReady ? readyColour : unreadyColour);
+        ChangeBodyColour(isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyColour);
         UIManager.instance.UpdateLobbyPanel();
     }
 
@@ -170,7 +165,7 @@ public class PlayerManager : MonoBehaviour
                 //gameStartFailed
                 break;
             case PlayerType.Hunter:
-                ChangeBodyColour(hunterColour);
+                ChangeBodyColour(GameManager.instance.hunterColour);
                 break;
             case PlayerType.Hider:
 

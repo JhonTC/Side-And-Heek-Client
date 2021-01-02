@@ -17,6 +17,10 @@ public class GameManager : MonoBehaviour
 
     public bool gameStarted = false;
 
+    public Color unreadyColour;
+    public Color readyColour;
+    public Color hunterColour;
+
     private void Awake()
     {
         if (instance == null)
