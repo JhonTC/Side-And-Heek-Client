@@ -13,7 +13,7 @@ public class PlayerManager : MonoBehaviour
     public bool hasAuthority = false;
     public PlayerType playerType = PlayerType.Default;
 
-    [SerializeField] private TMP_Text usernameText;
+    [SerializeField] private TextMeshProUGUI usernameText;
 
     [SerializeField] private Transform root;
     [SerializeField] private Transform head;
@@ -26,7 +26,7 @@ public class PlayerManager : MonoBehaviour
     public Behaviour[] baseComponentsToDisable;
     public Behaviour[] extraComponentsToDisable;
 
-    [SerializeField] private Text messageText;
+    [SerializeField] private TextMeshProUGUI messageText;
 
     public Camera playerCamera;
 
@@ -53,6 +53,7 @@ public class PlayerManager : MonoBehaviour
             } else
             {
                 fadeOutMessageText = false;
+                messageText.enabled = false;
             }
         }
     }
@@ -190,6 +191,7 @@ public class PlayerManager : MonoBehaviour
     
     private void SetMessage(string _message, float _duration = 1)
     {
+        messageText.enabled = true;
         messageText.text = _message;
         messageText.color = new Color(1, 1, 1, 1);
         fadeDuration = _duration;
