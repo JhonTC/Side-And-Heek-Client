@@ -64,5 +64,16 @@ public class ClientSend : MonoBehaviour
         }
     }
 
+    public static void SetPlayerColour(Color _colour, bool _isSeekerColour)
+    {
+        using (Packet _packet = new Packet((int)ClientPackets.setPlayerColour))
+        {
+            _packet.Write(_colour);
+            _packet.Write(_isSeekerColour);
+
+            SendTCPData(_packet);
+        }
+    }
+
     #endregion
 }

@@ -49,7 +49,12 @@ public class SimplePlayerController : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                UIManager.instance.DisplayOptionsPanel();
+                UIManager.instance.DisplayDisconnectPanel();
+            }
+
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                UIManager.instance.DisplayCustomisationPanel();
             }
         }
         

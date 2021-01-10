@@ -3,20 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager instance;
 
     [SerializeField] private GameObject startPanel;
-    [SerializeField] private GameObject optionsPanel;
+    [SerializeField] private GameObject connectPanel;
+    [SerializeField] private GameObject disconnectPanel;
+    [SerializeField] private GameObject customisationPanel;
     //[SerializeField] private GameObject lobbyPanel;
-    public InputField ipField;
-    public InputField usernameField;
+    public TMP_InputField ipField;
+    public TMP_InputField usernameField;
 
     [SerializeField] private MeshRenderer[] readyGemRenderers;
     
     public Dictionary<int, int> playerReadyGems = new Dictionary<int, int>();
+
+    [SerializeField] private ColourSelectorUI hiderColourSelector;
+    [SerializeField] private ColourSelectorUI seekerColourSelector;
 
     private void Awake()
     {
@@ -33,11 +39,24 @@ public class UIManager : MonoBehaviour
         DisplayStartPanel();
     }
 
+    private void DisableAllPanels()
+    {
+        startPanel.SetActive(false);
+        connectPanel.SetActive(false);
+        disconnectPanel.SetActive(false);
+        customisationPanel.SetActive(false);
+    }
+
     public void DisplayStartPanel()
     {
+        DisableAllPanels();
         startPanel.SetActive(true);
-        optionsPanel.SetActive(false);
-        //lobbyPanel.SetActive(false);
+    }
+
+    public void DisplayConnectPanel()
+    {
+        DisableAllPanels();
+        connectPanel.SetActive(true);
         
         usernameField.interactable = true;
         ipField.interactable = true;
@@ -54,9 +73,24 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void DisplayOptionsPanel()
+    public void DisplayDisconnectPanel()
     {
-        optionsPanel.SetActive(!optionsPanel.activeSelf);
+        bool isActive = disconnectPanel.activeSelf;
+        DisableAllPanels();
+        if (!isActive)
+        {
+            disconnectPanel.SetActive(true);
+        }
+    }
+
+    public void DisplayCustomisationPanel()
+    {
+        bool isActive = customisationPanel.activeSelf;
+        DisableAllPanels();
+        if (!isActive)
+        {
+            customisationPanel.SetActive(true);
+        }
     }
 
     public void RemovePlayerReady(int _playerId)
@@ -124,7 +158,7 @@ public class UIManager : MonoBehaviour
 
     public void OnConnectButtonPressed()
     {
-        startPanel.SetActive(false);
+        connectPanel.SetActive(false);
         usernameField.interactable = false;
         ipField.interactable = false;
 
@@ -134,14 +168,59 @@ public class UIManager : MonoBehaviour
     public void OnDisconnectButtonPressed()
     {
         Client.instance.Disconnect();
-        optionsPanel.SetActive(false);
+        disconnectPanel.SetActive(false);
+    }
+
+    public void OnHiderColourChangeButtonPressed(ColourItem colourItem)
+    {
+        hiderColourSelector.UpdateAllButtons(colourItem);
+
+        customisationPanel.SetActive(false);
+
+        GameManager.instance.GetLocalPlayer().ChangeBodyColour(colourItem.colour, false);
+
+        ClientSend.SetPlayerColour(colourItem.colour, false);
+    }
+    
+    public void OnSeekerColourChangeButtonPressed(ColourItem colourItem)
+    {
+        seekerColourSelector.UpdateAllButtons(colourItem);
+
+        customisationPanel.SetActive(false);
+        
+        GameManager.instance.GetLocalPlayer().ChangeBodyColour(colourItem.colour, true);
+
+        ClientSend.SetPlayerColour(colourItem.colour, true);
+    }
+
+    [SerializeField] private GameObject[] tabs;
+    [SerializeField] private GameObject[] tabContents;
+    public void OnTabPressed(int tabIndex)
+    {
+        if (tabIndex >= tabs.Length || tabIndex < 0)
+        {
+            throw new System.Exception($"ERROR: Tab for tabIndex({tabIndex}) does not exist.");
+        }
+
+        for (int i = 0; i < tabs.Length; i++)
+        {
+            if (i != tabIndex)
+            {
+                tabs[i].SetActive(false);
+                tabContents[i].SetActive(false);
+            } else
+            {
+                tabs[i].SetActive(true);
+                tabContents[i].SetActive(true);
+            }
+        }
     }
 
     private void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
     {
         if (_scene.name == "Lobby") //needs replacing with enum or int
         {
-            DisplayStartPanel();
+            DisplayConnectPanel();
         }
     }
 }

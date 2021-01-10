@@ -61,6 +61,7 @@ public class Client : MonoBehaviour
         udp = new UDP();
 
         InitialiseClientData();
+        ErrorResponseHandler.InitialiseErrorResponseData();
 
         isConnected = true;
         tcp.Connect();
@@ -303,7 +304,8 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.playerReadyToggled, ClientHandle.PlayerReadyToggled },
             { (int)ServerPackets.changeScene, ClientHandle.ChangeScene },
             { (int)ServerPackets.setPlayerType, ClientHandle.SetPlayerType },
-            { (int)ServerPackets.setSpecialCountdown, ClientHandle.SetSpecialCountdown }
+            { (int)ServerPackets.setSpecialCountdown, ClientHandle.SetSpecialCountdown },
+            { (int)ServerPackets.setPlayerColour, ClientHandle.SetPlayerColour }
         };
         Debug.Log("Initialised packets.");
     }

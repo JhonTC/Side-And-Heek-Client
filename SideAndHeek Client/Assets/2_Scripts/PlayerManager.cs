@@ -33,6 +33,9 @@ public class PlayerManager : MonoBehaviour
     private bool fadeOutMessageText = false;
     private float fadeDuration = 1f;
 
+    public Color hiderColour;
+    public Color seekerColour;
+
     private void Awake()
     {
         DontDestroyOnLoad(this);
@@ -141,15 +144,40 @@ public class PlayerManager : MonoBehaviour
     public void SetPlayerReady(bool _isReady)
     {
         isReady = _isReady;
-        ChangeBodyColour(isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyColour);
+        //ChangeEyeColour(isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyEyeColour);
+        usernameText.color = isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyTextColour;
         UIManager.instance.UpdateLobbyPanel();
     }
 
-    private void ChangeBodyColour(Color colour)
+    public void ChangeBodyColour(Color colour, bool isSeekerColour)
+    {
+        if (isSeekerColour)
+        {
+            seekerColour = colour;
+        }
+        else
+        {
+            hiderColour = colour;
+        }
+
+        ChangeBodyColour(isSeekerColour);
+    }
+    public void ChangeBodyColour(bool isSeekerColour)
     {
         foreach (MeshRenderer mr in GetComponentsInChildren<MeshRenderer>())
         {
             if (mr.tag != "Eye")
+            {
+                mr.material.color = isSeekerColour? seekerColour : hiderColour;
+            }
+        }
+    }
+
+    public void ChangeEyeColour(Color colour)
+    {
+        foreach (MeshRenderer mr in GetComponentsInChildren<MeshRenderer>())
+        {
+            if (mr.tag == "Eye")
             {
                 mr.material.color = colour;
             }
@@ -166,7 +194,7 @@ public class PlayerManager : MonoBehaviour
                 //gameStartFailed
                 break;
             case PlayerType.Hunter:
-                ChangeBodyColour(GameManager.instance.hunterColour);
+                ChangeBodyColour(true);
                 break;
             case PlayerType.Hider:
 

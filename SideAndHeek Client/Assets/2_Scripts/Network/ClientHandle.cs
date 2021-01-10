@@ -143,4 +143,13 @@ public class ClientHandle : MonoBehaviour
             lastIsCountdownActive = _isCountdownActive;
         }
     }
+
+    public static void SetPlayerColour(Packet _packet)
+    {
+        int _playerId = _packet.ReadInt();
+        Color _colour = _packet.ReadColour();
+        bool _isSeekerColour = _packet.ReadBool();
+
+        GameManager.players[_playerId].ChangeBodyColour(_colour, _isSeekerColour);
+    }
 }
