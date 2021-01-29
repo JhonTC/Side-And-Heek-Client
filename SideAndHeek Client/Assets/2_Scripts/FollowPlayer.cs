@@ -11,14 +11,18 @@ public class FollowPlayer : MonoBehaviour
     [SerializeField] private Vector3 distanceToPlayer;
     [SerializeField] private Vector3 lookRotation;
     [SerializeField] private float orthographicSize;
+    [SerializeField] private bool isOrthographic;
 
     private void Start()
     {
-        playerCamera = GetComponent<Camera>();
-
         transform.position = GameManager.instance.sceneCamera.transform.position;
         transform.rotation = GameManager.instance.sceneCamera.transform.rotation;
-        playerCamera.orthographicSize = GameManager.instance.sceneCamera.GetComponent<Camera>().orthographicSize;
+
+        if (isOrthographic)
+        {
+            playerCamera = GetComponent<Camera>();
+            playerCamera.orthographicSize = GameManager.instance.sceneCamera.GetComponent<Camera>().orthographicSize;
+        }
     }
 
     void FixedUpdate()
@@ -31,8 +35,17 @@ public class FollowPlayer : MonoBehaviour
         if (target)
         {
             transform.position = Vector3.Lerp(transform.position, target.position + distanceToPlayer, followSpeed);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(lookRotation), followSpeed * 1.5f);
-            playerCamera.orthographicSize = Mathf.Lerp(playerCamera.orthographicSize, orthographicSize, followSpeed * 1.5f);
+
+            if (isOrthographic)
+            {
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(lookRotation), followSpeed * 1.5f);
+                playerCamera.orthographicSize = Mathf.Lerp(playerCamera.orthographicSize, orthographicSize, followSpeed * 1.5f);
+            }
         }
+    }
+
+    public void PlayerTeleportedToPosition(Vector3 position)
+    {
+        transform.position = position + distanceToPlayer;
     }
 }

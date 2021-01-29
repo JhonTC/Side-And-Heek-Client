@@ -5,9 +5,7 @@ using UnityEngine;
 
 public enum ErrorResponseCode
 {
-    NotAllPlayersReady = 101,
-    PlayerLeftDuringGameStart = 102,
-    PlayerLeftDuringGamePlay = 103,
+    NotAllPlayersReady = 101
 }
 
 public class ErrorResponseHandler
@@ -18,8 +16,7 @@ public class ErrorResponseHandler
     {
         errorResponseHandlers = new Dictionary<int, Action>()
         {
-            { (int)ErrorResponseCode.NotAllPlayersReady, NotAllPlayersReady },
-            { (int)ErrorResponseCode.PlayerLeftDuringGameStart, PlayerLeftDuringGameStart }
+            { (int)ErrorResponseCode.NotAllPlayersReady, NotAllPlayersReady }
         };
     }
 
@@ -30,11 +27,7 @@ public class ErrorResponseHandler
 
     private static void NotAllPlayersReady()
     {
-
-    }
-
-    private static void PlayerLeftDuringGameStart()
-    {
-
+        Debug.Log("Game start failed: Not all players ready!");
+        // do something to show this
     }
 }

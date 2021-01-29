@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Net;
 using System.Net.Sockets;
 using System;
+using System.Net.NetworkInformation;
 
 public class Client : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class Client : MonoBehaviour
     private delegate void PacketHandler(Packet _packet);
     private static Dictionary<int, PacketHandler> packetHandlers;
 
+    public string uniqueUserCode;
+
     private void Awake()
     {
         if (instance == null)
@@ -32,6 +35,31 @@ public class Client : MonoBehaviour
         }
 
         DontDestroyOnLoad(this);
+    }
+
+    private void Start()
+    {
+        if (PlayerPrefs.HasKey("UniqueUserCode"))
+        {
+            uniqueUserCode = PlayerPrefs.GetString("UniqueUserCode");
+        } else
+        {
+            uniqueUserCode = GetMacAddress();
+            PlayerPrefs.SetString("UniqueUserCode", uniqueUserCode);
+        }
+    }
+
+    private string GetMacAddress() {
+        foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
+        {
+            string macAddress = adapter.GetPhysicalAddress().ToString();
+            if (macAddress != "")
+            {
+                return macAddress;
+            }
+        }
+
+        throw new Exception("ERROR: No mac address found");
     }
 
     private void OnApplicationQuit()
@@ -303,9 +331,15 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.itemPickedUp, ClientHandle.ItemPickedUp },
             { (int)ServerPackets.playerReadyToggled, ClientHandle.PlayerReadyToggled },
             { (int)ServerPackets.changeScene, ClientHandle.ChangeScene },
+            { (int)ServerPackets.unloadScene, ClientHandle.UnloadScene },
             { (int)ServerPackets.setPlayerType, ClientHandle.SetPlayerType },
             { (int)ServerPackets.setSpecialCountdown, ClientHandle.SetSpecialCountdown },
-            { (int)ServerPackets.setPlayerColour, ClientHandle.SetPlayerColour }
+            { (int)ServerPackets.setPlayerColour, ClientHandle.SetPlayerColour },
+            { (int)ServerPackets.sendErrorResponseCode, ClientHandle.RecieveErrorResponse },
+            { (int)ServerPackets.gameOver, ClientHandle.GameOver },
+            { (int)ServerPackets.playerTeleported, ClientHandle.PlayerTeleported },
+            { (int)ServerPackets.taskProgressed, ClientHandle.TaskProgressed },
+            { (int)ServerPackets.taskComplete, ClientHandle.TaskComplete }
         };
         Debug.Log("Initialised packets.");
     }

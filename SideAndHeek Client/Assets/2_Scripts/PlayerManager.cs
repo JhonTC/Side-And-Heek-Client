@@ -4,11 +4,16 @@ using UnityEngine.UI;
 using UnityEngine;
 using TMPro;
 
+public enum CameraMode
+{
+    FirstPerson,
+    ThirdPerson
+}
+
 public class PlayerManager : MonoBehaviour
 {
     public int id;
     public string username;
-    public int itemCount = 0;
     public bool isReady = false;
     public bool hasAuthority = false;
     public PlayerType playerType = PlayerType.Default;
@@ -28,7 +33,13 @@ public class PlayerManager : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI messageText;
 
-    public Camera playerCamera;
+    public Camera thirdPersonCamera;
+    public Camera firstPersonCamera;
+    public Transform firstPersonCameraHolder;
+    public MeshRenderer[] headRenderers;
+
+    public CameraMode cameraMode = CameraMode.ThirdPerson;
+    public float sensitivity = 1;
 
     private bool fadeOutMessageText = false;
     private float fadeDuration = 1f;
@@ -36,10 +47,78 @@ public class PlayerManager : MonoBehaviour
     public Color hiderColour;
     public Color seekerColour;
 
+    public List<TaskCode> activeTasks = new List<TaskCode>();
+
+    [System.Serializable]
+    public class Task {
+        public TaskCode code;
+        float progress;
+
+        public Task(TaskCode _code)
+        {
+            code = _code;
+            progress = 0;
+        }
+    }
+
     private void Awake()
     {
         DontDestroyOnLoad(this);
     }
+
+    RaycastHit hit;
+    Ray ray;
+    private void Update()
+    {
+        ray = thirdPersonCamera.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            if (hit.transform.tag == "ItemSpawner")
+            {
+                ItemSpawner spawner = hit.transform.GetComponent<ItemSpawner>();
+
+                spawner.OnHover();
+
+                if (Input.GetMouseButtonDown(0) && !IsTaskInProgress(spawner.activeTask.taskCode))
+                {
+                    spawner.OnClick();
+                }
+            }
+        }
+
+        //foreach (BaseTask task in activeTasks)
+        //{
+        //    task.UpdateTask();
+        //}
+    }
+
+    private bool IsTaskInProgress(TaskCode _code)
+    {
+        foreach (TaskCode code in activeTasks)
+        {
+            if (code == _code)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private TaskCode GetActiveTaskWithCode(TaskCode _code)
+    {
+        foreach (TaskCode code in activeTasks)
+        {
+            if (code == _code)
+            {
+                return code;
+            }
+        }
+
+        throw new System.Exception($"Task {_code}, is not in progress for {username}.");
+    }
+
 
     private void FixedUpdate()
     {
@@ -109,7 +188,7 @@ public class PlayerManager : MonoBehaviour
         {
             component.enabled = false;
         }
-        playerCamera.enabled = false;
+        thirdPersonCamera.enabled = false;
     }
 
     private void DisableExtraComponents()
@@ -144,7 +223,6 @@ public class PlayerManager : MonoBehaviour
     public void SetPlayerReady(bool _isReady)
     {
         isReady = _isReady;
-        //ChangeEyeColour(isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyEyeColour);
         usernameText.color = isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyTextColour;
         UIManager.instance.UpdateLobbyPanel();
     }
@@ -173,17 +251,6 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void ChangeEyeColour(Color colour)
-    {
-        foreach (MeshRenderer mr in GetComponentsInChildren<MeshRenderer>())
-        {
-            if (mr.tag == "Eye")
-            {
-                mr.material.color = colour;
-            }
-        }
-    }
-
     public void SetPlayerType(PlayerType _playerType)
     {
         playerType = _playerType;
@@ -191,13 +258,13 @@ public class PlayerManager : MonoBehaviour
         switch(playerType)
         {
             case PlayerType.Default:
-                //gameStartFailed
+                ChangeBodyColour(false);
                 break;
             case PlayerType.Hunter:
                 ChangeBodyColour(true);
                 break;
             case PlayerType.Hider:
-
+                ChangeBodyColour(false);
                 break;
             case PlayerType.Spectator:
                 //spectator controls
@@ -224,6 +291,31 @@ public class PlayerManager : MonoBehaviour
         messageText.color = new Color(1, 1, 1, 1);
         fadeDuration = _duration;
         fadeOutMessageText = true;
+    }
+
+    public void PlayerTeleported(Vector3 position)
+    {
+        thirdPersonCamera.GetComponent<FollowPlayer>().PlayerTeleportedToPosition(position);
+    }
+
+    public void ItemPickedUp(TaskCode code) 
+    {
+        activeTasks.Add(code);
+    }
+
+    public void TaskProgressed(TaskCode code, float progression)
+    {
+        Debug.Log($"Task {code} progressed by {progression}.");
+    }
+
+    public void TaskComplete(TaskCode code)
+    {
+        if (activeTasks.Contains(code))
+        {
+            activeTasks.Remove(code);
+        }
+
+        Debug.Log($"Task {code} Complete!");
     }
 }
 

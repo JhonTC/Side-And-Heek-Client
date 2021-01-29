@@ -19,6 +19,14 @@ public class SimplePlayerController : MonoBehaviour
 
     bool isJumping = false;
     bool isFlopping = false;
+    
+    private CameraMode cameraMode;
+
+    private void Start()
+    {
+        cameraMode = playerManager.cameraMode;
+        SetupCameraMode();
+    }
 
     RaycastHit hit;
     Ray ray;
@@ -58,7 +66,7 @@ public class SimplePlayerController : MonoBehaviour
             }
         }
         
-        ray = playerManager.playerCamera.ScreenPointToRay(Input.mousePosition);
+        ray = playerManager.thirdPersonCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit))
         {
             if (hit.collider.tag == "GameStartObject")
@@ -92,39 +100,86 @@ public class SimplePlayerController : MonoBehaviour
         }
     }
 
+    private void SetupCameraMode()
+    {
+        switch (cameraMode)
+        {
+            case CameraMode.ThirdPerson:
+                playerManager.firstPersonCamera.enabled = false;
+                playerManager.thirdPersonCamera.enabled = true;
+                foreach (MeshRenderer item in playerManager.headRenderers)
+                {
+                    item.enabled = true;
+                }
+                break;
+            case CameraMode.FirstPerson:
+                playerManager.firstPersonCamera.enabled = true;
+                playerManager.thirdPersonCamera.enabled = false;
+                foreach (MeshRenderer item in playerManager.headRenderers)
+                {
+                    item.enabled = false;
+                }
+                break;
+        }
+    }
+    
     private void FixedUpdate()
     {
-        float inputSpeed;
+        if (cameraMode != playerManager.cameraMode)
+        {
+            cameraMode = playerManager.cameraMode;
+            SetupCameraMode();
+        }
+
+        float inputSpeed = 1;
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
+        float yRot = Input.GetAxisRaw("Mouse X");
+        float xRot = Input.GetAxisRaw("Mouse Y");
 
-        if (!legacyControls)
+        if (cameraMode == CameraMode.ThirdPerson)
         {
-            inputSpeed = Mathf.Clamp(Mathf.Abs(horizontal) + Mathf.Abs(vertical), 0, 1);
-
-            float angle;
-            if (horizontal != 0 || vertical != 0)
+            if (!legacyControls)
             {
-                angle = Mathf.Atan2(horizontal, vertical) * Mathf.Rad2Deg;
-                rotation = Quaternion.AngleAxis(angle, Vector3.up);
+                inputSpeed = Mathf.Clamp(Mathf.Abs(horizontal) + Mathf.Abs(vertical), 0, 1);
+
+                float angle;
+                if (horizontal != 0 || vertical != 0)
+                {
+                    angle = Mathf.Atan2(horizontal, vertical) * Mathf.Rad2Deg;
+                    rotation = Quaternion.AngleAxis(angle, Vector3.up);
+                }
+                else
+                {
+                    rotation = root.rotation;
+                }
+
             }
             else
             {
-                rotation = root.rotation;
+                inputSpeed = vertical;
+                if (playerManager.thirdPersonCamera)
+                {
+                    Vector3 pos = playerManager.thirdPersonCamera.WorldToScreenPoint(root.position);
+                    Vector3 dir = Input.mousePosition - pos;
+                    float angle = Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg;
+
+                    // Lerp to target rotation
+                    rotation = Quaternion.AngleAxis(angle, Vector3.up);
+                }
             }
-            
-        } else
+        }
+        else if (cameraMode == CameraMode.FirstPerson)
         {
             inputSpeed = vertical;
-            if (playerManager.playerCamera)
-            {
-                Vector3 pos = playerManager.playerCamera.WorldToScreenPoint(root.position);
-                Vector3 dir = Input.mousePosition - pos;
-                float angle = Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg;
 
-                // Lerp to target rotation
-                rotation = Quaternion.AngleAxis(angle, Vector3.up);
-            }
+            Quaternion tempRotation = Quaternion.Euler(new Vector3(0, yRot * playerManager.sensitivity, 0));
+            rotation = rotation * tempRotation;
+            playerManager.firstPersonCameraHolder.rotation = rotation;
+
+            tempRotation = playerManager.firstPersonCamera.transform.localRotation * Quaternion.Euler(new Vector3(xRot * playerManager.sensitivity * -1, 0, 0));
+            if (tempRotation.eulerAngles.x > -40 && tempRotation.eulerAngles.x < 40)
+                playerManager.firstPersonCamera.transform.localRotation = tempRotation;
         }
         
         SendInputToServer(inputSpeed, new bool[] { isJumping, isFlopping }, rotation);

@@ -23,6 +23,7 @@ public class ClientSend : MonoBehaviour
         {
             _packet.Write(Client.instance.myId);
             _packet.Write(UIManager.instance.usernameField.text);
+            _packet.Write(Client.instance.uniqueUserCode);
 
             SendTCPData(_packet);
         }
@@ -70,6 +71,16 @@ public class ClientSend : MonoBehaviour
         {
             _packet.Write(_colour);
             _packet.Write(_isSeekerColour);
+
+            SendTCPData(_packet);
+        }
+    }
+
+    public static void TaskSelected(int _spawnerId)
+    {
+        using (Packet _packet = new Packet((int)ClientPackets.taskSelected))
+        {
+            _packet.Write(_spawnerId);
 
             SendTCPData(_packet);
         }

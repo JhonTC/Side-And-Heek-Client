@@ -37,6 +37,14 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(this);
     }
 
+    private void OnApplicationQuit()
+    {
+        if (PlayerPrefs.HasKey("LastRoomCode"))
+        {
+            PlayerPrefs.DeleteKey("LastRoomCode");
+        }
+    }
+
     void OnEnable()
     {
         SceneManager.sceneLoaded += OnLevelFinishedLoading;
@@ -49,6 +57,8 @@ public class GameManager : MonoBehaviour
 
     private void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
     {
+        SceneManager.SetActiveScene(_scene);
+
         if (players.Count > 0)
         {
             if (GetLocalPlayer().playerType == PlayerType.Hider) //TODO: Move this to PlayerManager, called when a player is teleported
@@ -79,6 +89,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void UnloadScene(string sceneName)
+    {
+         SceneManager.UnloadSceneAsync(sceneName);
+    }
+
     public void SpawnPlayer(int _id, string _username, bool _isReady, Vector3 _position, Quaternion _rotation)
     {
         PlayerManager _player;
@@ -101,22 +116,57 @@ public class GameManager : MonoBehaviour
         {
             if (SceneManager.GetActiveScene().name.Contains("Lobby"))
             {
-                GetLocalPlayer().playerCamera.transform.position = new Vector3(-100, 100, 0);
+                //GetLocalPlayer().thirdPersonCamera.transform.position = new Vector3(-1000, 100, 0);
             }
             else
             {
-                GetLocalPlayer().playerCamera.transform.position = new Vector3(0, 100, 0);
+                //GetLocalPlayer().thirdPersonCamera.transform.position = new Vector3(0, 100, 0);
             }
         } else
         {
-            GetLocalPlayer().playerCamera.transform.position = _position;
+            //GetLocalPlayer().thirdPersonCamera.transform.position = _position;
         }
     }
 
-    public void CreateItemSpawner(int _spawnerId, Vector3 _position, bool _hasItem)
+    public void CreateItemSpawner(int _spawnerId, Vector3 _position, bool _hasItem, TaskCode _code, string _taskName, string _taskContent, Color _taskDifficulty)
     {
         ItemSpawner _spawner = Instantiate(itemSpawnerPrefab, _position, itemSpawnerPrefab.transform.rotation);
-        _spawner.Init(_spawnerId, _hasItem);
+        _spawner.Init(_spawnerId, _hasItem, _code, _taskName, _taskContent, _taskDifficulty);
         itemSpawners.Add(_spawnerId, _spawner);
     }
+
+    public void OnLocalPlayerDisconnection()
+    {
+        for (int i = 1; i <= players.Count; i++)
+        {
+            PlayerManager player = players[i];
+
+            if (player != null)
+            {
+                UIManager.instance.RemovePlayerReady(player.id);
+
+                Destroy(player.gameObject);
+                players.Remove(player.id);
+            } else
+            {
+                throw new System.Exception($"ERROR: Player with id {i} does not exist.");
+            }
+        }
+
+        sceneCamera.SetActive(true);
+
+        if (gameStarted)
+        {
+            SceneManager.UnloadSceneAsync("Map_Legacy");
+        }
+    }
+}
+
+public enum TaskCode
+{
+    NULL_TASK,
+    TestTaskEasy,
+    TestTaskNormal,
+    TestTaskHard,
+    TestTaskExtreme
 }

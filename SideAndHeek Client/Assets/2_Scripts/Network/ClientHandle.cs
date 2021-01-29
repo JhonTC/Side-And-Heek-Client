@@ -74,25 +74,36 @@ public class ClientHandle : MonoBehaviour
     {
         int _spawnerId = _packet.ReadInt();
         Vector3 _position = _packet.ReadVector3();
-        bool _hasItem = _packet.ReadBool();
 
-        GameManager.instance.CreateItemSpawner(_spawnerId, _position, _hasItem);
+        TaskCode _taskCode = (TaskCode)_packet.ReadInt();
+        string _taskName = _packet.ReadString();
+        string _taskContent = _packet.ReadString();
+        Color _taskDifficulty = _packet.ReadColour();
+
+        bool _hasItem = _taskCode != TaskCode.NULL_TASK;
+
+        GameManager.instance.CreateItemSpawner(_spawnerId, _position, _hasItem, _taskCode, _taskName, _taskContent, _taskDifficulty);
     }
 
     public static void ItemSpawned(Packet _packet)
     {
         int _spawnerId = _packet.ReadInt();
+        TaskCode _taskCode = (TaskCode)_packet.ReadInt();
+        string _taskName = _packet.ReadString();
+        string _taskContent = _packet.ReadString();
+        Color _taskDifficulty = _packet.ReadColour();
 
-        GameManager.itemSpawners[_spawnerId].ItemSpawned();
+        GameManager.itemSpawners[_spawnerId].ItemSpawned(_taskCode, _taskName, _taskContent, _taskDifficulty);
     }
 
     public static void ItemPickedUp(Packet _packet)
     {
         int _spawnerId = _packet.ReadInt();
         int _byPlayer = _packet.ReadInt();
+        TaskCode _code = (TaskCode)_packet.ReadInt();
 
         GameManager.itemSpawners[_spawnerId].ItemPickedUp();
-        GameManager.players[_byPlayer].itemCount++;
+        GameManager.players[_byPlayer].ItemPickedUp(_code);
     }
 
     public static void PlayerReadyToggled(Packet _packet)
@@ -108,6 +119,13 @@ public class ClientHandle : MonoBehaviour
         string _sceneToLoad = _packet.ReadString();
 
         GameManager.instance.LoadScene(_sceneToLoad, LoadSceneMode.Additive);
+    }
+
+    public static void UnloadScene(Packet _packet)
+    {
+        string _sceneToLoad = _packet.ReadString();
+
+        GameManager.instance.UnloadScene(_sceneToLoad);
     }
 
     public static void SetPlayerType(Packet _packet)
@@ -151,5 +169,57 @@ public class ClientHandle : MonoBehaviour
         bool _isSeekerColour = _packet.ReadBool();
 
         GameManager.players[_playerId].ChangeBodyColour(_colour, _isSeekerColour);
+    }
+
+    public static void RecieveErrorResponse(Packet _packet)
+    {
+        ErrorResponseCode responseCode = (ErrorResponseCode)_packet.ReadInt();
+
+        ErrorResponseHandler.HandleErrorResponse(responseCode);
+    }
+
+    public static void GameOver(Packet _packet)
+    {
+        bool isHunterVictory = _packet.ReadBool();
+
+        GameManager.instance.gameStarted = false;
+
+        Debug.Log("Game Over!");
+
+        //disable input
+        //show gameover panel
+        //enable option to go back to the lobby 
+
+        /*  - what happens to the other players?
+            - stop receiveing input and teleport them all to the starting spawnpoints
+                - what about one player moving the others?
+                - lock the players in place?
+        */
+
+    }
+
+    public static void PlayerTeleported(Packet _packet)
+    {
+        int _playerId = _packet.ReadInt();
+        Vector3 _teleportPosition = _packet.ReadVector3();
+
+        GameManager.players[_playerId].PlayerTeleported(_teleportPosition);
+    }
+
+    public static void TaskProgressed(Packet _packet)
+    {
+        int _playerId = _packet.ReadInt();
+        TaskCode _code = (TaskCode)_packet.ReadInt();
+        float _progression = _packet.ReadFloat();
+
+        GameManager.players[_playerId].TaskProgressed(_code, _progression);
+    }
+
+    public static void TaskComplete(Packet _packet)
+    {
+        int _playerId = _packet.ReadInt();
+        TaskCode _code = (TaskCode)_packet.ReadInt();
+
+        GameManager.players[_playerId].TaskComplete(_code);
     }
 }

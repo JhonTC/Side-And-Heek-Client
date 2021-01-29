@@ -39,6 +39,18 @@ public class UIManager : MonoBehaviour
         DisplayStartPanel();
     }
 
+    private void Start()
+    {
+        if (PlayerPrefs.HasKey("Username"))
+        {
+            usernameField.text = PlayerPrefs.GetString("Username");
+        }
+        if (PlayerPrefs.HasKey("LastRoomCode"))
+        {
+            ipField.text = PlayerPrefs.GetString("LastRoomCode");
+        }
+    }
+
     private void DisableAllPanels()
     {
         startPanel.SetActive(false);
@@ -158,9 +170,13 @@ public class UIManager : MonoBehaviour
 
     public void OnConnectButtonPressed()
     {
-        connectPanel.SetActive(false);
+        DisableAllPanels();
         usernameField.interactable = false;
         ipField.interactable = false;
+
+        PlayerPrefs.SetString("Username", usernameField.text);
+        PlayerPrefs.SetString("LastRoomCode", ipField.text);
+        PlayerPrefs.Save();
 
         Client.instance.ConnectToServer(ipField.text);
     }
@@ -168,14 +184,16 @@ public class UIManager : MonoBehaviour
     public void OnDisconnectButtonPressed()
     {
         Client.instance.Disconnect();
-        disconnectPanel.SetActive(false);
+        GameManager.instance.OnLocalPlayerDisconnection();
+
+        DisplayConnectPanel();
     }
 
     public void OnHiderColourChangeButtonPressed(ColourItem colourItem)
     {
         hiderColourSelector.UpdateAllButtons(colourItem);
 
-        customisationPanel.SetActive(false);
+        DisableAllPanels();
 
         GameManager.instance.GetLocalPlayer().ChangeBodyColour(colourItem.colour, false);
 
@@ -186,8 +204,8 @@ public class UIManager : MonoBehaviour
     {
         seekerColourSelector.UpdateAllButtons(colourItem);
 
-        customisationPanel.SetActive(false);
-        
+        DisableAllPanels();
+
         GameManager.instance.GetLocalPlayer().ChangeBodyColour(colourItem.colour, true);
 
         ClientSend.SetPlayerColour(colourItem.colour, true);
