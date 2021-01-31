@@ -118,8 +118,8 @@ Material:
     - _TextureBlendingMode: 0
     - _TextureImpact: 1
     - _UnityShadowMode: 2
-    - _UnityShadowPower: 0.2
-    - _UnityShadowSharpness: 10
+    - _UnityShadowPower: 0
+    - _UnityShadowSharpness: 1
     - _VertexColorsEnabled: 0
     - _WorkflowMode: 1
     - _ZWrite: 1

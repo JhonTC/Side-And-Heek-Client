@@ -79,7 +79,7 @@ public class ItemSpawner : MonoBehaviour
             uiPanel.transform.position = basePosition + new Vector3(0f, 0.25f * Mathf.Sin(Time.time * bobSpeed), 0f);
         }
 
-        Vector3 cameraPos = camera.transform.position;
+        Vector3 cameraPos = camera.transform.position; //!!
         cameraPos.x = uiPanel.transform.position.x;
         uiPanel.transform.LookAt(cameraPos);
 

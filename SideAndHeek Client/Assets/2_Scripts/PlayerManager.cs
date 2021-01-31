@@ -274,9 +274,19 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void SetCountdown(int countdownValue)
+    public void GameStart()
     {
-        SetMessage(countdownValue.ToString(), 0.9f);
+        usernameText.gameObject.SetActive(false);
+    }
+
+    public void GameOver()
+    {
+        usernameText.gameObject.SetActive(true);
+    }
+
+    public void SetCountdown(int countdownValue, bool fadeOut = true)
+    {
+        SetMessage(countdownValue.ToString(), 0.9f, fadeOut);
     }
 
     public void SetSpecialMessage(string _message)
@@ -284,13 +294,13 @@ public class PlayerManager : MonoBehaviour
         SetMessage(_message, 4f);
     }
     
-    private void SetMessage(string _message, float _duration = 1)
+    private void SetMessage(string _message, float _duration = 1, bool fadeOut = true)
     {
         messageText.enabled = true;
         messageText.text = _message;
         messageText.color = new Color(1, 1, 1, 1);
         fadeDuration = _duration;
-        fadeOutMessageText = true;
+        fadeOutMessageText = fadeOut;
     }
 
     public void PlayerTeleported(Vector3 position)

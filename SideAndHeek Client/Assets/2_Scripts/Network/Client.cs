@@ -336,6 +336,7 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.setSpecialCountdown, ClientHandle.SetSpecialCountdown },
             { (int)ServerPackets.setPlayerColour, ClientHandle.SetPlayerColour },
             { (int)ServerPackets.sendErrorResponseCode, ClientHandle.RecieveErrorResponse },
+            { (int)ServerPackets.gameStart, ClientHandle.GameStart },
             { (int)ServerPackets.gameOver, ClientHandle.GameOver },
             { (int)ServerPackets.playerTeleported, ClientHandle.PlayerTeleported },
             { (int)ServerPackets.taskProgressed, ClientHandle.TaskProgressed },

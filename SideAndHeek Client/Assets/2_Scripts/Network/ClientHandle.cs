@@ -48,16 +48,29 @@ public class ClientHandle : MonoBehaviour
         Quaternion _rightLegRotation = _packet.ReadQuaternion();
         Quaternion _leftLegRotation = _packet.ReadQuaternion();
 
-        GameManager.players[_id].SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
-        GameManager.players[_id].SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
+        if (GameManager.players.ContainsKey(_id))
+        {
+            GameManager.players[_id].SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
+            GameManager.players[_id].SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
+        } else
+        {
+            Debug.Log($"No player with id {_id}");
+        }
     }
 
     public static void PlayerRotation(Packet _packet)
     {
         int _id = _packet.ReadInt();
         Quaternion _rootRotation = _packet.ReadQuaternion();
-        
-        GameManager.players[_id].SetRootRotation(_rootRotation);
+
+        if (GameManager.players.ContainsKey(_id))
+        {
+            GameManager.players[_id].SetRootRotation(_rootRotation);
+        }
+        else
+        {
+            Debug.Log($"No player with id {_id}");
+        }
     }
 
     public static void PlayerDisconnected(Packet _packet)
@@ -66,8 +79,22 @@ public class ClientHandle : MonoBehaviour
         
         UIManager.instance.RemovePlayerReady(_id);
 
-        Destroy(GameManager.players[_id].gameObject);
-        GameManager.players.Remove(_id);
+        if (GameManager.players.ContainsKey(_id))
+        {
+            if (Client.instance.myId != _id)
+            {
+                Destroy(GameManager.players[_id].gameObject);
+                GameManager.players.Remove(_id);
+            }
+            else
+            {
+                GameManager.instance.OnLocalPlayerDisconnection();
+            }
+        }
+        else
+        {
+            Debug.Log($"No player with id {_id}");
+        }
     }
 
     public static void CreateItemSpawner(Packet _packet)
@@ -103,7 +130,15 @@ public class ClientHandle : MonoBehaviour
         TaskCode _code = (TaskCode)_packet.ReadInt();
 
         GameManager.itemSpawners[_spawnerId].ItemPickedUp();
-        GameManager.players[_byPlayer].ItemPickedUp(_code);
+
+        if (GameManager.players.ContainsKey(_byPlayer))
+        {
+            GameManager.players[_byPlayer].ItemPickedUp(_code);
+        }
+        else
+        {
+            Debug.Log($"No player with id {_byPlayer}");
+        }
     }
 
     public static void PlayerReadyToggled(Packet _packet)
@@ -111,7 +146,14 @@ public class ClientHandle : MonoBehaviour
         int _playerId = _packet.ReadInt();
         bool _isReady = _packet.ReadBool();
 
-        GameManager.players[_playerId].SetPlayerReady(_isReady);
+        if (GameManager.players.ContainsKey(_playerId))
+        {
+            GameManager.players[_playerId].SetPlayerReady(_isReady);
+        }
+        else
+        {
+            Debug.Log($"No player with id {_playerId}");
+        }
     }
 
     public static void ChangeScene(Packet _packet)
@@ -125,15 +167,22 @@ public class ClientHandle : MonoBehaviour
     {
         string _sceneToLoad = _packet.ReadString();
 
-        GameManager.instance.UnloadScene(_sceneToLoad);
+        GameManager.instance.UnloadScene(_sceneToLoad, false);
     }
 
     public static void SetPlayerType(Packet _packet)
     {
         int _playerId = _packet.ReadInt();
         PlayerType _playerType = (PlayerType)_packet.ReadInt();
-        
-        GameManager.players[_playerId].SetPlayerType(_playerType);
+
+        if (GameManager.players.ContainsKey(_playerId))
+        {
+            GameManager.players[_playerId].SetPlayerType(_playerType);
+        }
+        else
+        {
+            Debug.Log($"No player with id {_playerId}");
+        }
     }
 
     private static bool lastIsCountdownActive = false;
@@ -145,7 +194,14 @@ public class ClientHandle : MonoBehaviour
         
         if (_specialId == Client.instance.myId)
         {
-            GameManager.players[_specialId].SetCountdown(_countdownValue);
+            if (GameManager.players.ContainsKey(_specialId))
+            {
+                GameManager.players[_specialId].SetCountdown(_countdownValue);
+            }
+            else
+            {
+                Debug.Log($"No player with id {_specialId}");
+            }
         }
         else if (lastIsCountdownActive != _isCountdownActive)
         {
@@ -168,7 +224,14 @@ public class ClientHandle : MonoBehaviour
         Color _colour = _packet.ReadColour();
         bool _isSeekerColour = _packet.ReadBool();
 
-        GameManager.players[_playerId].ChangeBodyColour(_colour, _isSeekerColour);
+        if (GameManager.players.ContainsKey(_playerId))
+        {
+            GameManager.players[_playerId].ChangeBodyColour(_colour, _isSeekerColour);
+        }
+        else
+        {
+            Debug.Log($"No player with id {_playerId}");
+        }
     }
 
     public static void RecieveErrorResponse(Packet _packet)
@@ -178,11 +241,23 @@ public class ClientHandle : MonoBehaviour
         ErrorResponseHandler.HandleErrorResponse(responseCode);
     }
 
+    public static void GameStart(Packet _packet)
+    {
+        int _gameDuration = _packet.ReadInt();
+
+        GameManager.instance.StartGameTimer(_gameDuration);
+    }
+
     public static void GameOver(Packet _packet)
     {
         bool isHunterVictory = _packet.ReadBool();
 
         GameManager.instance.gameStarted = false;
+
+        foreach (PlayerManager player in GameManager.players.Values)
+        {
+            player.GameOver();
+        }
 
         Debug.Log("Game Over!");
 
@@ -203,7 +278,14 @@ public class ClientHandle : MonoBehaviour
         int _playerId = _packet.ReadInt();
         Vector3 _teleportPosition = _packet.ReadVector3();
 
-        GameManager.players[_playerId].PlayerTeleported(_teleportPosition);
+        if (GameManager.players.ContainsKey(_playerId))
+        {
+            GameManager.players[_playerId].PlayerTeleported(_teleportPosition);
+        }
+        else
+        {
+            Debug.Log($"No player with id {_playerId}");
+        }
     }
 
     public static void TaskProgressed(Packet _packet)
@@ -212,7 +294,14 @@ public class ClientHandle : MonoBehaviour
         TaskCode _code = (TaskCode)_packet.ReadInt();
         float _progression = _packet.ReadFloat();
 
-        GameManager.players[_playerId].TaskProgressed(_code, _progression);
+        if (GameManager.players.ContainsKey(_playerId))
+        {
+            GameManager.players[_playerId].TaskProgressed(_code, _progression);
+        }
+        else
+        {
+            Debug.Log($"No player with id {_playerId}");
+        }
     }
 
     public static void TaskComplete(Packet _packet)
@@ -220,6 +309,13 @@ public class ClientHandle : MonoBehaviour
         int _playerId = _packet.ReadInt();
         TaskCode _code = (TaskCode)_packet.ReadInt();
 
-        GameManager.players[_playerId].TaskComplete(_code);
+        if (GameManager.players.ContainsKey(_playerId))
+        {
+            GameManager.players[_playerId].TaskComplete(_code);
+        }
+        else
+        {
+            Debug.Log($"No player with id {_playerId}");
+        }
     }
 }

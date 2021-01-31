@@ -22,6 +22,8 @@ public class GameManager : MonoBehaviour
     public Color unreadyEyeColour;
     public Color readyColour;
 
+    private int currentTime = 0;
+
     private void Awake()
     {
         if (instance == null)
@@ -48,11 +50,13 @@ public class GameManager : MonoBehaviour
     void OnEnable()
     {
         SceneManager.sceneLoaded += OnLevelFinishedLoading;
+        SceneManager.sceneUnloaded += OnLevelFinishedUnloading;
     }
 
     void OnDisable()
     {
         SceneManager.sceneLoaded -= OnLevelFinishedLoading;
+        SceneManager.sceneUnloaded -= OnLevelFinishedUnloading;
     }
 
     private void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
@@ -65,6 +69,25 @@ public class GameManager : MonoBehaviour
             {
                 ResetLocalPlayerCamera();
             }
+        }
+
+        if (_scene.name != "Lobby")
+        {
+            gameStarted = true;
+
+            foreach (PlayerManager player in players.Values)
+            {
+                player.GameStart();
+            }
+        }
+    }
+
+    bool destoryItemSpawners;
+    private void OnLevelFinishedUnloading(Scene _scene)
+    {
+        if (destoryItemSpawners)
+        {
+            DestroyItemSpawners();
         }
     }
 
@@ -89,9 +112,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void UnloadScene(string sceneName)
+    public void UnloadScene(string sceneName, bool _destoryItemSpawners)
     {
-         SceneManager.UnloadSceneAsync(sceneName);
+        destoryItemSpawners = _destoryItemSpawners;
+        SceneManager.UnloadSceneAsync(sceneName);
     }
 
     public void SpawnPlayer(int _id, string _username, bool _isReady, Vector3 _position, Quaternion _rotation)
@@ -137,27 +161,46 @@ public class GameManager : MonoBehaviour
 
     public void OnLocalPlayerDisconnection()
     {
-        for (int i = 1; i <= players.Count; i++)
+        foreach (PlayerManager player in players.Values)
         {
-            PlayerManager player = players[i];
-
-            if (player != null)
-            {
-                UIManager.instance.RemovePlayerReady(player.id);
-
-                Destroy(player.gameObject);
-                players.Remove(player.id);
-            } else
-            {
-                throw new System.Exception($"ERROR: Player with id {i} does not exist.");
-            }
+            UIManager.instance.RemovePlayerReady(player.id);
+            Destroy(player.gameObject);
         }
+        players.Clear();
 
         sceneCamera.SetActive(true);
 
         if (gameStarted)
         {
-            SceneManager.UnloadSceneAsync("Map_Legacy");
+            UnloadScene("Map_1", true);
+        } else
+        {
+            DestroyItemSpawners();
+        }
+    }
+
+    private void DestroyItemSpawners()
+    {
+        foreach (ItemSpawner spawner in itemSpawners.Values)
+        {
+            Destroy(spawner.gameObject);
+        }
+        itemSpawners.Clear();
+    }
+
+    public void StartGameTimer(int _duration) 
+    {
+        StartCoroutine(GameTimeCountdown(_duration));
+    }
+    private IEnumerator GameTimeCountdown(int _duration = 240)
+    {
+        currentTime = _duration;
+        while (currentTime > 0)
+        {
+            yield return new WaitForSeconds(1.0f);
+
+            GetLocalPlayer().SetCountdown(currentTime, currentTime <= 1);
+            currentTime--;
         }
     }
 }
