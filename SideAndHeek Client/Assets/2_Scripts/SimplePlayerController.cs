@@ -46,18 +46,19 @@ public class SimplePlayerController : MonoBehaviour
         {
             isFlopping = false;
         }
-        
+
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            UIManager.instance.DisplayDisconnectPanel();
+        }
+
         if (!GameManager.instance.gameStarted)
         {
             if (Input.GetKeyDown(KeyCode.Return))
             {
                 playerManager.SetPlayerReady();
                 ClientSend.PlayerReady(playerManager.isReady);
-            }
-
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                UIManager.instance.DisplayDisconnectPanel();
             }
 
             if (Input.GetKeyDown(KeyCode.C))

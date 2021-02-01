@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
+    public static Dictionary<int, PlayerManager> disconnectedPlayers = new Dictionary<int, PlayerManager>();
     public static Dictionary<int, PlayerManager> players = new Dictionary<int, PlayerManager>();
     public static Dictionary<int, ItemSpawner> itemSpawners = new Dictionary<int, ItemSpawner>();
     
@@ -118,11 +119,11 @@ public class GameManager : MonoBehaviour
         SceneManager.UnloadSceneAsync(sceneName);
     }
 
-    public void SpawnPlayer(int _id, string _username, bool _isReady, Vector3 _position, Quaternion _rotation)
+    public void SpawnPlayer(int _id, string _username, bool _isReady, Vector3 _position, Quaternion _rotation, PlayerType _playerType, List<TaskCode> _activeTasks)
     {
         PlayerManager _player;
         _player = Instantiate(playerPrefab, _position, _rotation);
-        _player.Init(_id, _username, _isReady, _id == Client.instance.myId, players.Count == 0);
+        _player.Init(_id, _username, _isReady, _id == Client.instance.myId, _playerType, _activeTasks);
 
         players.Add(_id, _player);
 

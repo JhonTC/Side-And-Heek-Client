@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
@@ -27,11 +28,35 @@ public class ClientHandle : MonoBehaviour
         bool _isReady = _packet.ReadBool();
         Vector3 _position = _packet.ReadVector3();
         Quaternion _rotation = _packet.ReadQuaternion();
-        
+        PlayerType _playerType = (PlayerType)_packet.ReadInt();
+
+        List<TaskCode> _activeTasks = new List<TaskCode>();
+        int _activeTaskCount = _packet.ReadInt();
+        for (int i = 0; i < _activeTaskCount; i++)
+        {
+            _activeTasks.Add((TaskCode)_packet.ReadInt());
+        }
+
         Debug.Log($"Message from server: Spawn Player with id: {_id}");
-        GameManager.instance.SpawnPlayer(_id, _username, _isReady,_position, _rotation);
+        GameManager.instance.SpawnPlayer(_id, _username, _isReady,_position, _rotation, _playerType, _activeTasks);
 
         UIManager.instance.AddPlayerReady(_id);
+    }
+
+    public static void UpdatePlayerDetails(Packet _packet)
+    {
+        int _oldPlayerId = _packet.ReadInt();
+        int _newPlayerId = _packet.ReadInt();
+        string _username = _packet.ReadString();
+
+        if (GameManager.players.ContainsKey(_oldPlayerId))
+        {
+            PlayerManager player = GameManager.players[_oldPlayerId];
+            player.Init(_newPlayerId, _username);
+
+            GameManager.players.Remove(_oldPlayerId);
+            GameManager.players.Add(_newPlayerId, player);
+        }
     }
 
     public static void PlayerPositions(Packet _packet)
@@ -76,24 +101,32 @@ public class ClientHandle : MonoBehaviour
     public static void PlayerDisconnected(Packet _packet)
     {
         int _id = _packet.ReadInt();
-        
-        UIManager.instance.RemovePlayerReady(_id);
+        bool _fullQuit = _packet.ReadBool();
 
-        if (GameManager.players.ContainsKey(_id))
+        if (_fullQuit)
         {
-            if (Client.instance.myId != _id)
+
+            UIManager.instance.RemovePlayerReady(_id);
+
+            if (GameManager.players.ContainsKey(_id))
             {
-                Destroy(GameManager.players[_id].gameObject);
-                GameManager.players.Remove(_id);
+                if (Client.instance.myId != _id)
+                {
+                    Destroy(GameManager.players[_id].gameObject);
+                    GameManager.players.Remove(_id);
+                }
+                else
+                {
+                    GameManager.instance.OnLocalPlayerDisconnection();
+                }
             }
             else
             {
-                GameManager.instance.OnLocalPlayerDisconnection();
+                Debug.Log($"No player with id {_id}");
             }
-        }
-        else
+        } else
         {
-            Debug.Log($"No player with id {_id}");
+
         }
     }
 

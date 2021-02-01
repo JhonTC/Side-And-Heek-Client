@@ -183,6 +183,8 @@ public class UIManager : MonoBehaviour
 
     public void OnDisconnectButtonPressed()
     {
+        Debug.Log("OnDisconnectButtonPressed");
+
         Client.instance.Disconnect();
         GameManager.instance.OnLocalPlayerDisconnection();
 

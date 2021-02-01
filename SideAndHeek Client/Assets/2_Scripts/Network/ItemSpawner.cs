@@ -67,6 +67,14 @@ public class ItemSpawner : MonoBehaviour
         camera = GameManager.instance.GetLocalPlayer().thirdPersonCamera;
     }
 
+    private void OnDestroy()
+    {
+        if (GameManager.itemSpawners.ContainsKey(spawnerId))
+        {
+            GameManager.itemSpawners.Remove(spawnerId);
+        }
+    }
+
     private void Update()
     {
         if (hasItem && cursorHovering) {

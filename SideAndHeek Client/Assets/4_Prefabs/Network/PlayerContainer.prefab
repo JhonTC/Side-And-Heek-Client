@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4201180792173309665}
   - component: {fileID: 8896917330329367613}
   - component: {fileID: 6407032995814424394}
-  - component: {fileID: 7629668698850225119}
+  - component: {fileID: 6941550780245947954}
   m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
@@ -82,7 +82,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
---- !u!114 &7629668698850225119
+--- !u!114 &6941550780245947954
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -349,7 +349,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -920,7 +920,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 0
   username: 
-  itemCount: 0
   isReady: 0
   hasAuthority: 0
   playerType: 0
@@ -949,6 +948,7 @@ MonoBehaviour:
   sensitivity: 5
   hiderColour: {r: 0.9245283, g: 0.9245283, b: 0.9245283, a: 1}
   seekerColour: {r: 0.94509804, g: 0.32723713, b: 0.27502355, a: 1}
+  activeTasks: 
 --- !u!1001 &68622656946434583
 PrefabInstance:
   m_ObjectHideFlags: 0

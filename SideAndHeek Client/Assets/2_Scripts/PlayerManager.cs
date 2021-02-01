@@ -140,12 +140,13 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void Init(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHunter)
+    public void Init(int _id, string _username, bool _isReady, bool _hasAuthority, PlayerType _playerType, List<TaskCode> _activeTasks)
     {
-        id = _id;
-        username = _username;
+        Init(_id, _username);
         isReady = _isReady;
         hasAuthority = _hasAuthority;
+        SetPlayerType(_playerType);
+        activeTasks = _activeTasks;
 
         if (username == "")
         {
@@ -157,13 +158,13 @@ public class PlayerManager : MonoBehaviour
         if (!hasAuthority)
         {
             DisableBaseComponents();
-            if (!_isHunter)
+            if (playerType != PlayerType.Hunter)
             {
                 DisableExtraComponents();
             }
         }
 
-        if (!_isHunter)
+        if (playerType != PlayerType.Hunter)
         {
             ChangeLayers("Player");
         } else
@@ -172,6 +173,12 @@ public class PlayerManager : MonoBehaviour
         }
 
         SetPlayerReady(isReady);
+    }
+
+    public void Init(int _id, string _username)
+    {
+        id = _id;
+        username = _username;
     }
 
     private void ChangeLayers(string layer)
