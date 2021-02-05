@@ -86,5 +86,13 @@ public class ClientSend : MonoBehaviour
         }
     }
 
+    public static void ItemUsed()
+    {
+        using (Packet _packet = new Packet((int)ClientPackets.itemUsed))
+        {
+            SendTCPData(_packet);
+        }
+    }
+
     #endregion
 }

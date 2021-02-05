@@ -31,8 +31,6 @@ public class PlayerManager : MonoBehaviour
     public Behaviour[] baseComponentsToDisable;
     public Behaviour[] extraComponentsToDisable;
 
-    [SerializeField] private TextMeshProUGUI messageText;
-
     public Camera thirdPersonCamera;
     public Camera firstPersonCamera;
     public Transform firstPersonCameraHolder;
@@ -41,13 +39,14 @@ public class PlayerManager : MonoBehaviour
     public CameraMode cameraMode = CameraMode.ThirdPerson;
     public float sensitivity = 1;
 
-    private bool fadeOutMessageText = false;
-    private float fadeDuration = 1f;
 
     public Color hiderColour;
     public Color seekerColour;
 
     public List<TaskCode> activeTasks = new List<TaskCode>();
+    public ItemCode activeItem = ItemCode.NULL_ITEM;
+
+    public float clickRange;
 
     [System.Serializable]
     public class Task {
@@ -58,6 +57,16 @@ public class PlayerManager : MonoBehaviour
         {
             code = _code;
             progress = 0;
+        }
+    }
+
+    public class Item
+    {
+        public ItemCode code;
+
+        public Item(ItemCode _code)
+        {
+            code = _code;
         }
     }
 
@@ -72,19 +81,59 @@ public class PlayerManager : MonoBehaviour
     {
         ray = thirdPersonCamera.ScreenPointToRay(Input.mousePosition);
 
-        if (Physics.Raycast(ray, out hit))
+        if (!UIManager.instance.isUIActive)
         {
-            if (hit.transform.tag == "ItemSpawner")
+            if (Physics.Raycast(ray, out hit))
             {
-                ItemSpawner spawner = hit.transform.GetComponent<ItemSpawner>();
-
-                spawner.OnHover();
-
-                if (Input.GetMouseButtonDown(0) && !IsTaskInProgress(spawner.activeTask.taskCode))
+                if (hit.transform.tag == "ItemSpawner")
                 {
-                    spawner.OnClick();
+                    PickupSpawner spawner = hit.transform.GetComponent<PickupSpawner>();
+
+                    spawner.OnHover();
+
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        bool isPickupInProgress = false;
+                        if (spawner.pickupType == PickupType.Task)
+                        {
+                            isPickupInProgress = IsTaskInProgress(spawner.activeTask.taskCode);
+                        }
+                        else if (spawner.pickupType == PickupType.Item)
+                        {
+                            isPickupInProgress = IsItemInProgress();
+                        } 
+
+                        if (!isPickupInProgress)
+                        {
+                            spawner.OnClick();
+                        }
+                    }
                 }
-            }
+
+                if (hit.collider.tag == "GameStartObject")
+                {
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        if (!LobbyManager.instance.tryStartGameActive)
+                        {
+                            //float distance = Mathf.Abs(Vector3.Distance(root.position, hit.transform.position));
+                            //Debug.DrawLine(root.position, hit.point, Color.red, clickRange);
+                            //if (distance < clickRange)
+                            //{
+                            Debug.Log("Attempting Start Game: Sending message to server");
+
+                            LobbyManager.instance.tryStartGameActive = true;
+                            ClientSend.TryStartGame();
+                            //} 
+                        }
+                        else
+                        {
+                            Debug.Log("Failed Start Game: Already trying to start the game");
+                            //Debug.Log("Hover-StartGame"); // replace with hoverStart&Stop
+                        }
+                    }
+                }
+            } 
         }
 
         //foreach (BaseTask task in activeTasks)
@@ -101,6 +150,16 @@ public class PlayerManager : MonoBehaviour
             {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    private bool IsItemInProgress()
+    {
+        if (activeItem != ItemCode.NULL_ITEM)
+        {
+            return true;
         }
 
         return false;
@@ -124,20 +183,6 @@ public class PlayerManager : MonoBehaviour
     {
         head.position = Vector3.Lerp(head.position, root.position, 1f);
         head.rotation = Quaternion.Lerp(head.rotation, root.rotation, 1f);
-
-        if (fadeOutMessageText)
-        {
-            float messageTextAlpha = messageText.color.a;
-            if (messageTextAlpha > 0)
-            {
-                messageTextAlpha -= Time.fixedDeltaTime / fadeDuration;
-                messageText.color = new Color(1, 1, 1, messageTextAlpha);
-            } else
-            {
-                fadeOutMessageText = false;
-                messageText.enabled = false;
-            }
-        }
     }
 
     public void Init(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHunter)
@@ -223,7 +268,7 @@ public class PlayerManager : MonoBehaviour
     public void SetPlayerReady(bool _isReady)
     {
         isReady = _isReady;
-        usernameText.color = isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyTextColour;
+        usernameText.color = isReady ? LobbyManager.instance.readyColour : LobbyManager.instance.unreadyTextColour;
         UIManager.instance.UpdateLobbyPanel();
     }
 
@@ -284,33 +329,21 @@ public class PlayerManager : MonoBehaviour
         usernameText.gameObject.SetActive(true);
     }
 
-    public void SetCountdown(int countdownValue, bool fadeOut = true)
-    {
-        SetMessage(countdownValue.ToString(), 0.9f, fadeOut);
-    }
-
-    public void SetSpecialMessage(string _message)
-    {
-        SetMessage(_message, 4f);
-    }
-    
-    private void SetMessage(string _message, float _duration = 1, bool fadeOut = true)
-    {
-        messageText.enabled = true;
-        messageText.text = _message;
-        messageText.color = new Color(1, 1, 1, 1);
-        fadeDuration = _duration;
-        fadeOutMessageText = fadeOut;
-    }
-
     public void PlayerTeleported(Vector3 position)
     {
         thirdPersonCamera.GetComponent<FollowPlayer>().PlayerTeleportedToPosition(position);
     }
 
-    public void ItemPickedUp(TaskCode code) 
+    public void PickupPickedUp(PickupType pickupType, int code) 
     {
-        activeTasks.Add(code);
+        if (pickupType == PickupType.Task)
+        {
+            activeTasks.Add((TaskCode)code);
+        }
+        else if (pickupType == PickupType.Item)
+        {
+            activeItem = (ItemCode)code;
+        }
     }
 
     public void TaskProgressed(TaskCode code, float progression)
@@ -326,6 +359,15 @@ public class PlayerManager : MonoBehaviour
         }
 
         Debug.Log($"Task {code} Complete!");
+    }
+
+    public void UseItem()
+    {
+        if (activeItem != ItemCode.NULL_ITEM)
+        {
+            ClientSend.ItemUsed();
+            activeItem = ItemCode.NULL_ITEM;
+        }
     }
 }
 

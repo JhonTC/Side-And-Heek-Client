@@ -7,20 +7,10 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    public static Dictionary<int, PlayerManager> players = new Dictionary<int, PlayerManager>();
-    public static Dictionary<int, ItemSpawner> itemSpawners = new Dictionary<int, ItemSpawner>();
-    
-    public PlayerManager playerPrefab;
-    public ItemSpawner itemSpawnerPrefab;
-
-    public GameObject sceneCamera;
+    public static Dictionary<int, PickupSpawner> pickupSpawners = new Dictionary<int, PickupSpawner>();
+    public PickupSpawner pickupSpawnerPrefab;
 
     public bool gameStarted = false;
-
-    public Color unreadyColour;
-    public Color unreadyTextColour;
-    public Color unreadyEyeColour;
-    public Color readyColour;
 
     private int currentTime = 0;
 
@@ -63,9 +53,9 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.SetActiveScene(_scene);
 
-        if (players.Count > 0)
+        if (LobbyManager.players.Count > 0)
         {
-            if (GetLocalPlayer().playerType == PlayerType.Hider) //TODO: Move this to PlayerManager, called when a player is teleported
+            if (LobbyManager.instance.GetLocalPlayer().playerType == PlayerType.Hider) //TODO: Move this to PlayerManager, called when a player is teleported
             {
                 ResetLocalPlayerCamera();
             }
@@ -75,10 +65,12 @@ public class GameManager : MonoBehaviour
         {
             gameStarted = true;
 
-            foreach (PlayerManager player in players.Values)
+            foreach (PlayerManager player in LobbyManager.players.Values)
             {
                 player.GameStart();
             }
+
+            UIManager.instance.DisableAllPanels();
         }
     }
 
@@ -89,19 +81,6 @@ public class GameManager : MonoBehaviour
         {
             DestroyItemSpawners();
         }
-    }
-
-    public PlayerManager GetLocalPlayer()
-    {
-        foreach(PlayerManager player in players.Values)
-        {
-            if (player.hasAuthority)
-            {
-                return player;
-            }
-        }
-
-        throw new System.Exception("ERROR: No PlayerManager is marked as local (hasAuthority)");
     }
 
     public void LoadScene(string sceneName, LoadSceneMode loadSceneMode)
@@ -118,23 +97,10 @@ public class GameManager : MonoBehaviour
         SceneManager.UnloadSceneAsync(sceneName);
     }
 
-    public void SpawnPlayer(int _id, string _username, bool _isReady, Vector3 _position, Quaternion _rotation)
-    {
-        PlayerManager _player;
-        _player = Instantiate(playerPrefab, _position, _rotation);
-        _player.Init(_id, _username, _isReady, _id == Client.instance.myId, players.Count == 0);
+    
 
-        players.Add(_id, _player);
-
-        if (_id == Client.instance.myId)
-        {
-            ResetLocalPlayerCamera(sceneCamera.transform.position, true);
-            sceneCamera.SetActive(false);
-        }
-    }
-
-    private void ResetLocalPlayerCamera() { ResetLocalPlayerCamera(Vector3.zero, false); }
-    private void ResetLocalPlayerCamera(Vector3 _position, bool _useSentPosition)
+    public void ResetLocalPlayerCamera() { ResetLocalPlayerCamera(Vector3.zero, false); }
+    public void ResetLocalPlayerCamera(Vector3 _position, bool _useSentPosition)
     {
         if (!_useSentPosition)
         {
@@ -152,40 +118,22 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void CreateItemSpawner(int _spawnerId, Vector3 _position, bool _hasItem, TaskCode _code, string _taskName, string _taskContent, Color _taskDifficulty)
+    public void CreatePickupSpawner(int _spawnerId, Vector3 _position, PickupType _pickupType, bool _hasPickup, int _code, string _taskName, string _taskContent, Color _taskDifficulty)
     {
-        ItemSpawner _spawner = Instantiate(itemSpawnerPrefab, _position, itemSpawnerPrefab.transform.rotation);
-        _spawner.Init(_spawnerId, _hasItem, _code, _taskName, _taskContent, _taskDifficulty);
-        itemSpawners.Add(_spawnerId, _spawner);
+        PickupSpawner _spawner = Instantiate(pickupSpawnerPrefab, _position, pickupSpawnerPrefab.transform.rotation);
+        _spawner.Init(_spawnerId, _pickupType, _hasPickup, _code, _taskName, _taskContent, _taskDifficulty);
+        pickupSpawners.Add(_spawnerId, _spawner);
     }
 
-    public void OnLocalPlayerDisconnection()
+    
+
+    public void DestroyItemSpawners()
     {
-        foreach (PlayerManager player in players.Values)
-        {
-            UIManager.instance.RemovePlayerReady(player.id);
-            Destroy(player.gameObject);
-        }
-        players.Clear();
-
-        sceneCamera.SetActive(true);
-
-        if (gameStarted)
-        {
-            UnloadScene("Map_1", true);
-        } else
-        {
-            DestroyItemSpawners();
-        }
-    }
-
-    private void DestroyItemSpawners()
-    {
-        foreach (ItemSpawner spawner in itemSpawners.Values)
+        foreach (PickupSpawner spawner in pickupSpawners.Values)
         {
             Destroy(spawner.gameObject);
         }
-        itemSpawners.Clear();
+        pickupSpawners.Clear();
     }
 
     public void StartGameTimer(int _duration) 
@@ -195,14 +143,23 @@ public class GameManager : MonoBehaviour
     private IEnumerator GameTimeCountdown(int _duration = 240)
     {
         currentTime = _duration;
-        while (currentTime > 0)
+        while (currentTime > 0 && gameStarted)
         {
             yield return new WaitForSeconds(1.0f);
 
-            GetLocalPlayer().SetCountdown(currentTime, currentTime <= 1);
+            UIManager.instance.SetCountdown(currentTime, currentTime <= 1);
             currentTime--;
         }
+
+        UIManager.instance.SetMessage("Game Over", 2f, true);
     }
+}
+
+public enum PickupType
+{
+    NULL,
+    Task,
+    Item
 }
 
 public enum TaskCode
@@ -212,4 +169,11 @@ public enum TaskCode
     TestTaskNormal,
     TestTaskHard,
     TestTaskExtreme
+}
+
+public enum ItemCode
+{
+    NULL_ITEM,
+    SuperFlop,
+    SuperJump,
 }

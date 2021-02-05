@@ -311,16 +311,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnerId: 0
-  hasItem: 0
+  hasPickup: 0
   collider: {fileID: 8133409739190884358}
   uiPanel: {fileID: 2998803849377898294}
-  taskTitle: {fileID: 8913636765665967328}
-  taskContent: {fileID: 4640526242123511392}
-  taskOutline: {fileID: 7463093072333867752}
+  pickupTitle: {fileID: 8913636765665967328}
+  pickupContent: {fileID: 4640526242123511392}
+  pickupOutline: {fileID: 7463093072333867752}
   rotationSpeed: 100
   bobSpeed: 2
   interractable: 1
   cursorHovering: 0
+  pickupType: 0
 --- !u!65 &8133409739190884358
 BoxCollider:
   m_ObjectHideFlags: 0

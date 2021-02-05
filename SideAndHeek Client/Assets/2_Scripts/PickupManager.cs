@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TaskManager : MonoBehaviour
+public class PickupManager : MonoBehaviour
 {
-    public static TaskManager instance;
+    public static PickupManager instance;
 
     private delegate void TaskHandler();
     private static Dictionary<TaskCode, TaskHandler> taskHandlers;

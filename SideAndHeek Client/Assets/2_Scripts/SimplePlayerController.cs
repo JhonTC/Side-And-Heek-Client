@@ -9,7 +9,6 @@ public class SimplePlayerController : MonoBehaviour
     [SerializeField] private Transform root;
 
     public float turnSpeed;
-    public float clickRange;
 
     [HideInInspector] public Quaternion rotation = Quaternion.identity;
     
@@ -19,7 +18,8 @@ public class SimplePlayerController : MonoBehaviour
 
     bool isJumping = false;
     bool isFlopping = false;
-    
+    bool isUsingAbility = false;
+
     private CameraMode cameraMode;
 
     private void Start()
@@ -28,10 +28,14 @@ public class SimplePlayerController : MonoBehaviour
         SetupCameraMode();
     }
 
-    RaycastHit hit;
-    Ray ray;
     private void Update()
     {
+        if (Input.GetMouseButtonDown(1))
+        {
+            //isUsingAbility = true;
+            playerManager.UseItem();
+        } 
+
         if (Input.GetAxisRaw("Jump") != 0)
         {
             isJumping = true;
@@ -63,39 +67,6 @@ public class SimplePlayerController : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.C))
             {
                 UIManager.instance.DisplayCustomisationPanel();
-            }
-        }
-        
-        ray = playerManager.thirdPersonCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit))
-        {
-            if (hit.collider.tag == "GameStartObject")
-            {
-                if (Input.GetMouseButtonDown(0))
-                {
-                    float distance = Mathf.Abs(Vector3.Distance(root.position, hit.transform.position));
-                    Debug.DrawLine(root.position, hit.point, Color.red, clickRange);
-                    if (distance < clickRange)
-                    {
-                        ClientSend.TryStartGame();
-                    }
-                }
-                else
-                {
-                    //Debug.Log("Hover-StartGame"); // replace with hoverStart&Stop
-                }
-            }
-
-            if (hit.collider.tag == "ItemSpawner")
-            {
-                if (Input.GetMouseButtonDown(0))
-                {
-                    //Debug.Log("Click-ItemSpawner");
-                }
-                else
-                {
-                    //Debug.Log("Hover-ItemSpawner"); // replace with hoverStart&Stop
-                }
             }
         }
     }

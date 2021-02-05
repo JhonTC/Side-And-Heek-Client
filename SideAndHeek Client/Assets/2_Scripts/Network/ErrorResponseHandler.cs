@@ -29,5 +29,7 @@ public class ErrorResponseHandler
     {
         Debug.Log("Game start failed: Not all players ready!");
         // do something to show this
+
+        LobbyManager.instance.tryStartGameActive = false;
     }
 }

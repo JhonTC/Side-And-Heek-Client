@@ -15,13 +15,13 @@ public class FollowPlayer : MonoBehaviour
 
     private void Start()
     {
-        transform.position = GameManager.instance.sceneCamera.transform.position;
-        transform.rotation = GameManager.instance.sceneCamera.transform.rotation;
+        transform.position = LobbyManager.instance.sceneCamera.transform.position;
+        transform.rotation = LobbyManager.instance.sceneCamera.transform.rotation;
 
         if (isOrthographic)
         {
             playerCamera = GetComponent<Camera>();
-            playerCamera.orthographicSize = GameManager.instance.sceneCamera.GetComponent<Camera>().orthographicSize;
+            playerCamera.orthographicSize = LobbyManager.instance.sceneCamera.GetComponent<Camera>().orthographicSize;
         }
     }
 

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -29,7 +27,7 @@ public class ClientHandle : MonoBehaviour
         Quaternion _rotation = _packet.ReadQuaternion();
         
         Debug.Log($"Message from server: Spawn Player with id: {_id}");
-        GameManager.instance.SpawnPlayer(_id, _username, _isReady,_position, _rotation);
+        LobbyManager.instance.SpawnPlayer(_id, _username, _isReady,_position, _rotation);
 
         UIManager.instance.AddPlayerReady(_id);
     }
@@ -48,10 +46,10 @@ public class ClientHandle : MonoBehaviour
         Quaternion _rightLegRotation = _packet.ReadQuaternion();
         Quaternion _leftLegRotation = _packet.ReadQuaternion();
 
-        if (GameManager.players.ContainsKey(_id))
+        if (LobbyManager.players.ContainsKey(_id))
         {
-            GameManager.players[_id].SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
-            GameManager.players[_id].SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
+            LobbyManager.players[_id].SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
+            LobbyManager.players[_id].SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
         } else
         {
             Debug.Log($"No player with id {_id}");
@@ -63,9 +61,9 @@ public class ClientHandle : MonoBehaviour
         int _id = _packet.ReadInt();
         Quaternion _rootRotation = _packet.ReadQuaternion();
 
-        if (GameManager.players.ContainsKey(_id))
+        if (LobbyManager.players.ContainsKey(_id))
         {
-            GameManager.players[_id].SetRootRotation(_rootRotation);
+            LobbyManager.players[_id].SetRootRotation(_rootRotation);
         }
         else
         {
@@ -79,16 +77,16 @@ public class ClientHandle : MonoBehaviour
         
         UIManager.instance.RemovePlayerReady(_id);
 
-        if (GameManager.players.ContainsKey(_id))
+        if (LobbyManager.players.ContainsKey(_id))
         {
             if (Client.instance.myId != _id)
             {
-                Destroy(GameManager.players[_id].gameObject);
-                GameManager.players.Remove(_id);
+                Destroy(LobbyManager.players[_id].gameObject);
+                LobbyManager.players.Remove(_id);
             }
             else
             {
-                GameManager.instance.OnLocalPlayerDisconnection();
+                LobbyManager.instance.OnLocalPlayerDisconnection();
             }
         }
         else
@@ -97,43 +95,46 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void CreateItemSpawner(Packet _packet)
+    public static void CreatePickupSpawner(Packet _packet)
     {
         int _spawnerId = _packet.ReadInt();
         Vector3 _position = _packet.ReadVector3();
+        PickupType _pickupType = (PickupType)_packet.ReadInt();
+        bool _hasPickup = _packet.ReadBool();
 
-        TaskCode _taskCode = (TaskCode)_packet.ReadInt();
-        string _taskName = _packet.ReadString();
-        string _taskContent = _packet.ReadString();
-        Color _taskDifficulty = _packet.ReadColour();
+        int _code = _packet.ReadInt();
+        string _pickupName = _packet.ReadString();
+        string _pickupContent = _packet.ReadString();
+        Color _pickupLevel = _packet.ReadColour();
 
-        bool _hasItem = _taskCode != TaskCode.NULL_TASK;
-
-        GameManager.instance.CreateItemSpawner(_spawnerId, _position, _hasItem, _taskCode, _taskName, _taskContent, _taskDifficulty);
+        GameManager.instance.CreatePickupSpawner(_spawnerId, _position, _pickupType, _hasPickup, _code, _pickupName, _pickupContent, _pickupLevel);
     }
 
-    public static void ItemSpawned(Packet _packet)
+    public static void PickupSpawned(Packet _packet)
     {
         int _spawnerId = _packet.ReadInt();
-        TaskCode _taskCode = (TaskCode)_packet.ReadInt();
-        string _taskName = _packet.ReadString();
-        string _taskContent = _packet.ReadString();
-        Color _taskDifficulty = _packet.ReadColour();
+        PickupType _pickupType = (PickupType)_packet.ReadInt();
 
-        GameManager.itemSpawners[_spawnerId].ItemSpawned(_taskCode, _taskName, _taskContent, _taskDifficulty);
+        int _code = _packet.ReadInt();
+        string _pickupName = _packet.ReadString();
+        string _pickupContent = _packet.ReadString();
+        Color _pickupLevel = _packet.ReadColour();
+
+        GameManager.pickupSpawners[_spawnerId].PickupSpawned(_pickupType, _code, _pickupName, _pickupContent, _pickupLevel);
     }
 
-    public static void ItemPickedUp(Packet _packet)
+    public static void PickupPickedUp(Packet _packet)
     {
         int _spawnerId = _packet.ReadInt();
         int _byPlayer = _packet.ReadInt();
-        TaskCode _code = (TaskCode)_packet.ReadInt();
+        PickupType _pickupType = (PickupType)_packet.ReadInt();
+        int _code = _packet.ReadInt();
 
-        GameManager.itemSpawners[_spawnerId].ItemPickedUp();
+        GameManager.pickupSpawners[_spawnerId].ItemPickedUp();
 
-        if (GameManager.players.ContainsKey(_byPlayer))
+        if (LobbyManager.players.ContainsKey(_byPlayer))
         {
-            GameManager.players[_byPlayer].ItemPickedUp(_code);
+            LobbyManager.players[_byPlayer].PickupPickedUp(_pickupType, _code);
         }
         else
         {
@@ -146,9 +147,9 @@ public class ClientHandle : MonoBehaviour
         int _playerId = _packet.ReadInt();
         bool _isReady = _packet.ReadBool();
 
-        if (GameManager.players.ContainsKey(_playerId))
+        if (LobbyManager.players.ContainsKey(_playerId))
         {
-            GameManager.players[_playerId].SetPlayerReady(_isReady);
+            LobbyManager.players[_playerId].SetPlayerReady(_isReady);
         }
         else
         {
@@ -175,9 +176,9 @@ public class ClientHandle : MonoBehaviour
         int _playerId = _packet.ReadInt();
         PlayerType _playerType = (PlayerType)_packet.ReadInt();
 
-        if (GameManager.players.ContainsKey(_playerId))
+        if (LobbyManager.players.ContainsKey(_playerId))
         {
-            GameManager.players[_playerId].SetPlayerType(_playerType);
+            LobbyManager.players[_playerId].SetPlayerType(_playerType);
         }
         else
         {
@@ -194,9 +195,9 @@ public class ClientHandle : MonoBehaviour
         
         if (_specialId == Client.instance.myId)
         {
-            if (GameManager.players.ContainsKey(_specialId))
+            if (LobbyManager.players.ContainsKey(_specialId))
             {
-                GameManager.players[_specialId].SetCountdown(_countdownValue);
+                UIManager.instance.SetCountdown(_countdownValue);
             }
             else
             {
@@ -207,11 +208,11 @@ public class ClientHandle : MonoBehaviour
         {
             if (_isCountdownActive)
             {
-                GameManager.players[Client.instance.myId].SetSpecialMessage($"{GameManager.players[_specialId].username} is the hunter... Hide!");
+                UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].username} is the hunter... Hide!");
             }
             else
             {
-                GameManager.players[Client.instance.myId].SetSpecialMessage($"{GameManager.players[_specialId].username} has been released");
+                UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].username} has been released");
             }
 
             lastIsCountdownActive = _isCountdownActive;
@@ -224,9 +225,9 @@ public class ClientHandle : MonoBehaviour
         Color _colour = _packet.ReadColour();
         bool _isSeekerColour = _packet.ReadBool();
 
-        if (GameManager.players.ContainsKey(_playerId))
+        if (LobbyManager.players.ContainsKey(_playerId))
         {
-            GameManager.players[_playerId].ChangeBodyColour(_colour, _isSeekerColour);
+            LobbyManager.players[_playerId].ChangeBodyColour(_colour, _isSeekerColour);
         }
         else
         {
@@ -245,6 +246,9 @@ public class ClientHandle : MonoBehaviour
     {
         int _gameDuration = _packet.ReadInt();
 
+        Debug.Log("Game Start");
+        LobbyManager.instance.tryStartGameActive = false;
+        UIManager.instance.DisableAllPanels();
         GameManager.instance.StartGameTimer(_gameDuration);
     }
 
@@ -254,7 +258,7 @@ public class ClientHandle : MonoBehaviour
 
         GameManager.instance.gameStarted = false;
 
-        foreach (PlayerManager player in GameManager.players.Values)
+        foreach (PlayerManager player in LobbyManager.players.Values)
         {
             player.GameOver();
         }
@@ -278,9 +282,9 @@ public class ClientHandle : MonoBehaviour
         int _playerId = _packet.ReadInt();
         Vector3 _teleportPosition = _packet.ReadVector3();
 
-        if (GameManager.players.ContainsKey(_playerId))
+        if (LobbyManager.players.ContainsKey(_playerId))
         {
-            GameManager.players[_playerId].PlayerTeleported(_teleportPosition);
+            LobbyManager.players[_playerId].PlayerTeleported(_teleportPosition);
         }
         else
         {
@@ -294,9 +298,9 @@ public class ClientHandle : MonoBehaviour
         TaskCode _code = (TaskCode)_packet.ReadInt();
         float _progression = _packet.ReadFloat();
 
-        if (GameManager.players.ContainsKey(_playerId))
+        if (LobbyManager.players.ContainsKey(_playerId))
         {
-            GameManager.players[_playerId].TaskProgressed(_code, _progression);
+            LobbyManager.players[_playerId].TaskProgressed(_code, _progression);
         }
         else
         {
@@ -309,9 +313,9 @@ public class ClientHandle : MonoBehaviour
         int _playerId = _packet.ReadInt();
         TaskCode _code = (TaskCode)_packet.ReadInt();
 
-        if (GameManager.players.ContainsKey(_playerId))
+        if (LobbyManager.players.ContainsKey(_playerId))
         {
-            GameManager.players[_playerId].TaskComplete(_code);
+            LobbyManager.players[_playerId].TaskComplete(_code);
         }
         else
         {

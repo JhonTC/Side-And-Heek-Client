@@ -24,6 +24,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private ColourSelectorUI hiderColourSelector;
     [SerializeField] private ColourSelectorUI seekerColourSelector;
 
+    public bool isUIActive = false;
+
+    private bool fadeOutMessageText = false;
+    private float fadeDuration = 1f;
+    [SerializeField] private TextMeshProUGUI messageText;
+    [SerializeField] private GameObject[] tabs;
+    [SerializeField] private GameObject[] tabContents;
+
     private void Awake()
     {
         if (instance == null)
@@ -51,8 +59,27 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void DisableAllPanels()
+    private void FixedUpdate()
     {
+        if (fadeOutMessageText)
+        {
+            float messageTextAlpha = messageText.color.a;
+            if (messageTextAlpha > 0)
+            {
+                messageTextAlpha -= Time.fixedDeltaTime / fadeDuration;
+                messageText.color = new Color(1, 1, 1, messageTextAlpha);
+            }
+            else
+            {
+                fadeOutMessageText = false;
+                messageText.enabled = false;
+            }
+        }
+    }
+
+    public void DisableAllPanels()
+    {
+        isUIActive = false;
         startPanel.SetActive(false);
         connectPanel.SetActive(false);
         disconnectPanel.SetActive(false);
@@ -63,6 +90,8 @@ public class UIManager : MonoBehaviour
     {
         DisableAllPanels();
         startPanel.SetActive(true);
+
+        isUIActive = true;
     }
 
     public void DisplayConnectPanel()
@@ -72,17 +101,21 @@ public class UIManager : MonoBehaviour
         
         usernameField.interactable = true;
         ipField.interactable = true;
+
+        isUIActive = true;
     }
 
     public void DisplayLobbyPanel()
     {
         //lobbyPanel.SetActive(true);
 
-        foreach (PlayerManager player in GameManager.players.Values)
+        foreach (PlayerManager player in LobbyManager.players.Values)
         {
             //playerReadyPanels.Add(player.id, Instantiate(playerReadyPanelPrefab, playerReadyParentPanel));
             //playerReadyPanels[player.id].color = player.isReady ? Color.green : Color.grey;
         }
+
+        //isUIActive = true;
     }
 
     public void DisplayDisconnectPanel()
@@ -93,6 +126,8 @@ public class UIManager : MonoBehaviour
         {
             disconnectPanel.SetActive(true);
         }
+
+        isUIActive = true;
     }
 
     public void DisplayCustomisationPanel()
@@ -103,6 +138,8 @@ public class UIManager : MonoBehaviour
         {
             customisationPanel.SetActive(true);
         }
+
+        isUIActive = true;
     }
 
     public void RemovePlayerReady(int _playerId)
@@ -142,7 +179,7 @@ public class UIManager : MonoBehaviour
         {
             if (playerReadyGems.ContainsKey(i)) {
                 readyGemRenderers[i].enabled = true;
-                readyGemRenderers[i].material.color = GameManager.players[playerReadyGems[i]].isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyColour;
+                readyGemRenderers[i].material.color = LobbyManager.players[playerReadyGems[i]].isReady ? LobbyManager.instance.readyColour : LobbyManager.instance.unreadyColour;
             } else
             {
                 readyGemRenderers[i].enabled = false;
@@ -184,7 +221,7 @@ public class UIManager : MonoBehaviour
     public void OnDisconnectButtonPressed()
     {
         Client.instance.Disconnect();
-        GameManager.instance.OnLocalPlayerDisconnection();
+        LobbyManager.instance.OnLocalPlayerDisconnection();
 
         DisplayConnectPanel();
     }
@@ -195,7 +232,7 @@ public class UIManager : MonoBehaviour
 
         DisableAllPanels();
 
-        GameManager.instance.GetLocalPlayer().ChangeBodyColour(colourItem.colour, false);
+        LobbyManager.instance.GetLocalPlayer().ChangeBodyColour(colourItem.colour, false);
 
         ClientSend.SetPlayerColour(colourItem.colour, false);
     }
@@ -206,13 +243,11 @@ public class UIManager : MonoBehaviour
 
         DisableAllPanels();
 
-        GameManager.instance.GetLocalPlayer().ChangeBodyColour(colourItem.colour, true);
+        LobbyManager.instance.GetLocalPlayer().ChangeBodyColour(colourItem.colour, true);
 
         ClientSend.SetPlayerColour(colourItem.colour, true);
     }
 
-    [SerializeField] private GameObject[] tabs;
-    [SerializeField] private GameObject[] tabContents;
     public void OnTabPressed(int tabIndex)
     {
         if (tabIndex >= tabs.Length || tabIndex < 0)
@@ -240,5 +275,24 @@ public class UIManager : MonoBehaviour
         {
             DisplayConnectPanel();
         }
+    }
+
+    public void SetCountdown(int countdownValue, bool fadeOut = true)
+    {
+        SetMessage(countdownValue.ToString(), 0.9f, fadeOut);
+    }
+
+    public void SetSpecialMessage(string _message)
+    {
+        SetMessage(_message, 4f);
+    }
+
+    public void SetMessage(string _message, float _duration = 1, bool fadeOut = true)
+    {
+        messageText.enabled = true;
+        messageText.text = _message;
+        messageText.color = new Color(1, 1, 1, 1);
+        fadeDuration = _duration;
+        fadeOutMessageText = fadeOut;
     }
 }
