@@ -79,61 +79,65 @@ public class PlayerManager : MonoBehaviour
     Ray ray;
     private void Update()
     {
-        ray = thirdPersonCamera.ScreenPointToRay(Input.mousePosition);
-
-        if (!UIManager.instance.isUIActive)
+        if (hasAuthority)
         {
-            if (Physics.Raycast(ray, out hit))
+            ray = thirdPersonCamera.ScreenPointToRay(Input.mousePosition);
+
+            if (!UIManager.instance.isUIActive)
             {
-                if (hit.transform.tag == "ItemSpawner")
+                if (Physics.Raycast(ray, out hit))
                 {
-                    PickupSpawner spawner = hit.transform.GetComponent<PickupSpawner>();
-
-                    spawner.OnHover();
-
-                    if (Input.GetMouseButtonDown(0))
+                    Debug.DrawRay(ray.origin, ray.direction);
+                    if (hit.transform.tag == "ItemSpawner")
                     {
-                        bool isPickupInProgress = false;
-                        if (spawner.pickupType == PickupType.Task)
-                        {
-                            isPickupInProgress = IsTaskInProgress(spawner.activeTask.taskCode);
-                        }
-                        else if (spawner.pickupType == PickupType.Item)
-                        {
-                            isPickupInProgress = IsItemInProgress();
-                        } 
+                        PickupSpawner spawner = hit.transform.GetComponent<PickupSpawner>();
 
-                        if (!isPickupInProgress)
+                        spawner.OnHover();
+
+                        if (Input.GetMouseButtonDown(0))
                         {
-                            spawner.OnClick();
+                            bool isPickupInProgress = false;
+                            if (spawner.pickupType == PickupType.Task)
+                            {
+                                isPickupInProgress = IsTaskInProgress(spawner.activeTask.taskCode);
+                            }
+                            else if (spawner.pickupType == PickupType.Item)
+                            {
+                                isPickupInProgress = IsItemInProgress();
+                            }
+
+                            if (!isPickupInProgress)
+                            {
+                                spawner.OnClick();
+                            }
+                        }
+                    }
+
+                    if (hit.collider.tag == "GameStartObject")
+                    {
+                        if (Input.GetMouseButtonDown(0))
+                        {
+                            if (!LobbyManager.instance.tryStartGameActive)
+                            {
+                                //float distance = Mathf.Abs(Vector3.Distance(root.position, hit.transform.position));
+                                //Debug.DrawLine(root.position, hit.point, Color.red, clickRange);
+                                //if (distance < clickRange)
+                                //{
+                                Debug.Log("Attempting Start Game: Sending message to server");
+
+                                LobbyManager.instance.tryStartGameActive = true;
+                                ClientSend.TryStartGame();
+                                //} 
+                            }
+                            else
+                            {
+                                Debug.Log("Failed Start Game: Already trying to start the game");
+                                //Debug.Log("Hover-StartGame"); // replace with hoverStart&Stop
+                            }
                         }
                     }
                 }
-
-                if (hit.collider.tag == "GameStartObject")
-                {
-                    if (Input.GetMouseButtonDown(0))
-                    {
-                        if (!LobbyManager.instance.tryStartGameActive)
-                        {
-                            //float distance = Mathf.Abs(Vector3.Distance(root.position, hit.transform.position));
-                            //Debug.DrawLine(root.position, hit.point, Color.red, clickRange);
-                            //if (distance < clickRange)
-                            //{
-                            Debug.Log("Attempting Start Game: Sending message to server");
-
-                            LobbyManager.instance.tryStartGameActive = true;
-                            ClientSend.TryStartGame();
-                            //} 
-                        }
-                        else
-                        {
-                            Debug.Log("Failed Start Game: Already trying to start the game");
-                            //Debug.Log("Hover-StartGame"); // replace with hoverStart&Stop
-                        }
-                    }
-                }
-            } 
+            }
         }
 
         //foreach (BaseTask task in activeTasks)
@@ -210,10 +214,10 @@ public class PlayerManager : MonoBehaviour
 
         if (!_isHunter)
         {
-            ChangeLayers("Player");
+            //ChangeLayers("Player");
         } else
         {
-            ChangeLayers("LocalPlayer");
+            //ChangeLayers("LocalPlayer");
         }
 
         SetPlayerReady(isReady);
