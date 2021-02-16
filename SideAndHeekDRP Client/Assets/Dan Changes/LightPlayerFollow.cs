@@ -5,7 +5,7 @@ using UnityEngine;
 public class LightPlayerFollow : MonoBehaviour
 {
     [SerializeField] private Transform target;
-    [SerializeField] private SimplePlayerController spc;
+    [SerializeField] private PlayerMotor spc;
     [SerializeField] private float turnSpeed;
 
     private void Update()

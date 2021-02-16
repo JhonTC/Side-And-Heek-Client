@@ -7,6 +7,10 @@ TagManager:
   - Eye
   - ItemSpawner
   - LobbySpawnpoint
+  - GameStartObject
+  - Bush
+  - Ground
+  - BodyCollider
   layers:
   - Default
   - TransparentFX
@@ -17,8 +21,8 @@ TagManager:
   - 
   - 
   - PostProcessing
-  - 
-  - 
+  - Ground
+  - Foot
   - 
   - 
   - 
