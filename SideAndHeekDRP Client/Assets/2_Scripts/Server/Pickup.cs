@@ -47,7 +47,7 @@ namespace Server
             }
         }*/
 
-        private IEnumerator SpawnPickup(int spawnDelay = 1)
+        private IEnumerator SpawnPickup(int spawnDelay = 10)
         {
             yield return new WaitForSeconds(spawnDelay);
 
@@ -55,11 +55,11 @@ namespace Server
             {
                 if (pickupType == PickupType.Task)
                 {
-                    TaskDetails newTaskDetails = LocalGameManager.instance.collection.GetRandomTask();
+                    TaskDetails newTaskDetails = GameManager.instance.collection.GetRandomTask();
 
                     while (!CanTaskCodeBeUsed(newTaskDetails))
                     {
-                        newTaskDetails = LocalGameManager.instance.collection.GetRandomTask();
+                        newTaskDetails = GameManager.instance.collection.GetRandomTask();
                     }
 
                     if (tasksLog.ContainsKey(newTaskDetails.task.taskCode))
@@ -77,11 +77,11 @@ namespace Server
                 }
                 else if (pickupType == PickupType.Item)
                 {
-                    ItemDetails newItemDetails = LocalGameManager.instance.collection.GetRandomItem();
+                    ItemDetails newItemDetails = GameManager.instance.collection.GetRandomItem();
 
                     while (!CanItemCodeBeUsed(newItemDetails))
                     {
-                        newItemDetails = LocalGameManager.instance.collection.GetRandomItem();
+                        newItemDetails = GameManager.instance.collection.GetRandomItem();
                     }
 
                     if (itemsLog.ContainsKey(newItemDetails.item.itemCode))
@@ -130,7 +130,7 @@ namespace Server
         {
             if (pickupType == PickupType.Task)
             {
-                if (tasksLog.Count < LocalGameManager.instance.collection.taskDetails.Count)
+                if (tasksLog.Count < GameManager.instance.collection.taskDetails.Count)
                 {
                     return false;
                 }
@@ -139,7 +139,7 @@ namespace Server
                 {
                     if (tasksLog.ContainsKey(taskCode))
                     {
-                        if (tasksLog[taskCode] < LocalGameManager.instance.collection.GetTaskByCode(taskCode).numberOfUses)
+                        if (tasksLog[taskCode] < GameManager.instance.collection.GetTaskByCode(taskCode).numberOfUses)
                         {
                             return false;
                         }
@@ -152,7 +152,7 @@ namespace Server
             }
             else if (pickupType == PickupType.Item)
             {
-                if (itemsLog.Count < LocalGameManager.instance.collection.itemDetails.Count)
+                if (itemsLog.Count < GameManager.instance.collection.itemDetails.Count)
                 {
                     return false;
                 }
@@ -161,7 +161,7 @@ namespace Server
                 {
                     if (itemsLog.ContainsKey(itemCode))
                     {
-                        if (itemsLog[itemCode] < LocalGameManager.instance.collection.GetItemByCode(itemCode).numberOfUses)
+                        if (itemsLog[itemCode] < GameManager.instance.collection.GetItemByCode(itemCode).numberOfUses)
                         {
                             return false;
                         }
