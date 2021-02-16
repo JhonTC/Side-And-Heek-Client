@@ -1159,7 +1159,7 @@ MonoBehaviour:
   lobbyScene: S_Lobby
   specialSpawnDelay: 2
   activeSceneName: S_Lobby
-  maxPlayDuration: 240
+  maxPlayDuration: 1000
   hunterSpeedMultiplier: 1
 --- !u!4 &217739930
 Transform:
@@ -4806,6 +4806,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Padding: {x: 0, y: 0, z: 0, w: 0}
+  m_Softness: {x: 0, y: 0}
 --- !u!1 &855813024
 GameObject:
   m_ObjectHideFlags: 0
@@ -8569,6 +8571,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Padding: {x: 0, y: 0, z: 0, w: 0}
+  m_Softness: {x: 0, y: 0}
 --- !u!1 &1401658847
 GameObject:
   m_ObjectHideFlags: 0
