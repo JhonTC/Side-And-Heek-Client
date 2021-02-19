@@ -321,7 +321,7 @@ public class PlayerManager : MonoBehaviour
         thirdPersonCamera.GetComponent<FollowPlayer>().PlayerTeleportedToPosition(position);
     }
 
-    public virtual void PickupPickedUp(BasePickup pickup) 
+    public virtual void PickupPickedUp(BasePickup pickup)
     {
         if (pickup.pickupType == PickupType.Task)
         {
@@ -330,6 +330,7 @@ public class PlayerManager : MonoBehaviour
         else if (pickup.pickupType == PickupType.Item)
         {
             activeItem = PickupManager.instance.HandleItem(pickup as ItemPickup);
+            UIManager.instance.gameplayPanel.SetItemDetails(pickup as ItemPickup);
         }
     }
 
@@ -353,6 +354,7 @@ public class PlayerManager : MonoBehaviour
         if (activeItem != null)
         {
             ClientSend.ItemUsed();
+            UIManager.instance.gameplayPanel.SetItemDetails();
             activeItem = null;
         }
     }

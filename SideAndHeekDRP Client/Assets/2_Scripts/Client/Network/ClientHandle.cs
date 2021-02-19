@@ -332,4 +332,12 @@ public class ClientHandle : MonoBehaviour
             Debug.Log($"No player with id {_playerId}");
         }
     }
+
+    public static void GameRulesChanged(Packet _packet)
+    {
+        int _playerId = _packet.ReadInt();
+        GameRules gameRules = _packet.ReadGameRules();
+
+        Debug.Log($"Game Rules Changed by player with id {_playerId}");
+    }
 }

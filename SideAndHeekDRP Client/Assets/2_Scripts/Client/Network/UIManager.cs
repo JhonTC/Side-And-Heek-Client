@@ -12,7 +12,9 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private GameObject startPanel;
     [SerializeField] private GameObject connectPanel;
-    [SerializeField] private GameObject disconnectPanel;
+    public GameplayUI gameplayPanel;
+    [SerializeField] private SettingsUI settingsPanel;
+    [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject customisationPanel;
     //[SerializeField] private GameObject lobbyPanel;
     public TMP_InputField ipField;
@@ -25,13 +27,15 @@ public class UIManager : MonoBehaviour
     [SerializeField] private ColourSelectorUI hiderColourSelector;
     [SerializeField] private ColourSelectorUI seekerColourSelector;
 
-    public bool isUIActive = false;
+    private bool m_IsUIActive = false;
+
+    public bool isUIActive { get { return m_IsUIActive || gameplayPanel.isActive; } }
 
     private bool fadeOutMessageText = false;
     private float fadeDuration = 1f;
     [SerializeField] private TextMeshProUGUI messageText;
-    [SerializeField] private GameObject[] tabs;
-    [SerializeField] private GameObject[] tabContents;
+
+    private GameObject lastActivePanel;
 
     private void Awake()
     {
@@ -80,30 +84,57 @@ public class UIManager : MonoBehaviour
 
     public void DisableAllPanels()
     {
-        isUIActive = false;
+        m_IsUIActive = false;
         startPanel.SetActive(false);
         connectPanel.SetActive(false);
-        disconnectPanel.SetActive(false);
+        pausePanel.SetActive(false);
         customisationPanel.SetActive(false);
+        settingsPanel.gameObject.SetActive(false);
     }
 
     public void DisplayStartPanel()
     {
         DisableAllPanels();
+        gameplayPanel.gameObject.SetActive(false);
         startPanel.SetActive(true);
 
-        isUIActive = true;
+        m_IsUIActive = true;
+
+        lastActivePanel = startPanel;
     }
 
     public void DisplayConnectPanel()
     {
         DisableAllPanels();
+        gameplayPanel.gameObject.SetActive(false);
         connectPanel.SetActive(true);
         
         usernameField.interactable = true;
         ipField.interactable = true;
 
-        isUIActive = true;
+        m_IsUIActive = true;
+
+        lastActivePanel = connectPanel;
+    }
+
+    public void DisplayGameplayPanel()
+    {
+        //DisableAllPanels();
+        gameplayPanel.gameObject.SetActive(true);
+
+        m_IsUIActive = true;
+
+        lastActivePanel = gameplayPanel.gameObject;
+    }
+
+    public void DisplaySettingsPanel()
+    {
+        DisableAllPanels();
+        settingsPanel.gameObject.SetActive(true);
+
+        m_IsUIActive = true;
+
+        //lastActivePanel = startPanel;
     }
 
     public void DisplayLobbyPanel()
@@ -119,16 +150,18 @@ public class UIManager : MonoBehaviour
         //isUIActive = true;
     }
 
-    public void DisplayDisconnectPanel()
+    public void DisplayPausePanel()
     {
-        bool isActive = disconnectPanel.activeSelf;
+        bool isActive = pausePanel.activeSelf;
         DisableAllPanels();
         if (!isActive)
         {
-            disconnectPanel.SetActive(true);
+            pausePanel.SetActive(true);
         }
 
-        isUIActive = true;
+        m_IsUIActive = true;
+
+        lastActivePanel = pausePanel;
     }
 
     public void DisplayCustomisationPanel()
@@ -140,7 +173,9 @@ public class UIManager : MonoBehaviour
             customisationPanel.SetActive(true);
         }
 
-        isUIActive = true;
+        m_IsUIActive = true;
+
+        lastActivePanel = customisationPanel;
     }
 
     public void RemovePlayerReady(int _playerId)
@@ -201,11 +236,6 @@ public class UIManager : MonoBehaviour
         throw new System.Exception("No player-ready Gem Avaliable, too many players have joined.");
     }
 
-    public void DisplayGamePanel()
-    {
-        //lobbyPanel.SetActive(false);
-    }
-
     public void OnTutorialButtonPressed()
     {
         DisableAllPanels();
@@ -217,6 +247,8 @@ public class UIManager : MonoBehaviour
     public void OnConnectButtonPressed()
     {
         DisableAllPanels();
+        gameplayPanel.gameObject.SetActive(true);
+
         usernameField.interactable = false;
         ipField.interactable = false;
 
@@ -263,25 +295,19 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void OnTabPressed(int tabIndex)
+    public void OnBackButtonPressed()
     {
-        if (tabIndex >= tabs.Length || tabIndex < 0)
-        {
-            throw new System.Exception($"ERROR: Tab for tabIndex({tabIndex}) does not exist.");
-        }
+        DisableAllPanels();
 
-        for (int i = 0; i < tabs.Length; i++)
-        {
-            if (i != tabIndex)
-            {
-                tabs[i].SetActive(false);
-                tabContents[i].SetActive(false);
-            } else
-            {
-                tabs[i].SetActive(true);
-                tabContents[i].SetActive(true);
-            }
-        }
+        lastActivePanel.SetActive(true);
+
+        m_IsUIActive = true;
+    }
+
+    public void OnQuitButtonPressed()
+    {
+        //todo: handle something?
+        Application.Quit();
     }
 
     private void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)

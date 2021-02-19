@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
 
     public PickupCollection collection;
+    public GameRules gameRules;
 
     public static Dictionary<int, PickupSpawner> pickupSpawners = new Dictionary<int, PickupSpawner>();
     public PickupSpawner pickupSpawnerPrefab;
@@ -19,6 +20,8 @@ public class GameManager : MonoBehaviour
     public GameType gameType;
 
     public string lobbyScene;
+
+    public GameObject gameStartCollider;
 
     private void Awake()
     {
@@ -70,6 +73,7 @@ public class GameManager : MonoBehaviour
         if (_scene.name != lobbyScene)
         {
             gameStarted = true;
+            gameStartCollider.SetActive(false);
 
             foreach (PlayerManager player in LobbyManager.players.Values)
             {
@@ -77,6 +81,10 @@ public class GameManager : MonoBehaviour
             }
 
             UIManager.instance.DisableAllPanels();
+        } 
+        else
+        {
+            gameStartCollider.SetActive(true);
         }
     }
 
@@ -130,8 +138,6 @@ public class GameManager : MonoBehaviour
         _spawner.Init(_spawnerId, _pickupType, _hasPickup, _code);
         pickupSpawners.Add(_spawnerId, _spawner);
     }
-
-    
 
     public void DestroyItemSpawners()
     {

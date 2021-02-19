@@ -6,5 +6,28 @@ using UnityEngine;
 public class GameRules : ScriptableObject
 {
     public int id;
+    [Range(60, 360)]
+    public int gameLength;
 
+    [HideInInspector] public int numberOfHunters;                     //* - requires more hunter spawns
+    public CatchType catchType;
+    [Range(0, 60)]
+    public int hidingTime;
+
+    public SpeedBoostType speedBoostType;
+    [Range(0.8f, 1.2f)]
+    public float speedMultiplier;
+}
+
+public enum CatchType
+{
+    OnFlop,
+    OnTouch
+}
+
+public enum SpeedBoostType
+{
+    FirstHunter,
+    AllHunters,
+    None
 }

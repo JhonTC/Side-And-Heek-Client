@@ -80,7 +80,7 @@ public class PlayerMotor : MonoBehaviour
             {
                 if (GameManager.instance.gameType == GameType.Multiplayer)
                 {
-                    UIManager.instance.DisplayDisconnectPanel();
+                    UIManager.instance.DisplayPausePanel();
                 }
             }
 

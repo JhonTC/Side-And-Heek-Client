@@ -340,7 +340,8 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.gameOver, ClientHandle.GameOver },
             { (int)ServerPackets.playerTeleported, ClientHandle.PlayerTeleported },
             { (int)ServerPackets.taskProgressed, ClientHandle.TaskProgressed },
-            { (int)ServerPackets.taskComplete, ClientHandle.TaskComplete }
+            { (int)ServerPackets.taskComplete, ClientHandle.TaskComplete },
+            { (int)ServerPackets.gameRulesChanged, ClientHandle.GameRulesChanged }
         };
         Debug.Log("Initialised packets.");
     }

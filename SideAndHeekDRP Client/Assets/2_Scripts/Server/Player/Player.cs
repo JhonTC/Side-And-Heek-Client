@@ -123,6 +123,7 @@ namespace Server
             else if (pickup.pickupType == PickupType.Item)
             {
                 activeItem = PickupManager.instance.HandleItem(pickup as ItemPickup, this);
+                UIManager.instance.gameplayPanel.SetItemDetails(pickup as ItemPickup);
             }
         }
 

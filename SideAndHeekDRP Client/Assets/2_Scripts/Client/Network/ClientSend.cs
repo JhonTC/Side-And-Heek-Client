@@ -94,5 +94,15 @@ public class ClientSend : MonoBehaviour
         }
     }
 
+    public static void GameRulesChanged(GameRules gameRules)
+    {
+        using (Packet _packet = new Packet((int)ClientPackets.gameRulesChanged))
+        {
+            _packet.Write(gameRules);
+
+            SendTCPData(_packet);
+        }
+    }
+
     #endregion
 }
