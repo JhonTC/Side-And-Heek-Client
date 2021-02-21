@@ -37,7 +37,7 @@ public enum ClientPackets
     playerReady,
     tryStartGame,
     setPlayerColour,
-    taskSelected,
+    pickupSelected,
     itemUsed,
     gameRulesChanged
 }
@@ -424,7 +424,7 @@ public class Packet : IDisposable
         rules.gameLength = ReadInt(_moveReadPos);
         rules.numberOfHunters = ReadInt(_moveReadPos);
         rules.catchType = (CatchType)ReadInt(_moveReadPos);
-        rules.gameLength = ReadInt(_moveReadPos);
+        rules.hidingTime = ReadInt(_moveReadPos);
         rules.speedBoostType = (SpeedBoostType)ReadInt(_moveReadPos);
         rules.speedMultiplier = ReadFloat(_moveReadPos);
 

@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using UnityEngine;
 using TMPro;
 using Server;
+using System;
 
 public enum CameraMode
 {
@@ -17,6 +18,7 @@ public class PlayerManager : MonoBehaviour
     public string username;
     public bool isReady = false;
     public bool hasAuthority = false;
+    public bool isHost = false;
     public PlayerType playerType = PlayerType.Default;
 
     [SerializeField] private TextMeshProUGUI usernameText;
@@ -34,7 +36,6 @@ public class PlayerManager : MonoBehaviour
     public CameraMode cameraMode = CameraMode.ThirdPerson;
     public float sensitivity = 1;
 
-
     public Color hiderColour;
     public Color seekerColour;
 
@@ -43,6 +44,7 @@ public class PlayerManager : MonoBehaviour
 
     public float clickRange;
 
+    [SerializeField] private AudioSource walkingAudioSource;
 
     private void Awake()
     {
@@ -129,12 +131,13 @@ public class PlayerManager : MonoBehaviour
         playerMotor.head.rotation = Quaternion.Lerp(playerMotor.head.rotation, playerMotor.root.rotation, 1f);
     }
 
-    public virtual void Init(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHunter)
+    public virtual void Init(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHost)
     {
         id = _id;
         username = _username;
         isReady = _isReady;
         hasAuthority = _hasAuthority;
+        isHost = _isHost;
 
         if (username == "")
         {
@@ -149,18 +152,7 @@ public class PlayerManager : MonoBehaviour
         if (!hasAuthority)
         {
             DisableBaseComponents();
-            if (!_isHunter)
-            {
-                DisableExtraComponents();
-            }
-        }
-
-        if (!_isHunter)
-        {
-            //ChangeLayers("Player");
-        } else
-        {
-            //ChangeLayers("LocalPlayer");
+            thirdPersonCamera.gameObject.SetActive(false);
         }
 
         SetPlayerReady(isReady);
@@ -242,6 +234,21 @@ public class PlayerManager : MonoBehaviour
         playerMotor.leftLeg.rotation = _leftLegRot;
     }
 
+    public void PlayFootstepSound(FootstepType footstepType)
+    {
+        if (footstepType != FootstepType.Null) {
+            GameManager.SoundGroup soundGroup = GameManager.instance.GetFootstepSoundForType(footstepType);
+            if (soundGroup != null)
+            {
+                GameManager.FootstepSound sound = soundGroup.GetRandomClip();
+
+                walkingAudioSource.volume = sound.volume;
+                walkingAudioSource.clip = sound.audioClip;
+                walkingAudioSource.Play();
+            }
+        }
+    }
+
     public void SetPlayerReady() { SetPlayerReady(!isReady); }
     public void SetPlayerReady(bool _isReady)
     {
@@ -262,6 +269,7 @@ public class PlayerManager : MonoBehaviour
         else
         {
             hiderColour = colour;
+            UIManager.instance.customisationPanel.hiderColourSelector.UpdateAllButtons();
         }
 
         ChangeBodyColour(isSeekerColour);
@@ -330,7 +338,11 @@ public class PlayerManager : MonoBehaviour
         else if (pickup.pickupType == PickupType.Item)
         {
             activeItem = PickupManager.instance.HandleItem(pickup as ItemPickup);
-            UIManager.instance.gameplayPanel.SetItemDetails(pickup as ItemPickup);
+
+            if (hasAuthority)
+            {
+                UIManager.instance.gameplayPanel.SetItemDetails(pickup as ItemPickup);
+            }
         }
     }
 

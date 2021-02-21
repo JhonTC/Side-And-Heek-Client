@@ -9,13 +9,26 @@ public class ClientHandle : MonoBehaviour
         string _msg = _packet.ReadString();
         int _myId = _packet.ReadInt();
 
+        GameRules _gameRules = _packet.ReadGameRules();
+
+        int _hiderColourCount = _packet.ReadInt();
+        Color[] _hiderColours = new Color[_hiderColourCount];
+        for (int i = 0; i < _hiderColours.Length; i++)
+        {
+            _hiderColours[i] = _packet.ReadColour();
+        }
+
         Debug.Log($"Message from server: {_msg}");
         Client.instance.myId = _myId;
-        ClientSend.WelcomeReceived();
 
         Client.instance.udp.Connect(((IPEndPoint)Client.instance.tcp.socket.Client.LocalEndPoint).Port);
 
+        GameManager.instance.gameRules = _gameRules;
+        GameManager.instance.hiderColours = _hiderColours;
+        UIManager.instance.customisationPanel.hiderColourSelector.Init(_hiderColours);
         UIManager.instance.DisplayLobbyPanel();
+
+        ClientSend.WelcomeReceived();
     }
 
     public static void SpawnPlayer(Packet _packet)
@@ -23,11 +36,15 @@ public class ClientHandle : MonoBehaviour
         int _id = _packet.ReadInt();
         string _username = _packet.ReadString();
         bool _isReady = _packet.ReadBool();
+        bool _isHost = _packet.ReadBool();
         Vector3 _position = _packet.ReadVector3();
         Quaternion _rotation = _packet.ReadQuaternion();
-        
+        Color _colour = _packet.ReadColour();
+
+        bool _hasAuthority = _id == Client.instance.myId;
+
         Debug.Log($"Message from server: Spawn Player with id: {_id}");
-        LobbyManager.instance.SpawnPlayer(_id, _username, _isReady, _id == Client.instance.myId, _position, _rotation);
+        LobbyManager.instance.SpawnPlayer(_id, _username, _isReady, _hasAuthority, _isHost, _position, _rotation, _colour);
 
         UIManager.instance.AddPlayerReady(_id);
     }
@@ -336,7 +353,8 @@ public class ClientHandle : MonoBehaviour
     public static void GameRulesChanged(Packet _packet)
     {
         int _playerId = _packet.ReadInt();
-        GameRules gameRules = _packet.ReadGameRules();
+        GameRules _gameRules = _packet.ReadGameRules();
+        GameManager.instance.GameRulesChanged(_gameRules);
 
         Debug.Log($"Game Rules Changed by player with id {_playerId}");
     }

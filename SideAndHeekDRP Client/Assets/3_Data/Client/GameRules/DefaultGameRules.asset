@@ -17,5 +17,5 @@ MonoBehaviour:
   numberOfHunters: 1
   catchType: 1
   hidingTime: 20
-  speedBoostType: 0
+  speedBoostType: 1
   speedMultiplier: 1.1

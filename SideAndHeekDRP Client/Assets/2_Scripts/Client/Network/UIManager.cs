@@ -15,7 +15,8 @@ public class UIManager : MonoBehaviour
     public GameplayUI gameplayPanel;
     [SerializeField] private SettingsUI settingsPanel;
     [SerializeField] private GameObject pausePanel;
-    [SerializeField] private GameObject customisationPanel;
+    public CustomisationUI customisationPanel;
+    public GameRulesUI gameRulesPanel;
     //[SerializeField] private GameObject lobbyPanel;
     public TMP_InputField ipField;
     public TMP_InputField usernameField;
@@ -88,7 +89,7 @@ public class UIManager : MonoBehaviour
         startPanel.SetActive(false);
         connectPanel.SetActive(false);
         pausePanel.SetActive(false);
-        customisationPanel.SetActive(false);
+        customisationPanel.gameObject.SetActive(false);
         settingsPanel.gameObject.SetActive(false);
     }
 
@@ -166,16 +167,16 @@ public class UIManager : MonoBehaviour
 
     public void DisplayCustomisationPanel()
     {
-        bool isActive = customisationPanel.activeSelf;
+        bool isActive = customisationPanel.gameObject.activeSelf;
         DisableAllPanels();
         if (!isActive)
         {
-            customisationPanel.SetActive(true);
+            customisationPanel.gameObject.SetActive(true);
         }
 
         m_IsUIActive = true;
 
-        lastActivePanel = customisationPanel;
+        lastActivePanel = customisationPanel.gameObject;
     }
 
     public void RemovePlayerReady(int _playerId)
@@ -269,21 +270,20 @@ public class UIManager : MonoBehaviour
 
     public void OnHiderColourChangeButtonPressed(ColourItem colourItem)
     {
-        hiderColourSelector.UpdateAllButtons(colourItem);
-
         DisableAllPanels();
-
-        LobbyManager.instance.GetLocalPlayer().ChangeBodyColour(colourItem.colour, false);
 
         if (GameManager.instance.gameType == GameType.Multiplayer)
         {
             ClientSend.SetPlayerColour(colourItem.colour, false);
+        } else
+        {
+            LobbyManager.instance.GetLocalPlayer().ChangeBodyColour(colourItem.colour, false);
         }
     }
     
     public void OnSeekerColourChangeButtonPressed(ColourItem colourItem)
     {
-        seekerColourSelector.UpdateAllButtons(colourItem);
+        seekerColourSelector.UpdateAllButtons(false, colourItem);
 
         DisableAllPanels();
 

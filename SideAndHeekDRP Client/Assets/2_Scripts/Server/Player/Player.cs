@@ -52,9 +52,9 @@ namespace Server
             }
         }
 
-        public override void Init(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHunter)
+        public override void Init(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHost)
         {
-            base.Init(_id, _username, _isReady, _hasAuthority, _isHunter);
+            base.Init(_id, _username, _isReady, _hasAuthority, _isHost);
 
             SpawnPlayer();
         }

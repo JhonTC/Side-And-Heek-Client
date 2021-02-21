@@ -20,6 +20,8 @@ public class LobbyManager : MonoBehaviour
 
     public string mapScene;
 
+    public bool isHost = false;
+
     private void Awake()
     {
         if (instance == null)
@@ -56,18 +58,29 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    public void SpawnPlayer(int _id, string _username, bool _isReady, bool _hasAuthority, Vector3 _position, Quaternion _rotation)
+    public void SpawnPlayer(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHost, Vector3 _position, Quaternion _rotation, Color _colour)
     {
+        if (_hasAuthority) {
+            isHost = _isHost;
+        }
+
         PlayerManager _player;
         _player = Instantiate(playerPrefab, _position, _rotation);
-        _player.Init(_id, _username, _isReady, _hasAuthority, players.Count == 0);
+        _player.Init(_id, _username, _isReady, _hasAuthority, _isHost);
 
         players.Add(_id, _player);
+
+        _player.ChangeBodyColour(_colour, _player.playerType == PlayerType.Hunter);
 
         if (_hasAuthority)
         {
             GameManager.instance.ResetLocalPlayerCamera(sceneCamera.transform.position, true);
             sceneCamera.SetActive(false);
+
+            if (_isHost)
+            {
+                ClientSend.GameRulesChanged(GameManager.instance.gameRules);
+            }
         }
     }
 

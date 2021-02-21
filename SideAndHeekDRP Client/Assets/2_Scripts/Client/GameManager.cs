@@ -23,6 +23,43 @@ public class GameManager : MonoBehaviour
 
     public GameObject gameStartCollider;
 
+    [HideInInspector] public Color[] hiderColours;
+
+    [System.Serializable]
+    public class FootstepSound //todo:needs to be in an audiomanager instead
+    {
+        public AudioClip audioClip;
+        [Range(0, 1)]
+        public float volume;
+    }
+
+    [System.Serializable]
+    public class SoundGroup //todo:needs to be in an audiomanager instead
+    {
+        public FootstepSound[] audioClips;
+        public FootstepType footstepType;
+
+        public FootstepSound GetRandomClip()
+        {
+            return audioClips[Random.Range(0, audioClips.Length)];
+        }
+    }
+
+    public SoundGroup[] footstepSounds;
+
+    public SoundGroup GetFootstepSoundForType(FootstepType footstepType)
+    {
+        foreach (SoundGroup footstepSound in footstepSounds)
+        {
+            if (footstepSound.footstepType == footstepType)
+            {
+                return footstepSound;
+            }
+        }
+
+        throw new System.Exception($"ERROR: No footstep sound for type {footstepType}");
+    }
+
     private void Awake()
     {
         if (instance == null)
@@ -95,6 +132,18 @@ public class GameManager : MonoBehaviour
         {
             DestroyItemSpawners();
         }
+
+        if (SceneManager.GetActiveScene().name == lobbyScene)
+        {
+            gameStartCollider.SetActive(true);
+            foreach (PlayerManager player in LobbyManager.players.Values)
+            {
+                player.activeTasks.Clear();
+                player.activeItem = null;
+            }
+
+            UIManager.instance.gameplayPanel.SetItemDetails();
+        }
     }
 
     public void LoadScene(string sceneName, LoadSceneMode loadSceneMode)
@@ -165,10 +214,24 @@ public class GameManager : MonoBehaviour
 
         UIManager.instance.SetMessage("Game Over", 2f, true);
     }
+
+    public void GameRulesChanged(GameRules _gameRules)
+    {
+        gameRules = _gameRules;
+        UIManager.instance.gameRulesPanel.SetGameRules(gameRules);
+    }
 }
 
 public enum GameType
 {
     Singleplayer,
     Multiplayer
+}
+
+public enum FootstepType
+{
+    Null,
+    Stone,
+    Grass,
+    Water
 }

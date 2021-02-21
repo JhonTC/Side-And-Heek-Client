@@ -76,9 +76,9 @@ public class ClientSend : MonoBehaviour
         }
     }
 
-    public static void TaskSelected(int _spawnerId)
+    public static void PickupSelected(int _spawnerId)
     {
-        using (Packet _packet = new Packet((int)ClientPackets.taskSelected))
+        using (Packet _packet = new Packet((int)ClientPackets.pickupSelected))
         {
             _packet.Write(_spawnerId);
 

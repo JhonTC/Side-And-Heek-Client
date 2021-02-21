@@ -353,6 +353,8 @@ public class Client : MonoBehaviour
             isConnected = false;
             tcp.socket.Close();
             udp.socket.Close();
+
+            UIManager.instance.customisationPanel.hiderColourSelector.ClearAll();
             
             //foreach (PlayerManager player in GameManager.players.Values)
             //{

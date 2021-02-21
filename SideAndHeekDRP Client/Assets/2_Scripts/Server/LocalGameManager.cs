@@ -31,7 +31,7 @@ namespace Server
             Debug.Log($"Message from GameManager: Spawn Player with id: {newId}");
 
             Transform spawnpoint = LevelManager.GetLevelManagerForScene(activeSceneName).GetNextSpawnpoint(true);
-            LobbyManager.instance.SpawnPlayer(newId, "", false, true, spawnpoint.position, spawnpoint.rotation);
+            LobbyManager.instance.SpawnPlayer(newId, "", false, true, LobbyManager.players.Count == 0, spawnpoint.position, spawnpoint.rotation, LobbyManager.instance.unreadyColour);
 
             UIManager.instance.AddPlayerReady(newId);
         }

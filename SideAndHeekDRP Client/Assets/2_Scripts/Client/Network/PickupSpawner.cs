@@ -100,7 +100,7 @@ public class PickupSpawner : MonoBehaviour
         {
             if (GameManager.instance.gameType == GameType.Multiplayer)
             {
-                ClientSend.TaskSelected(spawnerId);
+                ClientSend.PickupSelected(spawnerId);
             } else
             {
                 Pickup pickup = this as Pickup;
