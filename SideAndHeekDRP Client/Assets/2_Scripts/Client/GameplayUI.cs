@@ -14,8 +14,6 @@ public class GameplayUI : MonoBehaviour
     [SerializeField] private TMP_Text itemContent;
     [SerializeField] private Image itemOutline;
 
-    [SerializeField] private UIManager uiManager;
-
     [HideInInspector] public List<GameplayMouseDetector> mouseDetectors = new List<GameplayMouseDetector>();
 
     public bool isActive = false;

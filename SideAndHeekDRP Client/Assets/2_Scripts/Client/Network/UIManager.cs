@@ -120,10 +120,8 @@ public class UIManager : MonoBehaviour
 
     public void DisplayGameplayPanel()
     {
-        //DisableAllPanels();
+        DisableAllPanels();
         gameplayPanel.gameObject.SetActive(true);
-
-        m_IsUIActive = true;
 
         lastActivePanel = gameplayPanel.gameObject;
     }
@@ -239,7 +237,7 @@ public class UIManager : MonoBehaviour
 
     public void OnTutorialButtonPressed()
     {
-        DisableAllPanels();
+        DisplayGameplayPanel();
 
         LocalGameManager localGameManager = GameManager.instance as LocalGameManager;
         localGameManager.SpawnPlayer();
@@ -247,8 +245,7 @@ public class UIManager : MonoBehaviour
 
     public void OnConnectButtonPressed()
     {
-        DisableAllPanels();
-        gameplayPanel.gameObject.SetActive(true);
+        DisplayGameplayPanel();
 
         usernameField.interactable = false;
         ipField.interactable = false;
@@ -262,6 +259,7 @@ public class UIManager : MonoBehaviour
 
     public void OnDisconnectButtonPressed()
     {
+        gameplayPanel.gameObject.SetActive(false);
         Client.instance.Disconnect();
         LobbyManager.instance.OnLocalPlayerDisconnection();
 
@@ -302,6 +300,14 @@ public class UIManager : MonoBehaviour
         lastActivePanel.SetActive(true);
 
         m_IsUIActive = true;
+    }
+
+    public void OnLeaveButtonPressed()
+    {
+        LobbyManager.instance.OnLocalPlayerDisconnection();
+        GameManager.instance.gameStarted = false;
+
+        DisplayStartPanel();
     }
 
     public void OnQuitButtonPressed()

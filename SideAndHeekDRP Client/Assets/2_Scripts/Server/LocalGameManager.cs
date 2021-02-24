@@ -20,8 +20,9 @@ namespace Server
 
         private bool tryStartGameActive = false;
 
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             activeSceneName = lobbyScene;
         }
 
@@ -41,11 +42,6 @@ namespace Server
             base.OnLevelFinishedLoading(_scene, _loadSceneMode);
 
             activeSceneName = _scene.name;
-
-            if (LevelManager.GetLevelManagerForScene(activeSceneName).levelType == LevelType.Map)
-            {
-                gameStarted = true;
-            }
 
             foreach (PlayerManager playerManager in LobbyManager.players.Values)
             {

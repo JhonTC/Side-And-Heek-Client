@@ -13,17 +13,25 @@ public class SliderTextSetter : MonoBehaviour
     [SerializeField] private float startValue;
     [SerializeField] private string valueSuffix;
 
+    [SerializeField] private bool hostOnly = true;
+
     private void Start()
     {
-        if (LobbyManager.instance.isHost)
+        if (LobbyManager.instance.isHost || !hostOnly)
         {
             slider.gameObject.SetActive(true);
-            baseValueDisplay.gameObject.SetActive(false);
+            if (baseValueDisplay)
+            {
+                baseValueDisplay.gameObject.SetActive(false);
+            }
         }
         else
         {
-            slider.gameObject.SetActive(false);
-            baseValueDisplay.gameObject.SetActive(true);
+            slider.gameObject.SetActive(false); 
+            if (baseValueDisplay)
+            {
+                baseValueDisplay.gameObject.SetActive(true);
+            }
         }
 
         slider.value = startValue;
@@ -39,6 +47,9 @@ public class SliderTextSetter : MonoBehaviour
         }
 
         sliderValueDisplay.text = value + valueSuffix;
-        baseValueDisplay.text = value + valueSuffix;
+        if (baseValueDisplay)
+        {
+            baseValueDisplay.text = value + valueSuffix;
+        }
     }
 }

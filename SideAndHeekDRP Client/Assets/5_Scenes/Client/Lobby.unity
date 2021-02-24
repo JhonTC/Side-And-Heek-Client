@@ -834,6 +834,7 @@ MonoBehaviour:
   baseValueDisplay: {fileID: 2135823510}
   startValue: 20
   valueSuffix: s
+  hostOnly: 1
 --- !u!1 &41967150
 GameObject:
   m_ObjectHideFlags: 0
@@ -1362,6 +1363,7 @@ GameObject:
   - component: {fileID: 85282291}
   - component: {fileID: 85282290}
   - component: {fileID: 85282292}
+  - component: {fileID: 85282293}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1403,6 +1405,7 @@ MonoBehaviour:
     - audioClip: {fileID: 8300000, guid: aab8b24edff03b944b9f0f40bccafee7, type: 3}
       volume: 0.005
     footstepType: 3
+  musicStartVolume: 0.5
 --- !u!4 &85282291
 Transform:
   m_ObjectHideFlags: 0
@@ -1429,6 +1432,103 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 678fa206778d8ae42b2d507a44cc1569, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!82 &85282293
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 85282289}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: -8027168054592119555, guid: 57cf25ddc32b05643bf54fbc4703ecc4,
+    type: 2}
+  m_audioClip: {fileID: 8300000, guid: 1358caa8573cbeb4ea54ea8a720a57df, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.5
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &103409079
 GameObject:
   m_ObjectHideFlags: 0
@@ -3627,6 +3727,7 @@ MonoBehaviour:
   baseValueDisplay: {fileID: 956249462}
   startValue: 1
   valueSuffix: 
+  hostOnly: 1
 --- !u!1 &216530306
 GameObject:
   m_ObjectHideFlags: 0
@@ -5092,11 +5193,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b3059648137fe74b8ebf0eb7b76e291, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slider: {fileID: 0}
+  slider: {fileID: 294484912}
   sliderValueDisplay: {fileID: 1022175306}
   baseValueDisplay: {fileID: 0}
   startValue: 50
   valueSuffix: 
+  hostOnly: 0
 --- !u!222 &294484911
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5819,7 +5921,6 @@ MonoBehaviour:
   itemTitle: {fileID: 843770134}
   itemContent: {fileID: 616348781}
   itemOutline: {fileID: 1914313536}
-  uiManager: {fileID: 0}
   mouseDetectors: []
   isActive: 0
 --- !u!1 &332933988
@@ -7095,7 +7196,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960, y: -476.85413}
+  m_AnchoredPosition: {x: 960, y: -515.9534}
   m_SizeDelta: {x: 600, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &396313919
@@ -9610,7 +9711,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 548352262}
   m_Direction: 2
   m_Value: 1
-  m_Size: 1
+  m_Size: 0.99999994
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -10457,7 +10558,7 @@ RectTransform:
   m_Father: {fileID: 407083423}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 0.000000059604645}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 10}
@@ -11244,11 +11345,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b3059648137fe74b8ebf0eb7b76e291, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slider: {fileID: 0}
+  slider: {fileID: 585568046}
   sliderValueDisplay: {fileID: 1306869676}
   baseValueDisplay: {fileID: 0}
   startValue: 50
   valueSuffix: 
+  hostOnly: 0
 --- !u!222 &585568045
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -14606,6 +14708,7 @@ MonoBehaviour:
   baseValueDisplay: {fileID: 0}
   startValue: 180
   valueSuffix: s
+  hostOnly: 1
 --- !u!222 &760304655
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -19847,7 +19950,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960, y: -222.50143}
+  m_AnchoredPosition: {x: 960, y: -283.74445}
   m_SizeDelta: {x: 600, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1014168942
@@ -20961,6 +21064,7 @@ MonoBehaviour:
   baseValueDisplay: {fileID: 0}
   startValue: 180
   valueSuffix: s
+  hostOnly: 1
 --- !u!222 &1057879623
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -21786,6 +21890,7 @@ MonoBehaviour:
   baseValueDisplay: {fileID: 624520326}
   startValue: 1.1
   valueSuffix: x
+  hostOnly: 1
 --- !u!1 &1102360629
 GameObject:
   m_ObjectHideFlags: 0
@@ -22011,11 +22116,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b3059648137fe74b8ebf0eb7b76e291, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slider: {fileID: 0}
+  slider: {fileID: 1109027335}
   sliderValueDisplay: {fileID: 1707082964}
   baseValueDisplay: {fileID: 0}
   startValue: 50
   valueSuffix: 
+  hostOnly: 0
 --- !u!222 &1109027334
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -22766,6 +22872,7 @@ MonoBehaviour:
   baseValueDisplay: {fileID: 0}
   startValue: 1
   valueSuffix: 
+  hostOnly: 1
 --- !u!222 &1136562778
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -27789,6 +27896,7 @@ MonoBehaviour:
   baseValueDisplay: {fileID: 0}
   startValue: 1.1
   valueSuffix: x
+  hostOnly: 1
 --- !u!222 &1370615906
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -34743,6 +34851,7 @@ MonoBehaviour:
   baseValueDisplay: {fileID: 0}
   startValue: 20
   valueSuffix: s
+  hostOnly: 1
 --- !u!222 &1643158748
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -36336,6 +36445,7 @@ MonoBehaviour:
   baseValueDisplay: {fileID: 1360192119}
   startValue: 180
   valueSuffix: s
+  hostOnly: 1
 --- !u!1 &1681675633
 GameObject:
   m_ObjectHideFlags: 0
@@ -44419,11 +44529,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b3059648137fe74b8ebf0eb7b76e291, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slider: {fileID: 0}
+  slider: {fileID: 1856171514}
   sliderValueDisplay: {fileID: 527591944}
   baseValueDisplay: {fileID: 0}
   startValue: 50
   valueSuffix: 
+  hostOnly: 0
 --- !u!222 &1856171513
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -48442,7 +48553,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 960, y: -522.50146}
+  m_AnchoredPosition: {x: 960, y: -583.74445}
   m_SizeDelta: {x: 600, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2032514058

@@ -355,7 +355,8 @@ public class Client : MonoBehaviour
             udp.socket.Close();
 
             UIManager.instance.customisationPanel.hiderColourSelector.ClearAll();
-            
+            GameManager.instance.FadeMusic(false);
+
             //foreach (PlayerManager player in GameManager.players.Values)
             //{
             //    Destroy(player.gameObject);

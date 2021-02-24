@@ -25,7 +25,9 @@ public class GameManager : MonoBehaviour
 
     [HideInInspector] public Color[] hiderColours;
 
-    [System.Serializable]
+    private AudioSource music;
+
+    /*[System.Serializable]
     public class FootstepSound //todo:needs to be in an audiomanager instead
     {
         public AudioClip audioClip;
@@ -45,7 +47,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public SoundGroup[] footstepSounds;
+    //public SoundGroup[] footstepSounds;
 
     public SoundGroup GetFootstepSoundForType(FootstepType footstepType)
     {
@@ -58,7 +60,7 @@ public class GameManager : MonoBehaviour
         }
 
         throw new System.Exception($"ERROR: No footstep sound for type {footstepType}");
-    }
+    }*/
 
     private void Awake()
     {
@@ -73,6 +75,12 @@ public class GameManager : MonoBehaviour
         }
 
         DontDestroyOnLoad(this);
+    }
+
+    protected virtual void Start()
+    {
+        music = GetComponent<AudioSource>();
+        FadeMusic(false);
     }
 
     private void OnApplicationQuit()
@@ -219,6 +227,45 @@ public class GameManager : MonoBehaviour
     {
         gameRules = _gameRules;
         UIManager.instance.gameRulesPanel.SetGameRules(gameRules);
+    }
+
+    public void FadeMusic(bool fadeOut)
+    {
+        StartCoroutine(FadeMusic(fadeOut, 4));
+    }
+
+    public float musicStartVolume;
+    float fadeTime;
+    IEnumerator FadeMusic(bool fadeOut, float fadeDuration)
+    {
+        if (fadeOut)
+        {
+            fadeTime = musicStartVolume;
+            while (fadeTime > 0)
+            {
+                yield return new WaitForSeconds(Time.fixedDeltaTime);
+
+                fadeTime -= Time.fixedDeltaTime / fadeDuration;
+
+                music.volume = fadeTime;
+            }
+
+            music.Stop();
+        } else
+        {
+            music.Play();
+            music.volume = 0;
+
+            fadeTime = 0;
+            while (fadeTime < musicStartVolume)
+            {
+                yield return new WaitForSeconds(Time.fixedDeltaTime);
+
+                fadeTime += Time.fixedDeltaTime / fadeDuration;
+
+                music.volume = fadeTime;
+            }
+        }
     }
 }
 

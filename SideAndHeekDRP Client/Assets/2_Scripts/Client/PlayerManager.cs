@@ -234,7 +234,7 @@ public class PlayerManager : MonoBehaviour
         playerMotor.leftLeg.rotation = _leftLegRot;
     }
 
-    public void PlayFootstepSound(FootstepType footstepType)
+    /*public void PlayFootstepSound(FootstepType footstepType)
     {
         if (footstepType != FootstepType.Null) {
             GameManager.SoundGroup soundGroup = GameManager.instance.GetFootstepSoundForType(footstepType);
@@ -247,7 +247,7 @@ public class PlayerManager : MonoBehaviour
                 walkingAudioSource.Play();
             }
         }
-    }
+    }*/
 
     public void SetPlayerReady() { SetPlayerReady(!isReady); }
     public void SetPlayerReady(bool _isReady)

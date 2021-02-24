@@ -25,8 +25,10 @@ public class ClientHandle : MonoBehaviour
 
         GameManager.instance.gameRules = _gameRules;
         GameManager.instance.hiderColours = _hiderColours;
+        GameManager.instance.FadeMusic(true);
         UIManager.instance.customisationPanel.hiderColourSelector.Init(_hiderColours);
         UIManager.instance.DisplayLobbyPanel();
+
 
         ClientSend.WelcomeReceived();
     }

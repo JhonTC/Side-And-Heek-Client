@@ -79,7 +79,12 @@ public class GameRulesUI : MonoBehaviour
     public void OnSaveButtonPressed()
     {
         GameManager.instance.gameRules = localGameRules.AsGameRules();
-        ClientSend.GameRulesChanged(GameManager.instance.gameRules);
+
+        if (GameManager.instance.gameType == GameType.Multiplayer)
+        {
+            ClientSend.GameRulesChanged(GameManager.instance.gameRules);
+        }
+
         gameObject.SetActive(false);
     }
 

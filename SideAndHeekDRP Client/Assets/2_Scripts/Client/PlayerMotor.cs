@@ -76,18 +76,15 @@ public class PlayerMotor : MonoBehaviour
                 }
             }
 
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                if (GameManager.instance.gameType == GameType.Multiplayer)
-                {
-                    UIManager.instance.DisplayPausePanel();
-                }
-            }
-
             if (Input.GetKeyDown(KeyCode.C))
             {
                 UIManager.instance.DisplayCustomisationPanel();
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            UIManager.instance.DisplayPausePanel();
         }
     }
 
