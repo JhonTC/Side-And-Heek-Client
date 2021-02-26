@@ -21,13 +21,13 @@ MonoBehaviour:
     value: {x: 50, y: 95}
   minLuminance:
     overrideState: 1
-    value: -5.24
+    value: -9
   maxLuminance:
     overrideState: 1
-    value: 3.47
+    value: 0.2
   keyValue:
     overrideState: 1
-    value: 0.7
+    value: 0.8
   eyeAdaptation:
     overrideState: 0
     value: 0
@@ -58,10 +58,10 @@ MonoBehaviour:
     value: 0
   intensity:
     overrideState: 1
-    value: 0.47
+    value: 0.45
   color:
     overrideState: 1
-    value: {r: 0.32657012, g: 0.20392157, b: 0.5372549, a: 1}
+    value: {r: 0.20489176, g: 0.103150584, b: 0.3584906, a: 1}
   ambientOnly:
     overrideState: 1
     value: 1
@@ -82,7 +82,7 @@ MonoBehaviour:
     value: 0
   radius:
     overrideState: 1
-    value: 0.21
+    value: 0.93
   quality:
     overrideState: 1
     value: 3
@@ -104,13 +104,13 @@ MonoBehaviour:
     value: 1
   intensity:
     overrideState: 1
-    value: 6.71
+    value: 19.4
   threshold:
     overrideState: 1
-    value: 1.25
+    value: 330.3
   softKnee:
     overrideState: 1
-    value: 0.5
+    value: 0.573
   clamp:
     overrideState: 1
     value: 65471.23
@@ -119,7 +119,7 @@ MonoBehaviour:
     value: 3.06
   anamorphicRatio:
     overrideState: 1
-    value: 0.984
+    value: 1
   color:
     overrideState: 1
     value: {r: 1, g: 1, b: 1, a: 1}
@@ -298,7 +298,7 @@ MonoBehaviour:
     value: -0.41
   contrast:
     overrideState: 1
-    value: 18.2
+    value: 26
   mixerRedOutRedIn:
     overrideState: 1
     value: 100
