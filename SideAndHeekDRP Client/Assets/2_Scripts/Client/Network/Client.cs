@@ -17,7 +17,7 @@ public class Client : MonoBehaviour
     public TCP tcp;
     public UDP udp;
 
-    private bool isConnected = false;
+    public bool isConnected = false;
     private delegate void PacketHandler(Packet _packet);
     private static Dictionary<int, PacketHandler> packetHandlers;
 
@@ -91,8 +91,23 @@ public class Client : MonoBehaviour
         InitialiseClientData();
         ErrorResponseHandler.InitialiseErrorResponseData();
 
-        isConnected = true;
         tcp.Connect();
+
+        StartCoroutine(ConnectionTimeoutTimer());
+    }
+
+    IEnumerator ConnectionTimeoutTimer(int waitTime = 15)
+    {
+        int currentTime = 0;
+        while (currentTime < waitTime && !isConnected)
+        {
+            yield return new WaitForSeconds(1.0f);
+
+            currentTime++;
+        }
+
+        UIManager.instance.OnConnectionFailed();
+        Debug.Log("Connection timeout: Failed to receive response from server.");
     }
 
     public class TCP

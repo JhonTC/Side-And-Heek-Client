@@ -6,6 +6,8 @@ public class ClientHandle : MonoBehaviour
 {
     public static void Welcome(Packet _packet)
     {
+        Client.instance.isConnected = true;
+
         string _msg = _packet.ReadString();
         int _myId = _packet.ReadInt();
 
@@ -20,15 +22,14 @@ public class ClientHandle : MonoBehaviour
 
         Debug.Log($"Message from server: {_msg}");
         Client.instance.myId = _myId;
-
         Client.instance.udp.Connect(((IPEndPoint)Client.instance.tcp.socket.Client.LocalEndPoint).Port);
 
         GameManager.instance.gameRules = _gameRules;
         GameManager.instance.hiderColours = _hiderColours;
         GameManager.instance.FadeMusic(true);
-        UIManager.instance.customisationPanel.hiderColourSelector.Init(_hiderColours);
-        UIManager.instance.DisplayLobbyPanel();
 
+        UIManager.instance.DisplayGameplayPanel();
+        UIManager.instance.customisationPanel.hiderColourSelector.Init(_hiderColours);
 
         ClientSend.WelcomeReceived();
     }

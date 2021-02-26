@@ -36,7 +36,12 @@ public class UIManager : MonoBehaviour
     private float fadeDuration = 1f;
     [SerializeField] private TextMeshProUGUI messageText;
 
-    private GameObject lastActivePanel;
+    [SerializeField] private GameObject activePanel;
+    [SerializeField] private GameObject lastActivePanel;
+
+    [SerializeField] private GameObject connectLoadingPanel;
+    [SerializeField] private GameObject connectTitlePanel;
+
 
     private void Awake()
     {
@@ -50,11 +55,13 @@ public class UIManager : MonoBehaviour
             Destroy(this);
         }
 
-        DisplayStartPanel();
+        DontDestroyOnLoad(this);
     }
 
     private void Start()
     {
+        DisplayStartPanel();
+
         if (PlayerPrefs.HasKey("Username"))
         {
             usernameField.text = PlayerPrefs.GetString("Username");
@@ -102,6 +109,7 @@ public class UIManager : MonoBehaviour
         m_IsUIActive = true;
 
         lastActivePanel = startPanel;
+        activePanel = startPanel;
     }
 
     public void DisplayConnectPanel()
@@ -109,13 +117,16 @@ public class UIManager : MonoBehaviour
         DisableAllPanels();
         gameplayPanel.gameObject.SetActive(false);
         connectPanel.SetActive(true);
-        
+
+        connectTitlePanel.SetActive(true);
+        connectLoadingPanel.SetActive(false);
         usernameField.interactable = true;
         ipField.interactable = true;
 
         m_IsUIActive = true;
 
-        lastActivePanel = connectPanel;
+        lastActivePanel = activePanel;
+        activePanel = connectPanel;
     }
 
     public void DisplayGameplayPanel()
@@ -123,7 +134,7 @@ public class UIManager : MonoBehaviour
         DisableAllPanels();
         gameplayPanel.gameObject.SetActive(true);
 
-        lastActivePanel = gameplayPanel.gameObject;
+        activePanel = gameplayPanel.gameObject;
     }
 
     public void DisplaySettingsPanel()
@@ -133,7 +144,8 @@ public class UIManager : MonoBehaviour
 
         m_IsUIActive = true;
 
-        //lastActivePanel = startPanel;
+        lastActivePanel = activePanel;
+        activePanel = connectPanel;
     }
 
     public void DisplayLobbyPanel()
@@ -160,7 +172,8 @@ public class UIManager : MonoBehaviour
 
         m_IsUIActive = true;
 
-        lastActivePanel = pausePanel;
+        lastActivePanel = activePanel;
+        activePanel = pausePanel;
     }
 
     public void DisplayCustomisationPanel()
@@ -174,7 +187,8 @@ public class UIManager : MonoBehaviour
 
         m_IsUIActive = true;
 
-        lastActivePanel = customisationPanel.gameObject;
+        lastActivePanel = activePanel;
+        activePanel = customisationPanel.gameObject;
     }
 
     public void RemovePlayerReady(int _playerId)
@@ -235,8 +249,16 @@ public class UIManager : MonoBehaviour
         throw new System.Exception("No player-ready Gem Avaliable, too many players have joined.");
     }
 
+    public void OnPlayButtonPressed()
+    {
+        //SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
+        DisplayConnectPanel();
+    }
+
     public void OnTutorialButtonPressed()
     {
+        //SceneManager.LoadScene("S_Lobby", LoadSceneMode.Single);
+
         DisplayGameplayPanel();
 
         LocalGameManager localGameManager = GameManager.instance as LocalGameManager;
@@ -245,8 +267,6 @@ public class UIManager : MonoBehaviour
 
     public void OnConnectButtonPressed()
     {
-        DisplayGameplayPanel();
-
         usernameField.interactable = false;
         ipField.interactable = false;
 
@@ -254,7 +274,25 @@ public class UIManager : MonoBehaviour
         PlayerPrefs.SetString("LastRoomCode", ipField.text);
         PlayerPrefs.Save();
 
+        //start swirler
+        connectTitlePanel.SetActive(false);
+        connectLoadingPanel.SetActive(true);
+
         Client.instance.ConnectToServer(ipField.text);
+    }
+
+    public void OnConnectionFailed()
+    {
+        DisableAllPanels();
+        gameplayPanel.gameObject.SetActive(false);
+        connectPanel.SetActive(true);
+
+        connectTitlePanel.SetActive(true);
+        connectLoadingPanel.SetActive(false);
+        usernameField.interactable = true;
+        ipField.interactable = true;
+
+        m_IsUIActive = true;
     }
 
     public void OnDisconnectButtonPressed()
@@ -298,6 +336,10 @@ public class UIManager : MonoBehaviour
         DisableAllPanels();
 
         lastActivePanel.SetActive(true);
+
+        GameObject tempActivePanel = activePanel;
+        activePanel = lastActivePanel;
+        lastActivePanel = tempActivePanel;
 
         m_IsUIActive = true;
     }
