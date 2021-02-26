@@ -106,8 +106,11 @@ public class Client : MonoBehaviour
             currentTime++;
         }
 
-        UIManager.instance.OnConnectionFailed();
-        Debug.Log("Connection timeout: Failed to receive response from server.");
+        if (!isConnected)
+        {
+            UIManager.instance.OnConnectionFailed();
+            Debug.Log("Connection timeout: Failed to receive response from server.");
+        }
     }
 
     public class TCP
