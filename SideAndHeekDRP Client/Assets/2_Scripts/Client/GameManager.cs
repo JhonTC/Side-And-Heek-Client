@@ -27,41 +27,6 @@ public class GameManager : MonoBehaviour
 
     private AudioSource music;
 
-    /*[System.Serializable]
-    public class FootstepSound //todo:needs to be in an audiomanager instead
-    {
-        public AudioClip audioClip;
-        [Range(0, 1)]
-        public float volume;
-    }
-
-    [System.Serializable]
-    public class SoundGroup //todo:needs to be in an audiomanager instead
-    {
-        public FootstepSound[] audioClips;
-        public FootstepType footstepType;
-
-        public FootstepSound GetRandomClip()
-        {
-            return audioClips[Random.Range(0, audioClips.Length)];
-        }
-    }
-
-    //public SoundGroup[] footstepSounds;
-
-    public SoundGroup GetFootstepSoundForType(FootstepType footstepType)
-    {
-        foreach (SoundGroup footstepSound in footstepSounds)
-        {
-            if (footstepSound.footstepType == footstepType)
-            {
-                return footstepSound;
-            }
-        }
-
-        throw new System.Exception($"ERROR: No footstep sound for type {footstepType}");
-    }*/
-
     private void Awake()
     {
         if (instance == null)
@@ -189,10 +154,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void CreatePickupSpawner(int _spawnerId, Vector3 _position, PickupType _pickupType, bool _hasPickup, int _code, string _taskName, string _taskContent, Color _taskDifficulty)
+    public void CreatePickupSpawner(int _spawnerId, Vector3 _position, PickupType _pickupType)
     {
         PickupSpawner _spawner = Instantiate(pickupSpawnerPrefab, _position, pickupSpawnerPrefab.transform.rotation);
-        _spawner.Init(_spawnerId, _pickupType, _hasPickup, _code);
+        _spawner.Init(_spawnerId, _pickupType);
+
         pickupSpawners.Add(_spawnerId, _spawner);
     }
 
@@ -200,7 +166,10 @@ public class GameManager : MonoBehaviour
     {
         foreach (PickupSpawner spawner in pickupSpawners.Values)
         {
-            Destroy(spawner.gameObject);
+            if (spawner != null)
+            {
+                Destroy(spawner.gameObject);
+            }
         }
         pickupSpawners.Clear();
     }

@@ -17,6 +17,11 @@ public class GameRules : ScriptableObject
     public SpeedBoostType speedBoostType;
     [Range(0.8f, 1.2f)]
     public float speedMultiplier;
+
+    public HiderFallRespawnType fallRespawnType;
+    public FallRespawnLocation fallRespawnLocation;
+
+    public bool continuousFlop;
 }
 
 public enum CatchType
@@ -30,4 +35,17 @@ public enum SpeedBoostType
     FirstHunter,
     AllHunters,
     None
+}
+
+public enum FallRespawnLocation
+{
+    Centre,
+    Random
+}
+
+public enum HiderFallRespawnType
+{
+    Hider,
+    Hunter,
+    Spectator
 }

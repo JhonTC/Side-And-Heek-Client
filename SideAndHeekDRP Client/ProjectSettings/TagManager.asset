@@ -11,6 +11,8 @@ TagManager:
   - Bush
   - Ground
   - BodyCollider
+  - LobbySpawnpoints
+  - Pickup
   layers:
   - Default
   - TransparentFX

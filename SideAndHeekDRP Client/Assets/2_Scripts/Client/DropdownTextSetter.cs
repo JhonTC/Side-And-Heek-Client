@@ -24,9 +24,6 @@ public class DropdownTextSetter : MonoBehaviour
             dropdown.gameObject.SetActive(false);
             baseValueDisplay.gameObject.SetActive(true);
         }
-
-        dropdown.value = startValue;
-        OnValueChanged();
     }
 
     public void OnValueChanged()

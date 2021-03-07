@@ -30,6 +30,7 @@ public class ClientHandle : MonoBehaviour
 
         UIManager.instance.DisplayGameplayPanel();
         UIManager.instance.customisationPanel.hiderColourSelector.Init(_hiderColours);
+        //UIManager.instance.gameRulesPanel.SetGameRules(_gameRules, false);
 
         ClientSend.WelcomeReceived();
     }
@@ -91,6 +92,26 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
+    public static void PlayerState(Packet _packet)
+    {
+        int _id = _packet.ReadInt();
+
+        bool _isGrounded = _packet.ReadBool();
+        float _inputSpeed = _packet.ReadFloat();
+
+        bool _isJumping = _packet.ReadBool();
+        bool _isFlopping = _packet.ReadBool();
+
+        if (LobbyManager.players.ContainsKey(_id))
+        {
+            LobbyManager.players[_id].SetPlayerState(_isGrounded, _inputSpeed, _isJumping, _isFlopping);
+        }
+        else
+        {
+            Debug.Log($"No player with id {_id}");
+        }
+    }
+
     public static void PlayerDisconnected(Packet _packet)
     {
         int _id = _packet.ReadInt();
@@ -103,6 +124,7 @@ public class ClientHandle : MonoBehaviour
             {
                 Destroy(LobbyManager.players[_id].gameObject);
                 LobbyManager.players.Remove(_id);
+                UIManager.instance.customisationPanel.hiderColourSelector.UpdateAllButtons();
             }
             else
             {
@@ -120,37 +142,47 @@ public class ClientHandle : MonoBehaviour
         int _spawnerId = _packet.ReadInt();
         Vector3 _position = _packet.ReadVector3();
         PickupType _pickupType = (PickupType)_packet.ReadInt();
-        bool _hasPickup = _packet.ReadBool();
 
-        int _code = _packet.ReadInt();
-        string _pickupName = _packet.ReadString();
-        string _pickupContent = _packet.ReadString();
-        Color _pickupLevel = _packet.ReadColour();
-
-        GameManager.instance.CreatePickupSpawner(_spawnerId, _position, _pickupType, _hasPickup, _code, _pickupName, _pickupContent, _pickupLevel);
+        GameManager.instance.CreatePickupSpawner(_spawnerId, _position, _pickupType);
     }
 
     public static void PickupSpawned(Packet _packet)
     {
-        int _spawnerId = _packet.ReadInt();
+        int _pickupId = _packet.ReadInt();
+        bool _bySpawner = _packet.ReadBool();
+        int _id = _packet.ReadInt();
         PickupType _pickupType = (PickupType)_packet.ReadInt();
+        Vector3 _position = _packet.ReadVector3();
+        Quaternion _rotation = _packet.ReadQuaternion();
 
         int _code = _packet.ReadInt();
-        string _pickupName = _packet.ReadString();
-        string _pickupContent = _packet.ReadString();
-        Color _pickupLevel = _packet.ReadColour();
 
-        GameManager.pickupSpawners[_spawnerId].PickupSpawned(_pickupType, _code);
+        if (_bySpawner)
+        {
+            if (GameManager.pickupSpawners.ContainsKey(_id))
+            {
+                GameManager.pickupSpawners[_id].PickupSpawned(_pickupId, _pickupType, _code, _position, _rotation);
+            }
+        } else
+        {
+            if (LobbyManager.players.ContainsKey(_id))
+            {
+                LobbyManager.players[_id].PickupSpawned(_pickupId, _pickupType, _code, _position, _rotation);
+            }
+        }
     }
 
     public static void PickupPickedUp(Packet _packet)
     {
-        int _spawnerId = _packet.ReadInt();
+        int _pickupId = _packet.ReadInt();
         int _byPlayer = _packet.ReadInt();
         PickupType _pickupType = (PickupType)_packet.ReadInt();
         int _code = _packet.ReadInt();
 
-        GameManager.pickupSpawners[_spawnerId].ItemPickedUp();
+        if (PickupManager.pickups.ContainsKey(_pickupId))
+        {
+            PickupManager.pickups[_pickupId].PickupPickedUp();
+        }
 
         BasePickup pickup = null;
         if (_pickupType == PickupType.Task)

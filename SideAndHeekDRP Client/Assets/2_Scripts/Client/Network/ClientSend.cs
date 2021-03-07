@@ -76,11 +76,11 @@ public class ClientSend : MonoBehaviour
         }
     }
 
-    public static void PickupSelected(int _spawnerId)
+    public static void PickupSelected(int _pickupId)
     {
         using (Packet _packet = new Packet((int)ClientPackets.pickupSelected))
         {
-            _packet.Write(_spawnerId);
+            _packet.Write(_pickupId);
 
             SendTCPData(_packet);
         }

@@ -10,6 +10,7 @@ public enum ServerPackets
     spawnPlayer,
     playerPosition,
     playerRotation,
+    playerState,
     playerDisconnected,
     createItemSpawner,
     itemSpawned,
@@ -216,11 +217,18 @@ public class Packet : IDisposable
     public void Write(GameRules _value)
     {
         Write(_value.gameLength);
+
         Write(_value.numberOfHunters);
         Write((int)_value.catchType);
         Write(_value.hidingTime);
+
         Write((int)_value.speedBoostType);
         Write(_value.speedMultiplier);
+
+        Write((int)_value.fallRespawnType);
+        Write((int)_value.fallRespawnLocation);
+
+        Write(_value.continuousFlop);
     }
     #endregion
 
@@ -427,6 +435,9 @@ public class Packet : IDisposable
         rules.hidingTime = ReadInt(_moveReadPos);
         rules.speedBoostType = (SpeedBoostType)ReadInt(_moveReadPos);
         rules.speedMultiplier = ReadFloat(_moveReadPos);
+        rules.fallRespawnType = (HiderFallRespawnType)ReadInt(_moveReadPos);
+        rules.fallRespawnLocation = (FallRespawnLocation)ReadInt(_moveReadPos);
+        rules.continuousFlop = ReadBool(_moveReadPos);
 
         return rules;
     }

@@ -46,6 +46,9 @@ public class PlayerManager : MonoBehaviour
 
     [SerializeField] private AudioSource walkingAudioSource;
 
+    [SerializeField] private ParticleSystem walkingDustParticles;
+    private bool lastIsGrounded = false;
+
     private void Awake()
     {
         DontDestroyOnLoad(this);
@@ -64,27 +67,27 @@ public class PlayerManager : MonoBehaviour
                 if (Physics.Raycast(ray, out hit))
                 {
                     Debug.DrawRay(ray.origin, ray.direction);
-                    if (hit.transform.tag == "ItemSpawner")
+                    if (hit.transform.tag == "Pickup")
                     {
-                        PickupSpawner spawner = hit.transform.GetComponent<PickupSpawner>();
+                        Pickup pickup = hit.transform.GetComponent<Pickup>();
 
-                        spawner.OnHover();
+                        pickup.OnHover();
 
                         if (Input.GetMouseButtonDown(0))
                         {
                             bool isPickupInProgress = false;
-                            if (spawner.pickupType == PickupType.Task)
+                            if (pickup.pickupType == PickupType.Task)
                             {
-                                isPickupInProgress = IsTaskInProgress(spawner.activeTaskDetails.task.taskCode);
+                                isPickupInProgress = IsTaskInProgress(pickup.activeTaskDetails.task.taskCode);
                             }
-                            else if (spawner.pickupType == PickupType.Item)
+                            else if (pickup.pickupType == PickupType.Item)
                             {
                                 isPickupInProgress = IsItemInProgress();
                             }
 
                             if (!isPickupInProgress)
                             {
-                                spawner.OnClick(id);
+                                pickup.OnClick(id);
                             }
                         }
                     }
@@ -233,6 +236,25 @@ public class PlayerManager : MonoBehaviour
         playerMotor.rightLeg.rotation = _rightLegRot;
         playerMotor.leftLeg.rotation = _leftLegRot;
     }
+    public void SetPlayerState(bool _isGrounded, float _inputSpeed, bool _isJumping, bool _isFlopping)
+    {
+        if (_isGrounded && (_inputSpeed != 0 || lastIsGrounded != _isGrounded) && !_isFlopping && !_isJumping)
+        {
+            if (!walkingDustParticles.isPlaying)
+            {
+                walkingDustParticles.Play();
+            }
+        } 
+        else
+        {
+            if (walkingDustParticles.isPlaying)
+            {
+                walkingDustParticles.Stop();
+            }
+        }
+
+        lastIsGrounded = _isGrounded;
+    }
 
     /*public void PlayFootstepSound(FootstepType footstepType)
     {
@@ -327,6 +349,11 @@ public class PlayerManager : MonoBehaviour
     public void PlayerTeleported(Vector3 position)
     {
         thirdPersonCamera.GetComponent<FollowPlayer>().PlayerTeleportedToPosition(position);
+    }
+
+    public void PickupSpawned(int _pickupId, PickupType _pickupType, int _code, Vector3 _position, Quaternion _rotation)
+    {
+        PickupManager.instance.SpawnPickup(_pickupId, _pickupType, _code, _position, _rotation);
     }
 
     public virtual void PickupPickedUp(BasePickup pickup)

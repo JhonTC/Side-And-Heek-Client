@@ -12,11 +12,15 @@ public class GameRulesUI : MonoBehaviour
     [SerializeField] private Slider hidingTimeSlider;
     [SerializeField] private TMP_Dropdown speedBoostTypeDropdown;
     [SerializeField] private Slider speedMultiplierSlider;
+    [SerializeField] private TMP_Dropdown fallRespawnTypeDropdown;
+    [SerializeField] private TMP_Dropdown fallRespawnLocationDropdown;
+    [SerializeField] private Toggle continuousFlopToggle;
 
-    private LocalGameRules localGameRules;
+    public LocalGameRules localGameRules;
 
     [SerializeField] private GameObject saveButton;
 
+    [System.Serializable]
     public class LocalGameRules
     {
         public int gameLength;
@@ -24,7 +28,10 @@ public class GameRulesUI : MonoBehaviour
         public CatchType catchType;
         public int hidingTime;
         public SpeedBoostType speedBoostType;
-        public float speedMultiplier;
+        public float speedMultiplier; 
+        public HiderFallRespawnType fallRespawnType;
+        public FallRespawnLocation fallRespawnLocation;
+        public bool continuousFlop;
 
         public LocalGameRules(GameRules gameRules)
         {
@@ -34,6 +41,9 @@ public class GameRulesUI : MonoBehaviour
             hidingTime = gameRules.hidingTime;
             speedBoostType = gameRules.speedBoostType;
             speedMultiplier = gameRules.speedMultiplier;
+            fallRespawnType = gameRules.fallRespawnType;
+            fallRespawnLocation = gameRules.fallRespawnLocation;
+            continuousFlop = gameRules.continuousFlop;
         }
 
         public GameRules AsGameRules()
@@ -45,6 +55,9 @@ public class GameRulesUI : MonoBehaviour
             gameRules.hidingTime = hidingTime;
             gameRules.speedBoostType = speedBoostType;
             gameRules.speedMultiplier = speedMultiplier;
+            gameRules.fallRespawnType = fallRespawnType;
+            gameRules.fallRespawnLocation = fallRespawnLocation;
+            gameRules.continuousFlop = continuousFlop;
 
             return gameRules;
         }
@@ -53,6 +66,7 @@ public class GameRulesUI : MonoBehaviour
     private void Start()
     {
         SetGameRules(GameManager.instance.gameRules);
+        //UpdateUIValues();
 
         if (LobbyManager.instance.isHost)
         {
@@ -68,12 +82,20 @@ public class GameRulesUI : MonoBehaviour
     {
         localGameRules = new LocalGameRules(gameRules);
 
+        UpdateUIValues();
+    }
+
+    private void UpdateUIValues()
+    {
         gameLengthSlider.value = localGameRules.gameLength;
         numberOfHuntersSlider.value = localGameRules.numberOfHunters;
         catchTypeDropdown.value = (int)localGameRules.catchType;
         hidingTimeSlider.value = localGameRules.hidingTime;
         speedBoostTypeDropdown.value = (int)localGameRules.speedBoostType;
         speedMultiplierSlider.value = localGameRules.speedMultiplier;
+        fallRespawnTypeDropdown.value = (int)localGameRules.fallRespawnType;
+        fallRespawnLocationDropdown.value = (int)localGameRules.fallRespawnLocation;
+        continuousFlopToggle.isOn = localGameRules.continuousFlop;
     }
 
     public void OnSaveButtonPressed()
@@ -91,6 +113,7 @@ public class GameRulesUI : MonoBehaviour
     public void OnGameLengthChanged(float value)
     {
         localGameRules.gameLength = Mathf.RoundToInt(value);
+        Debug.Log(value);
     }
 
     public void OnNumberOfHuntersChanged(float value)
@@ -116,5 +139,20 @@ public class GameRulesUI : MonoBehaviour
     public void OnSpeedMultiplierChanged(float value)
     {
         localGameRules.speedMultiplier = value;
+    }
+
+    public void OnFallRespawnTypeChanged(int index)
+    {
+        localGameRules.fallRespawnType = (HiderFallRespawnType)index;
+    }
+
+    public void OnFallRespawnLocationChanged(int index)
+    {
+        localGameRules.fallRespawnLocation = (FallRespawnLocation)index;
+    }
+
+    public void OnContinuousFlopChanged(bool value)
+    {
+        localGameRules.continuousFlop = value;
     }
 }

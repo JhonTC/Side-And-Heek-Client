@@ -15,6 +15,7 @@ public class UIManager : MonoBehaviour
     public GameplayUI gameplayPanel;
     [SerializeField] private SettingsUI settingsPanel;
     [SerializeField] private GameObject pausePanel;
+    [SerializeField] private GameObject quitPanel;
     public CustomisationUI customisationPanel;
     public GameRulesUI gameRulesPanel;
     //[SerializeField] private GameObject lobbyPanel;
@@ -41,6 +42,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private GameObject connectLoadingPanel;
     [SerializeField] private GameObject connectTitlePanel;
+    [SerializeField] private Button connectButton;
 
 
     private void Awake()
@@ -96,7 +98,9 @@ public class UIManager : MonoBehaviour
         startPanel.SetActive(false);
         connectPanel.SetActive(false);
         pausePanel.SetActive(false);
+        quitPanel.SetActive(false);
         customisationPanel.gameObject.SetActive(false);
+        gameRulesPanel.gameObject.SetActive(false);
         settingsPanel.gameObject.SetActive(false);
     }
 
@@ -122,6 +126,7 @@ public class UIManager : MonoBehaviour
         connectLoadingPanel.SetActive(false);
         usernameField.interactable = true;
         ipField.interactable = true;
+        connectButton.interactable = true;
 
         m_IsUIActive = true;
 
@@ -176,6 +181,17 @@ public class UIManager : MonoBehaviour
         activePanel = pausePanel;
     }
 
+    public void DisplayQuitPanel()
+    {
+        DisableAllPanels();
+        quitPanel.SetActive(true);
+
+        m_IsUIActive = true;
+
+        lastActivePanel = activePanel;
+        activePanel = quitPanel;
+    }
+
     public void DisplayCustomisationPanel()
     {
         bool isActive = customisationPanel.gameObject.activeSelf;
@@ -189,6 +205,21 @@ public class UIManager : MonoBehaviour
 
         lastActivePanel = activePanel;
         activePanel = customisationPanel.gameObject;
+    }
+
+    public void DisplayGameRulesPanel()
+    {
+        bool isActive = gameRulesPanel.gameObject.activeSelf;
+        DisableAllPanels();
+        if (!isActive)
+        {
+            gameRulesPanel.gameObject.SetActive(true);
+        }
+
+        m_IsUIActive = true;
+
+        lastActivePanel = activePanel;
+        activePanel = gameRulesPanel.gameObject;
     }
 
     public void RemovePlayerReady(int _playerId)
@@ -269,6 +300,7 @@ public class UIManager : MonoBehaviour
     {
         usernameField.interactable = false;
         ipField.interactable = false;
+        connectButton.interactable = false;
 
         PlayerPrefs.SetString("Username", usernameField.text);
         PlayerPrefs.SetString("LastRoomCode", ipField.text);
@@ -288,7 +320,8 @@ public class UIManager : MonoBehaviour
         connectPanel.SetActive(true);
 
         connectTitlePanel.SetActive(true);
-        connectLoadingPanel.SetActive(false);
+        connectLoadingPanel.SetActive(false); 
+        connectButton.interactable = true;
         usernameField.interactable = true;
         ipField.interactable = true;
 

@@ -8,11 +8,18 @@ public class PickupManager : MonoBehaviour
 {
     public static PickupManager instance;
 
+    public static Dictionary<int, Pickup> pickups = new Dictionary<int, Pickup>();
+
+    public static Dictionary<TaskCode, int> tasksLog = new Dictionary<TaskCode, int>();
+    public static Dictionary<ItemCode, int> itemsLog = new Dictionary<ItemCode, int>();
+
     private delegate BaseTask TaskHandler(TaskPickup _task, Player _player);
     private delegate BaseItem ItemHandler(ItemPickup _item, Player _player);
 
     private static Dictionary<TaskCode, TaskHandler> taskHandlers;
     private static Dictionary<ItemCode, ItemHandler> itemHandlers;
+
+    [SerializeField] private Pickup pickupPrefab;
 
     private void Awake()
     {
@@ -34,6 +41,94 @@ public class PickupManager : MonoBehaviour
         InitialiseTaskData();
         InitialiseItemData();
     }
+
+    public Pickup SpawnPickup(int _pickupId, PickupType _pickupType, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
+    {
+        Pickup pickup = Instantiate(pickupPrefab, _position, _rotation, transform);
+        pickup.Init(_pickupId, _spawner, _pickupType, _code, false);
+        pickups.Add(_pickupId, pickup);
+
+        return pickup;
+    }
+
+    public bool CanTaskCodeBeUsed(TaskDetails taskDetails)
+    {
+        if (tasksLog.ContainsKey(taskDetails.task.taskCode))
+        {
+            if (tasksLog[taskDetails.task.taskCode] >= taskDetails.numberOfUses)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public bool CanItemCodeBeUsed(ItemDetails itemDetails)
+    {
+        if (itemsLog.ContainsKey(itemDetails.item.itemCode))
+        {
+            if (itemsLog[itemDetails.item.itemCode] >= itemDetails.numberOfUses)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public bool HaveAllPickupsOfTypeBeenSpawned(PickupType pickupType)
+    {
+        if (pickupType == PickupType.Task)
+        {
+            if (tasksLog.Count < GameManager.instance.collection.taskDetails.Count)
+            {
+                return false;
+            }
+
+            foreach (TaskCode taskCode in tasksLog.Keys)
+            {
+                if (tasksLog.ContainsKey(taskCode))
+                {
+                    if (tasksLog[taskCode] < GameManager.instance.collection.GetTaskByCode(taskCode).numberOfUses)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        else if (pickupType == PickupType.Item)
+        {
+            if (itemsLog.Count < GameManager.instance.collection.itemDetails.Count)
+            {
+                return false;
+            }
+
+            foreach (ItemCode itemCode in itemsLog.Keys)
+            {
+                if (itemsLog.ContainsKey(itemCode))
+                {
+                    if (itemsLog[itemCode] < GameManager.instance.collection.GetItemByCode(itemCode).numberOfUses)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+
+
     private void InitialiseTaskData()
     {
         taskHandlers = new Dictionary<TaskCode, TaskHandler>()

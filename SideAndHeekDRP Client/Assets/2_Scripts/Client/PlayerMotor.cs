@@ -80,7 +80,12 @@ public class PlayerMotor : MonoBehaviour
             {
                 UIManager.instance.DisplayCustomisationPanel();
             }
-        }
+
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                UIManager.instance.DisplayGameRulesPanel();
+            }
+        } 
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {

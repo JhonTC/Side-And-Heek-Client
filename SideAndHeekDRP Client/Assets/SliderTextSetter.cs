@@ -17,7 +17,7 @@ public class SliderTextSetter : MonoBehaviour
 
     private void Start()
     {
-        if (LobbyManager.instance.isHost || !hostOnly)
+        if (LobbyManager.instance.isHost && hostOnly)
         {
             slider.gameObject.SetActive(true);
             if (baseValueDisplay)
@@ -33,9 +33,6 @@ public class SliderTextSetter : MonoBehaviour
                 baseValueDisplay.gameObject.SetActive(true);
             }
         }
-
-        slider.value = startValue;
-        OnValueChanged();
     }
 
     public void OnValueChanged()
