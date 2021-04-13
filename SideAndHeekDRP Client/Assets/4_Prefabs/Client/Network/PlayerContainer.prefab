@@ -5480,12 +5480,19 @@ MonoBehaviour:
   sensitivity: 5
   hiderColour: {r: 0.9245283, g: 0.9245283, b: 0.9245283, a: 1}
   seekerColour: {r: 0.94509804, g: 0.32723713, b: 0.27502355, a: 1}
-  activeTasks: []
-  activeItem:
-    item: {fileID: 0}
+  activePickup:
+    pickupSO: {fileID: 0}
   clickRange: 0
   walkingAudioSource: {fileID: 2272461442986635504}
   walkingDustParticles: {fileID: 1839886057}
+  defaultPlayerMaterial: {fileID: 2100000, guid: 55098341d5f310f4593009b030b73e43,
+    type: 2}
+  defaultEyeMaterial: {fileID: 2100000, guid: 1b6d5a53da6e98f4fb9a9056cd9806ec, type: 2}
+  invisiblePlayerLocalMaterial: {fileID: 2100000, guid: 924517d12d90fa044b54e79d0dfc2d10,
+    type: 2}
+  invisiblePlayerClientMaterial: {fileID: 2100000, guid: df19799750ecb8244bd32ef08db67e7a,
+    type: 2}
+  materialType: 0
 --- !u!1001 &68622656946434583
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5503,6 +5510,11 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 6003354813549393778}
+    - target: {fileID: 4949425284168624886, guid: 903a3aecb27597c44b3f969b9c1cae36,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 1b6d5a53da6e98f4fb9a9056cd9806ec, type: 2}
     - target: {fileID: 6525253392443921722, guid: 903a3aecb27597c44b3f969b9c1cae36,
         type: 3}
       propertyPath: playerManager
@@ -5568,6 +5580,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7344787782985901654, guid: 903a3aecb27597c44b3f969b9c1cae36,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 55098341d5f310f4593009b030b73e43, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 903a3aecb27597c44b3f969b9c1cae36, type: 3}
 --- !u!4 &8447523477001538934 stripped

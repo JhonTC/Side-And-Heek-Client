@@ -62,8 +62,7 @@ namespace Server
             base.OnLevelFinishedUnloading(_scene);
 
             activeSceneName = lobbyScene;
-            PickupManager.itemsLog.Clear();
-            PickupManager.tasksLog.Clear();
+            PickupHandler.pickupLog.Clear();
         }
 
         private IEnumerator SpawnSpecial(Player _player, int _delay = 60)

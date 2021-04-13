@@ -39,8 +39,7 @@ public class PlayerManager : MonoBehaviour
     public Color hiderColour;
     public Color seekerColour;
 
-    public List<BaseTask> activeTasks = new List<BaseTask>();
-    public BaseItem activeItem = null;
+    public Server.BasePickup activePickup = null;
 
     public float clickRange;
 
@@ -48,6 +47,15 @@ public class PlayerManager : MonoBehaviour
 
     [SerializeField] private ParticleSystem walkingDustParticles;
     private bool lastIsGrounded = false;
+
+    [SerializeField] private Material defaultPlayerMaterial;
+    [SerializeField] private Material defaultEyeMaterial;
+    [SerializeField] private Material invisiblePlayerLocalMaterial;
+    [SerializeField] private Material invisiblePlayerClientMaterial;
+
+    public MaterialType materialType = MaterialType.Default;
+
+    public bool isActivePickupInProgress = false;
 
     private void Awake()
     {
@@ -67,7 +75,7 @@ public class PlayerManager : MonoBehaviour
                 if (Physics.Raycast(ray, out hit))
                 {
                     Debug.DrawRay(ray.origin, ray.direction);
-                    if (hit.transform.tag == "Pickup")
+                    /*if (hit.transform.tag == "Pickup")
                     {
                         Pickup pickup = hit.transform.GetComponent<Pickup>();
 
@@ -75,22 +83,12 @@ public class PlayerManager : MonoBehaviour
 
                         if (Input.GetMouseButtonDown(0))
                         {
-                            bool isPickupInProgress = false;
-                            if (pickup.pickupType == PickupType.Task)
-                            {
-                                isPickupInProgress = IsTaskInProgress(pickup.activeTaskDetails.task.taskCode);
-                            }
-                            else if (pickup.pickupType == PickupType.Item)
-                            {
-                                isPickupInProgress = IsItemInProgress();
-                            }
-
-                            if (!isPickupInProgress)
+                            if (!IsPickupInProgress())
                             {
                                 pickup.OnClick(id);
                             }
                         }
-                    }
+                    }*/
 
                     if (hit.collider.tag == "GameStartObject")
                     {
@@ -178,43 +176,17 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    private bool IsTaskInProgress(TaskCode _code)
+    private bool IsPickupInProgress()
     {
-        foreach (BaseTask activeTask in activeTasks)
+        if (activePickup != null)
         {
-            if (activeTask.task.taskCode == _code)
+            if (activePickup.pickupSO != null)
             {
                 return true;
             }
         }
 
         return false;
-    }
-
-    private bool IsItemInProgress()
-    {
-        if (activeItem != null)
-        {
-            if (activeItem.item != null)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private BaseTask GetActiveTaskWithCode(TaskCode _code)
-    {
-        foreach (BaseTask activeTask in activeTasks)
-        {
-            if (activeTask.task.taskCode == _code)
-            {
-                return activeTask;
-            }
-        }
-
-        throw new System.Exception($"Task {_code}, is not in progress for {username}.");
     }
 
     public void SetRootRotation(Quaternion _rootRotation)
@@ -236,9 +208,9 @@ public class PlayerManager : MonoBehaviour
         playerMotor.rightLeg.rotation = _rightLegRot;
         playerMotor.leftLeg.rotation = _leftLegRot;
     }
-    public void SetPlayerState(bool _isGrounded, float _inputSpeed, bool _isJumping, bool _isFlopping)
+    public void SetPlayerState(bool _isGrounded, float _inputSpeed, bool _isJumping, bool _isFlopping, bool _isSneaking)
     {
-        if (_isGrounded && (_inputSpeed != 0 || lastIsGrounded != _isGrounded) && !_isFlopping && !_isJumping)
+        if (_isGrounded && (_inputSpeed != 0 || lastIsGrounded != _isGrounded) && !_isFlopping && !_isJumping && !_isSneaking)
         {
             if (!walkingDustParticles.isPlaying)
             {
@@ -282,27 +254,84 @@ public class PlayerManager : MonoBehaviour
         UIManager.instance.UpdateLobbyPanel();
     }
 
-    public void ChangeBodyColour(Color colour, bool isSeekerColour)
+    public void ChangeBodyColour(Color colour, bool isSeekerColour, bool isSpecialColour = false)
     {
-        if (isSeekerColour)
+        if (!isSpecialColour)
         {
-            seekerColour = colour;
-        }
-        else
+            if (isSeekerColour)
+            {
+                seekerColour = colour;
+            }
+            else
+            {
+                hiderColour = colour;
+                UIManager.instance.customisationPanel.hiderColourSelector.UpdateAllButtons();
+            }
+
+            ChangeBodyColour(isSeekerColour);
+        } else
         {
-            hiderColour = colour;
-            UIManager.instance.customisationPanel.hiderColourSelector.UpdateAllButtons();
+            ChangeBodyColour(colour);
         }
 
-        ChangeBodyColour(isSeekerColour);
     }
     public void ChangeBodyColour(bool isSeekerColour)
     {
+        if (materialType == MaterialType.Default)
+        {
+            foreach (MeshRenderer mr in GetComponentsInChildren<MeshRenderer>())
+            {
+                if (mr.tag != "Eye")
+                {
+                    mr.material.SetColor("_EmissionColor", isSeekerColour ? seekerColour : hiderColour);
+                }
+            }
+        }
+    }
+    public void ChangeBodyColour(Color colour)
+    {
+        if (materialType == MaterialType.Default)
+        {
+            foreach (MeshRenderer mr in GetComponentsInChildren<MeshRenderer>())
+            {
+                if (mr.tag != "Eye")
+                {
+                    mr.material.SetColor("_EmissionColor", colour);
+                }
+            }
+        }
+    }
+
+    public void ChangeMaterialType(MaterialType _materialType)
+    {
+        materialType = _materialType;
+
+        Material newMaterial = defaultPlayerMaterial;
+        if (materialType == MaterialType.Invisible)
+        {
+            if (hasAuthority)
+            {
+                newMaterial = invisiblePlayerLocalMaterial;
+            } else
+            {
+                newMaterial = invisiblePlayerClientMaterial;
+            }
+        }
+
         foreach (MeshRenderer mr in GetComponentsInChildren<MeshRenderer>())
         {
-            if (mr.tag != "Eye")
+            mr.material = newMaterial;
+            
+            if (materialType == MaterialType.Default)
             {
-                mr.material.SetColor("_EmissionColor", isSeekerColour? seekerColour : hiderColour);
+                if (mr.tag != "Eye")
+                {
+                    mr.material.SetColor("_EmissionColor", playerType == PlayerType.Hunter ? seekerColour : hiderColour);
+                }
+                else
+                {
+                    mr.material = defaultEyeMaterial;
+                }
             }
         }
     }
@@ -311,22 +340,28 @@ public class PlayerManager : MonoBehaviour
     {
         playerType = _playerType;
 
-        switch(playerType)
+        if (materialType == MaterialType.Default)
         {
-            case PlayerType.Default:
-                ChangeBodyColour(false);
-                break;
-            case PlayerType.Hunter:
-                ChangeBodyColour(true);
-                break;
-            case PlayerType.Hider:
-                ChangeBodyColour(false);
-                break;
-            case PlayerType.Spectator:
-                //spectator controls
-                break;
-            default:
-                break;
+            switch (playerType)
+            {
+                case PlayerType.Default:
+                    ChangeBodyColour(false);
+                    break;
+                case PlayerType.Hunter:
+                    ChangeBodyColour(true);
+                    break;
+                case PlayerType.Hider:
+                    ChangeBodyColour(false);
+                    break;
+                case PlayerType.Spectator:
+                    //spectator controls
+                    break;
+                default:
+                    break;
+            }
+        } else
+        {
+            ChangeMaterialType(MaterialType.Default);
         }
     }
 
@@ -351,50 +386,42 @@ public class PlayerManager : MonoBehaviour
         thirdPersonCamera.GetComponent<FollowPlayer>().PlayerTeleportedToPosition(position);
     }
 
-    public void PickupSpawned(int _pickupId, PickupType _pickupType, int _code, Vector3 _position, Quaternion _rotation)
+    public void PickupSpawned(int _pickupId, int _creatorId, int _code, Vector3 _position, Quaternion _rotation)
     {
-        PickupManager.instance.SpawnPickup(_pickupId, _pickupType, _code, _position, _rotation);
+        NetworkObjectsManager.instance.pickupHandler.SpawnPickup(_pickupId, _creatorId, _code, _position, _rotation);
+    }
+    public void ItemSpawned(int _itemId, int _creatorId, int _code, Vector3 _position, Quaternion _rotation)
+    {
+        NetworkObjectsManager.instance.itemHandler.SpawnItem(_itemId, _creatorId, _code, _position, _rotation);
     }
 
-    public virtual void PickupPickedUp(BasePickup pickup)
+    public virtual void PickupPickedUp(PickupSO _pickupSO)
     {
-        if (pickup.pickupType == PickupType.Task)
-        {
-            activeTasks.Add(PickupManager.instance.HandleTask(pickup as TaskPickup));
-        }
-        else if (pickup.pickupType == PickupType.Item)
-        {
-            activeItem = PickupManager.instance.HandleItem(pickup as ItemPickup);
+        activePickup = NetworkObjectsManager.instance.pickupHandler.HandlePickup(_pickupSO);
 
-            if (hasAuthority)
+        if (hasAuthority)
+        {
+            UIManager.instance.gameplayPanel.SetItemDetails(_pickupSO);
+        }
+    }
+
+    public virtual void UsePickup()
+    {
+        if (activePickup != null)
+        {
+            if (!isActivePickupInProgress)
             {
-                UIManager.instance.gameplayPanel.SetItemDetails(pickup as ItemPickup);
+                isActivePickupInProgress = true;
+                ClientSend.ItemUsed();
+
+                if (activePickup.pickupSO != null)
+                {
+                    if (activePickup.pickupSO.duration > 0)
+                    {
+                        UIManager.instance.gameplayPanel.StartProgressCountdown(activePickup.pickupSO.duration);
+                    }
+                }
             }
-        }
-    }
-
-    public void TaskProgressed(TaskCode code, float progression)
-    {
-        Debug.Log($"Task {code} progressed by {progression}.");
-    }
-
-    public void TaskComplete(TaskCode taskCode)
-    {
-        if (IsTaskInProgress(taskCode))
-        {
-            activeTasks.Remove(GetActiveTaskWithCode(taskCode));
-
-            Debug.Log($"Task {taskCode} Complete!");
-        }
-    }
-
-    public virtual void UseItem()
-    {
-        if (activeItem != null)
-        {
-            ClientSend.ItemUsed();
-            UIManager.instance.gameplayPanel.SetItemDetails();
-            activeItem = null;
         }
     }
 }
@@ -405,4 +432,10 @@ public enum PlayerType
     Hunter,
     Hider,
     Spectator
+}
+
+public enum MaterialType
+{
+    Default = 0,
+    Invisible
 }

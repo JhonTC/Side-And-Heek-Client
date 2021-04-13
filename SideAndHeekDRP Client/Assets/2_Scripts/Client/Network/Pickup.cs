@@ -5,11 +5,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Pickup : MonoBehaviour
+public class Pickup : SpawnableObject
 {
-    public int pickupId;
     public PickupSpawner spawner;
     public BoxCollider collider;
+
+    [SerializeField] private GameObject pickupObj;
 
     [SerializeField] private RectTransform uiPanel;
     [SerializeField] private TMP_Text pickupTitle;
@@ -25,56 +26,60 @@ public class Pickup : MonoBehaviour
     public bool cursorHovering = false;
     private bool lastCursorHovering = false;
 
+    [SerializeField] private Color hiderPickupColour;
+    [SerializeField] private Color hunterPickupColour;
+    [SerializeField] private Color defaultPickupColour;
+
+
     Camera camera;
 
-    public PickupType pickupType = PickupType.NULL;
-    public TaskDetails activeTaskDetails;
-    public ItemDetails activeItemDetails;
-
-    public void Init(int _pickupId, PickupSpawner _spawner, PickupType _pickupType, int _code, bool _trackMovement)
+    public void Init(int _pickupId, PickupSpawner _spawner, int _creatorId, int _code)
     {
-        pickupId = _pickupId;
-        pickupType = _pickupType;
+        base.Init(_pickupId, _creatorId, _code);
+
         spawner = _spawner;
+        
+        //pickupTitle.text = activeObjectDetails.pickupSO.pickupName;
+        //pickupContent.text = activeObjectDetails.pickupSO.pickupContent;
+        //pickupOutline.color = activeObjectDetails.pickupSO.pickupLevel.color;
 
-        if (pickupType == PickupType.Task)
-        {
-            activeTaskDetails = GameManager.instance.collection.GetTaskByCode((TaskCode)_code);
-
-            pickupTitle.text = activeTaskDetails.task.pickupName;
-            pickupContent.text = activeTaskDetails.task.pickupContent;
-            pickupOutline.color = activeTaskDetails.task.pickupLevel.color;
-        }
-        else if (pickupType == PickupType.Item)
-        {
-            activeItemDetails = GameManager.instance.collection.GetItemByCode((ItemCode)_code);
-
-            pickupTitle.text = activeItemDetails.item.pickupName;
-            pickupContent.text = activeItemDetails.item.pickupContent;
-            pickupOutline.color = activeItemDetails.item.pickupLevel.color;
-        }
-
-        uiPanel.gameObject.SetActive(true);
+        //uiPanel.gameObject.SetActive(true);
 
         basePosition = transform.position;
+
+        Color pickupColour = defaultPickupColour;
+        if (activeObjectDetails.pickupSO.userType == PlayerType.Hunter)
+        {
+            pickupColour = hunterPickupColour;
+        }
+        else if (activeObjectDetails.pickupSO.userType == PlayerType.Hider)
+        {
+            pickupColour = hiderPickupColour;
+        }
+
+        pickupObj.GetComponent<MeshRenderer>().material.color = pickupColour;
     }
 
     private void Start()
     {
         camera = LobbyManager.instance.GetLocalPlayer().thirdPersonCamera;
+
+        pickupObj.GetComponent<MeshRenderer>().material.SetFloat("_Random", Random.Range(0f, 1000f));
     }
 
     private void Update()
     {
         if (cursorHovering)
         {
-            uiPanel.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            //uiPanel.localScale = new Vector3(0.1f, 0.1f, 0.1f);
         }
         else if (!cursorHovering)
         {
-            uiPanel.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+            //uiPanel.localScale = new Vector3(0.02f, 0.02f, 0.02f);
 
-            uiPanel.transform.position = basePosition + new Vector3(0f, 0.25f * Mathf.Sin(Time.time * bobSpeed), 0f);
+            //uiPanel.transform.position = basePosition + new Vector3(0f, 0.25f * Mathf.Sin(Time.time * bobSpeed), 0f);
+
+            pickupObj.transform.position = basePosition + new Vector3(0f, 0.25f * Mathf.Sin(Time.time * bobSpeed), 0f);
         }
 
         Vector3 cameraPos = camera.transform.position; //!!
@@ -95,7 +100,7 @@ public class Pickup : MonoBehaviour
         {
             if (GameManager.instance.gameType == GameType.Multiplayer)
             {
-                ClientSend.PickupSelected(pickupId);
+                ClientSend.PickupSelected(objectId);
             }
             else
             {
@@ -114,9 +119,9 @@ public class Pickup : MonoBehaviour
             spawner.PickupPickedUp();
         }
 
-        if (PickupManager.pickups.ContainsKey(pickupId))
+        if (PickupHandler.pickups.ContainsKey(objectId))
         {
-            PickupManager.pickups.Remove(pickupId);
+            PickupHandler.pickups.Remove(objectId);
         }
 
         Destroy(gameObject);

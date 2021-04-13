@@ -337,7 +337,7 @@ RectTransform:
   m_GameObject: {fileID: 4106705422614270536}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_LocalScale: {x: 0.02, y: 0.02, z: 0.02}
   m_Children:
   - {fileID: 745191366575331112}
   - {fileID: 8299921115459652334}
@@ -479,28 +479,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 4404309366411333442}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3fecdd712f54de443b052d10ef012298, type: 3}
+  m_Script: {fileID: 11500000, guid: 91a30420df4428c41a8c956980e86cc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   spawnerId: 0
   hasPickup: 0
-  collider: {fileID: 4404309366411333500}
-  uiPanel: {fileID: 1640098086320728521}
-  pickupTitle: {fileID: 4966540039290751519}
-  pickupContent: {fileID: 9167462646871081119}
-  pickupOutline: {fileID: 6398791711453887511}
-  rotationSpeed: 100
-  bobSpeed: 2
-  interractable: 1
-  cursorHovering: 0
-  pickupType: 2
-  activeTaskDetails:
-    task: {fileID: 0}
-    numberOfUses: 0
-  activeItemDetails:
-    item: {fileID: 0}
-    numberOfUses: 0
   maxSpawnCount: 0
+  code: 0
 --- !u!1 &5679810339629653437
 GameObject:
   m_ObjectHideFlags: 0

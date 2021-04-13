@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class JellyBomb : MonoBehaviour
+public class JellyBomb : SpawnableObject
 {
     public float explosionRadius;
     public AnimationCurve explosionSpeed;
@@ -41,8 +41,9 @@ public class JellyBomb : MonoBehaviour
         }
     }
 
-    public void Init(Vector3 throwDirection, float throwForce)
+    public void Init(int _id, int _creatorId, int _code, Vector3 throwDirection, float throwForce)
     {
+        base.Init(_id, _creatorId, _code);
         rigidbody.AddForce(throwDirection * throwForce * throwForceMultiplier);
     }
 

@@ -26,11 +26,6 @@ namespace Server
         protected override void Update()
         {
             base.Update();
-
-            for (int i = 0; i < activeTasks.Count; i++)
-            {
-                activeTasks[i].UpdateTask();
-            }
         }
 
         protected override void FixedUpdate()
@@ -114,18 +109,11 @@ namespace Server
             }
         }
 
-        public override void PickupPickedUp(BasePickup pickup)
+        public override void PickupPickedUp(PickupSO _pickupSO)
         {
-            if (pickup.pickupType == PickupType.Task)
-            {
-                activeTasks.Add(PickupManager.instance.HandleTask(pickup as TaskPickup, this));
-            }
-            else if (pickup.pickupType == PickupType.Item)
-            {
-                activeItem = PickupManager.instance.HandleItem(pickup as ItemPickup, this);
+            activePickup = NetworkObjectsManager.instance.pickupHandler.HandlePickup(_pickupSO, this);
 
-                UIManager.instance.gameplayPanel.SetItemDetails(pickup as ItemPickup);
-            }
+            UIManager.instance.gameplayPanel.SetItemDetails(_pickupSO);
         }
 
         public void SpawnPlayer()
@@ -156,13 +144,13 @@ namespace Server
             }
         }
 
-        public override void UseItem()
+        public override void UsePickup()
         {
-            if (activeItem != null)
+            if (activePickup != null)
             {
                 Debug.Log("Item Used");
-                activeItem.ItemUsed();
-                activeItem = null;
+                activePickup.PickupUsed();
+                activePickup = null;
             }
         }
     }

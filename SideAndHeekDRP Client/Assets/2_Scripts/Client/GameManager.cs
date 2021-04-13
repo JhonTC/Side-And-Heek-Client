@@ -111,8 +111,7 @@ public class GameManager : MonoBehaviour
             gameStartCollider.SetActive(true);
             foreach (PlayerManager player in LobbyManager.players.Values)
             {
-                player.activeTasks.Clear();
-                player.activeItem = null;
+                player.activePickup = null;
             }
 
             UIManager.instance.gameplayPanel.SetItemDetails();
@@ -154,10 +153,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void CreatePickupSpawner(int _spawnerId, Vector3 _position, PickupType _pickupType)
+    public void CreatePickupSpawner(int _spawnerId, Vector3 _position)
     {
         PickupSpawner _spawner = Instantiate(pickupSpawnerPrefab, _position, pickupSpawnerPrefab.transform.rotation);
-        _spawner.Init(_spawnerId, _pickupType);
+        _spawner.Init(_spawnerId);
 
         pickupSpawners.Add(_spawnerId, _spawner);
     }

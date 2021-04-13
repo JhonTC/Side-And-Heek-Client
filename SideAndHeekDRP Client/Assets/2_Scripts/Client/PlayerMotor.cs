@@ -27,6 +27,7 @@ public class PlayerMotor : MonoBehaviour
 
     bool isJumping = false;
     bool isFlopping = false;
+    bool isSneaking = false;
     bool isUsingAbility = false;
 
     private CameraMode cameraMode;
@@ -47,7 +48,7 @@ public class PlayerMotor : MonoBehaviour
         if (Input.GetMouseButtonDown(1))
         {
             //isUsingAbility = true;
-            playerManager.UseItem();
+            playerManager.UsePickup();
         } 
 
         if (Input.GetAxisRaw("Jump") != 0)
@@ -64,10 +65,18 @@ public class PlayerMotor : MonoBehaviour
         {
             isFlopping = false;
         }
-        
+        if (Input.GetAxisRaw("Sneak") != 0)
+        {
+            isSneaking = true;
+        }
+        else
+        {
+            isSneaking = false;
+        }
+
         if (!GameManager.instance.gameStarted)
         {
-            if (Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             {
                 playerManager.SetPlayerReady();
                 if (GameManager.instance.gameType == GameType.Multiplayer)
@@ -177,7 +186,7 @@ public class PlayerMotor : MonoBehaviour
 
         if (GameManager.instance.gameType == GameType.Multiplayer)
         {
-            ClientSend.PlayerMovement(inputSpeed, new bool[] { isJumping, isFlopping }, rotation);
+            ClientSend.PlayerMovement(inputSpeed, new bool[] { isJumping, isFlopping, isSneaking }, rotation);
         }
         else
         {

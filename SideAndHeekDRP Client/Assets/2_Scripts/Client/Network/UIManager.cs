@@ -265,6 +265,8 @@ public class UIManager : MonoBehaviour
                 readyGemRenderers[i].enabled = false;
             }
         }
+
+        gameplayPanel.UpdatePlayerTypeViews();
     }
 
     public int GetNextAvaliableGemIndex()

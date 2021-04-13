@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -8,6 +9,7 @@ public class GameplayUI : MonoBehaviour
 {
     [SerializeField] private Animator itemAnimator;
     [SerializeField] private GameObject itemButton;
+    [SerializeField] private Image itemProgress;
 
     private bool hasItem = false;
     [SerializeField] private TMP_Text itemTitle;
@@ -17,13 +19,50 @@ public class GameplayUI : MonoBehaviour
     [HideInInspector] public List<GameplayMouseDetector> mouseDetectors = new List<GameplayMouseDetector>();
 
     public bool isActive = false;
+    private Action<PickupSO> onCloseCallback;
+
+    [SerializeField] private PlayerTypeView[] playerTypeViews;
 
     private void Start()
     {
-        itemButton.SetActive(false);
+        //itemButton.SetActive(false);
+        itemAnimator.gameObject.SetActive(false);
+
+        for (int i = 0; i < playerTypeViews.Length; i++)
+        {
+            if (LobbyManager.players.ContainsKey(i))
+            {
+                playerTypeViews[i].gameObject.SetActive(true);
+                playerTypeViews[i].SetPlayerTypeViewColour(LobbyManager.players[i].hiderColour);
+            }
+            else
+            {
+                playerTypeViews[i].gameObject.SetActive(false);
+            }
+        }
     }
 
-    public void SetItemDetails(ItemPickup pickup = null)
+    public void UpdatePlayerTypeViews()
+    {
+        for (int i = 0; i < playerTypeViews.Length; i++)
+        {
+            if (LobbyManager.players.ContainsKey(i))
+            {
+                playerTypeViews[i].gameObject.SetActive(true);
+
+                if (LobbyManager.players[i].playerType != PlayerType.Default)
+                {
+                    playerTypeViews[i].SetPlayerTypeViewColour(LobbyManager.players[i].playerType == PlayerType.Hider? LobbyManager.players[i].hiderColour : LobbyManager.players[i].seekerColour);
+                }
+            }
+            else
+            {
+                playerTypeViews[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void SetItemDetails(PickupSO pickup = null)
     {
         if (pickup != null)
         {
@@ -33,7 +72,8 @@ public class GameplayUI : MonoBehaviour
             itemContent.text = pickup.pickupContent;
             itemOutline.color = pickup.pickupLevel.color;
 
-            itemButton.SetActive(true);
+            //itemButton.SetActive(true);
+            itemAnimator.gameObject.SetActive(true);
         } 
         else
         {
@@ -42,21 +82,37 @@ public class GameplayUI : MonoBehaviour
             itemTitle.text = "";
             itemContent.text = "";
 
-            itemButton.SetActive(false);
+            //itemButton.SetActive(false);
+            itemAnimator.gameObject.SetActive(false);
         }
     }
 
-    public void ToggleItemDisplay(bool value)
+    public void ToggleItemDisplay(bool value, Action<PickupSO> callback = null)
     {
         isActive = value;
+        onCloseCallback = callback;
 
         if (isActive)
         {
-            itemAnimator.SetTrigger("Open");
+            //itemAnimator.SetTrigger("Open");
         } 
         else
         {
-            itemAnimator.SetTrigger("Close");
+            //itemAnimator.SetTrigger("Close");
+        }
+
+        if (callback != null)
+        {
+            callback?.Invoke(null);
+        }
+    }
+
+    public void OnClose()
+    {
+        if (onCloseCallback != null)
+        {
+            onCloseCallback?.Invoke(null);
+            onCloseCallback = null;
         }
     }
 
@@ -90,5 +146,33 @@ public class GameplayUI : MonoBehaviour
         }
 
         return false;
+    }
+
+
+    private bool progressCountdownActive = false;
+    private float duration;
+    private float countdownValue;
+    private void FixedUpdate()
+    {
+        if (progressCountdownActive)
+        {
+            if (countdownValue > 0)
+            {
+                itemProgress.fillAmount = countdownValue / duration;
+                countdownValue -= Time.fixedDeltaTime;
+            } else
+            {
+                progressCountdownActive = false;
+                itemProgress.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void StartProgressCountdown(float _duration)
+    {
+        duration = _duration;
+        countdownValue = duration;
+        progressCountdownActive = true; 
+        itemProgress.gameObject.SetActive(true);
     }
 }

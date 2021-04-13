@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System;
 using System.Net.NetworkInformation;
+using Steamworks;
 
 public class Client : MonoBehaviour
 {
@@ -92,6 +93,9 @@ public class Client : MonoBehaviour
         ErrorResponseHandler.InitialiseErrorResponseData();
 
         tcp.Connect();
+
+        //CSteamID id = new CSteamID(UInt64.Parse(ip));
+        //SNetSocket_t socket = SteamNetworking.CreateP2PConnectionSocket(CSteamID.NonSteamGS, 42069, 10, true);
 
         StartCoroutine(ConnectionTimeoutTimer());
     }
@@ -346,20 +350,22 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.playerState, ClientHandle.PlayerState },
             { (int)ServerPackets.playerDisconnected, ClientHandle.PlayerDisconnected },
             { (int)ServerPackets.createItemSpawner, ClientHandle.CreatePickupSpawner },
-            { (int)ServerPackets.itemSpawned, ClientHandle.PickupSpawned },
-            { (int)ServerPackets.itemPickedUp, ClientHandle.PickupPickedUp },
+            { (int)ServerPackets.pickupSpawned, ClientHandle.PickupSpawned },
+            { (int)ServerPackets.pickupPickedUp, ClientHandle.PickupPickedUp },
+            { (int)ServerPackets.itemSpawned, ClientHandle.ItemSpawned },
+            { (int)ServerPackets.itemTransform, ClientHandle.ItemTransform },
+            { (int)ServerPackets.itemUseComplete, ClientHandle.ItemUseComplete },
             { (int)ServerPackets.playerReadyToggled, ClientHandle.PlayerReadyToggled },
             { (int)ServerPackets.changeScene, ClientHandle.ChangeScene },
             { (int)ServerPackets.unloadScene, ClientHandle.UnloadScene },
             { (int)ServerPackets.setPlayerType, ClientHandle.SetPlayerType },
             { (int)ServerPackets.setSpecialCountdown, ClientHandle.SetSpecialCountdown },
             { (int)ServerPackets.setPlayerColour, ClientHandle.SetPlayerColour },
+            { (int)ServerPackets.setPlayerMaterialType, ClientHandle.SetPlayerMaterialType },
             { (int)ServerPackets.sendErrorResponseCode, ClientHandle.RecieveErrorResponse },
             { (int)ServerPackets.gameStart, ClientHandle.GameStart },
             { (int)ServerPackets.gameOver, ClientHandle.GameOver },
             { (int)ServerPackets.playerTeleported, ClientHandle.PlayerTeleported },
-            { (int)ServerPackets.taskProgressed, ClientHandle.TaskProgressed },
-            { (int)ServerPackets.taskComplete, ClientHandle.TaskComplete },
             { (int)ServerPackets.gameRulesChanged, ClientHandle.GameRulesChanged }
         };
         Debug.Log("Initialised packets.");
@@ -376,13 +382,25 @@ public class Client : MonoBehaviour
             UIManager.instance.customisationPanel.hiderColourSelector.ClearAll();
             GameManager.instance.FadeMusic(false);
 
+            foreach (Pickup pickup in PickupHandler.pickups.Values)
+            {
+                Destroy(pickup.gameObject);
+            }
+            PickupHandler.pickups.Clear();
+
+            foreach (SpawnableObject spawnable in ItemHandler.items.Values)
+            {
+                Destroy(spawnable.gameObject);
+            }
+            ItemHandler.items.Clear();
+
             //foreach (PlayerManager player in GameManager.players.Values)
             //{
             //    Destroy(player.gameObject);
             //}
             //GameManager.players.Clear();
             //UIManager.instance.playerReadyGems.Clear();
-            
+
             //GameManager.instance.LoadScene("Lobby", UnityEngine.SceneManagement.LoadSceneMode.Single);
 
             //UIManager.instance.DisplayStartPanel();

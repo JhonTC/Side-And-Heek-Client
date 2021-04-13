@@ -101,10 +101,11 @@ public class ClientHandle : MonoBehaviour
 
         bool _isJumping = _packet.ReadBool();
         bool _isFlopping = _packet.ReadBool();
+        bool _isSneaking = _packet.ReadBool();
 
         if (LobbyManager.players.ContainsKey(_id))
         {
-            LobbyManager.players[_id].SetPlayerState(_isGrounded, _inputSpeed, _isJumping, _isFlopping);
+            LobbyManager.players[_id].SetPlayerState(_isGrounded, _inputSpeed, _isJumping, _isFlopping, _isSneaking);
         }
         else
         {
@@ -135,40 +136,103 @@ public class ClientHandle : MonoBehaviour
         {
             Debug.Log($"No player with id {_id}");
         }
+
+        UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
 
     public static void CreatePickupSpawner(Packet _packet)
     {
         int _spawnerId = _packet.ReadInt();
         Vector3 _position = _packet.ReadVector3();
-        PickupType _pickupType = (PickupType)_packet.ReadInt();
 
-        GameManager.instance.CreatePickupSpawner(_spawnerId, _position, _pickupType);
+        GameManager.instance.CreatePickupSpawner(_spawnerId, _position);
     }
 
     public static void PickupSpawned(Packet _packet)
     {
         int _pickupId = _packet.ReadInt();
         bool _bySpawner = _packet.ReadBool();
-        int _id = _packet.ReadInt();
-        PickupType _pickupType = (PickupType)_packet.ReadInt();
+        int _creatorId = _packet.ReadInt();
         Vector3 _position = _packet.ReadVector3();
         Quaternion _rotation = _packet.ReadQuaternion();
 
         int _code = _packet.ReadInt();
 
-        if (_bySpawner)
+        if (!PickupHandler.pickups.ContainsKey(_pickupId))
         {
-            if (GameManager.pickupSpawners.ContainsKey(_id))
+            if (_bySpawner)
             {
-                GameManager.pickupSpawners[_id].PickupSpawned(_pickupId, _pickupType, _code, _position, _rotation);
+                if (GameManager.pickupSpawners.ContainsKey(_creatorId))
+                {
+                    GameManager.pickupSpawners[_creatorId].PickupSpawned(_pickupId, _creatorId, _code, _position, _rotation); //todo these can be merged into one
+                }
+                else
+                {
+                    Debug.Log($"No spawner with id {_creatorId}");
+                }
             }
-        } else
+            else
+            {
+                if (LobbyManager.players.ContainsKey(_creatorId))
+                {
+                    LobbyManager.players[_creatorId].PickupSpawned(_pickupId, _creatorId, _code, _position, _rotation);
+                }
+                else
+                {
+                    Debug.Log($"No player with id {_creatorId}");
+                }
+            }
+        }
+    }
+
+    public static void ItemSpawned(Packet _packet)
+    {
+        int _itemId = _packet.ReadInt();
+        int _creatorId = _packet.ReadInt();
+        Vector3 _position = _packet.ReadVector3();
+        Quaternion _rotation = _packet.ReadQuaternion();
+
+        int _code = _packet.ReadInt();
+
+        if (!ItemHandler.items.ContainsKey(_itemId))
         {
-            if (LobbyManager.players.ContainsKey(_id))
+            if (LobbyManager.players.ContainsKey(_creatorId))
             {
-                LobbyManager.players[_id].PickupSpawned(_pickupId, _pickupType, _code, _position, _rotation);
+                LobbyManager.players[_creatorId].ItemSpawned(_itemId, _creatorId, _code, _position, _rotation);
             }
+            else
+            {
+                Debug.Log($"No player with id {_creatorId}");
+            }
+        }
+    }
+    public static void ItemTransform(Packet _packet)
+    {
+        int _itemId = _packet.ReadInt();
+
+        Vector3 _position = _packet.ReadVector3();
+        Quaternion _rotation = _packet.ReadQuaternion();
+        Vector3 _scale = _packet.ReadVector3();
+
+        if (ItemHandler.items.ContainsKey(_itemId))
+        {
+            ItemHandler.items[_itemId].SetItemTransform(_position, _rotation, _scale);
+        }
+        else
+        {
+            Debug.Log($"No item with id {_itemId}");
+        }
+    }
+
+    public static void ItemUseComplete(Packet _packet)
+    {
+        int _playerId = _packet.ReadInt();
+
+        if (LobbyManager.players.ContainsKey(_playerId))
+        {
+            LobbyManager.players[_playerId].activePickup = null;
+            LobbyManager.players[_playerId].isActivePickupInProgress = false;
+            UIManager.instance.gameplayPanel.ToggleItemDisplay(false, UIManager.instance.gameplayPanel.SetItemDetails);
         }
     }
 
@@ -176,27 +240,16 @@ public class ClientHandle : MonoBehaviour
     {
         int _pickupId = _packet.ReadInt();
         int _byPlayer = _packet.ReadInt();
-        PickupType _pickupType = (PickupType)_packet.ReadInt();
         int _code = _packet.ReadInt();
 
-        if (PickupManager.pickups.ContainsKey(_pickupId))
+        if (PickupHandler.pickups.ContainsKey(_pickupId))
         {
-            PickupManager.pickups[_pickupId].PickupPickedUp();
-        }
-
-        BasePickup pickup = null;
-        if (_pickupType == PickupType.Task)
-        {
-            pickup = GameManager.instance.collection.GetTaskByCode((TaskCode)_code).task;
-        }
-        else if (_pickupType == PickupType.Item)
-        {
-            pickup = GameManager.instance.collection.GetItemByCode((ItemCode)_code).item;
+            PickupHandler.pickups[_pickupId].PickupPickedUp();
         }
 
         if (LobbyManager.players.ContainsKey(_byPlayer))
         {
-            LobbyManager.players[_byPlayer].PickupPickedUp(pickup);
+            LobbyManager.players[_byPlayer].PickupPickedUp(GameManager.instance.collection.GetPickupByCode((PickupCode)_code).pickupSO);
         }
         else
         {
@@ -246,6 +299,8 @@ public class ClientHandle : MonoBehaviour
         {
             Debug.Log($"No player with id {_playerId}");
         }
+
+        UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
 
     private static bool lastIsCountdownActive = false;
@@ -286,14 +341,26 @@ public class ClientHandle : MonoBehaviour
         int _playerId = _packet.ReadInt();
         Color _colour = _packet.ReadColour();
         bool _isSeekerColour = _packet.ReadBool();
+        bool _isSpecialColour = _packet.ReadBool();
 
         if (LobbyManager.players.ContainsKey(_playerId))
         {
-            LobbyManager.players[_playerId].ChangeBodyColour(_colour, _isSeekerColour);
+            LobbyManager.players[_playerId].ChangeBodyColour(_colour, _isSeekerColour, _isSpecialColour);
         }
         else
         {
             Debug.Log($"No player with id {_playerId}");
+        }
+    }
+
+    public static void SetPlayerMaterialType(Packet _packet)
+    {
+        int _playerId = _packet.ReadInt();
+        MaterialType _materialType = (MaterialType)_packet.ReadInt();
+
+        if (LobbyManager.players.ContainsKey(_playerId))
+        {
+            LobbyManager.players[_playerId].ChangeMaterialType(_materialType);
         }
     }
 
@@ -347,37 +414,6 @@ public class ClientHandle : MonoBehaviour
         if (LobbyManager.players.ContainsKey(_playerId))
         {
             LobbyManager.players[_playerId].PlayerTeleported(_teleportPosition);
-        }
-        else
-        {
-            Debug.Log($"No player with id {_playerId}");
-        }
-    }
-
-    public static void TaskProgressed(Packet _packet)
-    {
-        int _playerId = _packet.ReadInt();
-        TaskCode _code = (TaskCode)_packet.ReadInt();
-        float _progression = _packet.ReadFloat();
-
-        if (LobbyManager.players.ContainsKey(_playerId))
-        {
-            LobbyManager.players[_playerId].TaskProgressed(_code, _progression);
-        }
-        else
-        {
-            Debug.Log($"No player with id {_playerId}");
-        }
-    }
-
-    public static void TaskComplete(Packet _packet)
-    {
-        int _playerId = _packet.ReadInt();
-        TaskCode _code = (TaskCode)_packet.ReadInt();
-
-        if (LobbyManager.players.ContainsKey(_playerId))
-        {
-            LobbyManager.players[_playerId].TaskComplete(_code);
         }
         else
         {

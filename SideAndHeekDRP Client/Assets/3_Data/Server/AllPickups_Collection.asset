@@ -12,17 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43e50fc22602ade4fbccca0df4b6b38c, type: 3}
   m_Name: AllPickups_Collection
   m_EditorClassIdentifier: 
-  taskDetails:
-  - task: {fileID: 11400000, guid: d8ea33eeea56b894bb49be003e25e407, type: 2}
-    numberOfUses: 4
-  - task: {fileID: 11400000, guid: 00a1c4b6012729a4c8c69ba97f0cabb9, type: 2}
-    numberOfUses: 3
-  - task: {fileID: 11400000, guid: 8d0f7ae053089704eabb2c0a5a8481a7, type: 2}
-    numberOfUses: 2
-  - task: {fileID: 11400000, guid: 08a6a43cd1605f14bb8e4e30315c155c, type: 2}
+  pickupDetails:
+  - pickupSO: {fileID: 11400000, guid: b7c546730e950754ebfc872279ff85a3, type: 2}
     numberOfUses: 1
-  itemDetails:
-  - item: {fileID: 11400000, guid: b7c546730e950754ebfc872279ff85a3, type: 2}
-    numberOfUses: 10
-  - item: {fileID: 11400000, guid: 73d79d556290040498316feacbfb52fb, type: 2}
-    numberOfUses: 10
+  - pickupSO: {fileID: 11400000, guid: b81d26dee65778a47b128184fafb0d38, type: 2}
+    numberOfUses: 1
+  - pickupSO: {fileID: 11400000, guid: 2dc06454a567d26499885395ce3620b0, type: 2}
+    numberOfUses: 1
+  - pickupSO: {fileID: 11400000, guid: 72c93566d1ca19b4db40f3f0e43839f2, type: 2}
+    numberOfUses: 0
+  - pickupSO: {fileID: 11400000, guid: e33fa98ecfadbeb4eb75bc6f05b5c935, type: 2}
+    numberOfUses: 0
+  - pickupSO: {fileID: 11400000, guid: c825861384c72494c8cdc0fa935c7810, type: 2}
+    numberOfUses: 0
+  - pickupSO: {fileID: 11400000, guid: 1983ea728c831424fa3b9c0f15b496a0, type: 2}
+    numberOfUses: 1
