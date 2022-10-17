@@ -6,14 +6,16 @@ using TMPro;
 
 public class GameRulesUI : MonoBehaviour
 {
-    [SerializeField] private Slider gameLengthSlider;
-    [SerializeField] private Slider numberOfHuntersSlider;
-    [SerializeField] private TMP_Dropdown catchTypeDropdown;
-    [SerializeField] private Slider hidingTimeSlider;
-    [SerializeField] private TMP_Dropdown speedBoostTypeDropdown;
-    [SerializeField] private Slider speedMultiplierSlider;
-    [SerializeField] private TMP_Dropdown fallRespawnTypeDropdown;
-    [SerializeField] private TMP_Dropdown fallRespawnLocationDropdown;
+    [SerializeField] private DropdownTextSetter mapDropdown;
+    [SerializeField] private SliderTextSetter gameLengthSlider;
+    [SerializeField] private SliderTextSetter hiderRespawnDelaySlider;
+    [SerializeField] private SliderTextSetter numberOfHuntersSlider;
+    [SerializeField] private DropdownTextSetter catchTypeDropdown;
+    [SerializeField] private SliderTextSetter hidingTimeSlider;
+    [SerializeField] private DropdownTextSetter speedBoostTypeDropdown;
+    [SerializeField] private SliderTextSetter speedMultiplierSlider;
+    [SerializeField] private DropdownTextSetter fallRespawnTypeDropdown;
+    [SerializeField] private DropdownTextSetter fallRespawnLocationDropdown;
     [SerializeField] private Toggle continuousFlopToggle;
 
     public LocalGameRules localGameRules;
@@ -23,7 +25,9 @@ public class GameRulesUI : MonoBehaviour
     [System.Serializable]
     public class LocalGameRules
     {
+        public Map map;
         public int gameLength;
+        public int hiderRespawnDelay;
         public int numberOfHunters;
         public CatchType catchType;
         public int hidingTime;
@@ -35,7 +39,9 @@ public class GameRulesUI : MonoBehaviour
 
         public LocalGameRules(GameRules gameRules)
         {
+            map = gameRules.map;
             gameLength = gameRules.gameLength;
+            hiderRespawnDelay = gameRules.hiderRespawnDelay;
             numberOfHunters = gameRules.numberOfHunters;
             catchType = gameRules.catchType;
             hidingTime = gameRules.hidingTime;
@@ -49,7 +55,9 @@ public class GameRulesUI : MonoBehaviour
         public GameRules AsGameRules()
         {
             GameRules gameRules = ScriptableObject.CreateInstance<GameRules>();
+            gameRules.map = map;
             gameRules.gameLength = gameLength;
+            gameRules.hiderRespawnDelay = hiderRespawnDelay;
             gameRules.numberOfHunters = numberOfHunters;
             gameRules.catchType = catchType;
             gameRules.hidingTime = hidingTime;
@@ -87,14 +95,16 @@ public class GameRulesUI : MonoBehaviour
 
     private void UpdateUIValues()
     {
-        gameLengthSlider.value = localGameRules.gameLength;
-        numberOfHuntersSlider.value = localGameRules.numberOfHunters;
-        catchTypeDropdown.value = (int)localGameRules.catchType;
-        hidingTimeSlider.value = localGameRules.hidingTime;
-        speedBoostTypeDropdown.value = (int)localGameRules.speedBoostType;
-        speedMultiplierSlider.value = localGameRules.speedMultiplier;
-        fallRespawnTypeDropdown.value = (int)localGameRules.fallRespawnType;
-        fallRespawnLocationDropdown.value = (int)localGameRules.fallRespawnLocation;
+        mapDropdown.SetValue((int)localGameRules.map);
+        gameLengthSlider.SetValue(localGameRules.gameLength);
+        hiderRespawnDelaySlider.SetValue(localGameRules.hiderRespawnDelay);
+        numberOfHuntersSlider.SetValue(localGameRules.numberOfHunters);
+        catchTypeDropdown.SetValue((int)localGameRules.catchType);
+        hidingTimeSlider.SetValue(localGameRules.hidingTime);
+        speedBoostTypeDropdown.SetValue((int)localGameRules.speedBoostType);
+        speedMultiplierSlider.SetValue(localGameRules.speedMultiplier);
+        fallRespawnTypeDropdown.SetValue((int)localGameRules.fallRespawnType);
+        fallRespawnLocationDropdown.SetValue((int)localGameRules.fallRespawnLocation);
         continuousFlopToggle.isOn = localGameRules.continuousFlop;
     }
 
@@ -107,13 +117,22 @@ public class GameRulesUI : MonoBehaviour
             ClientSend.GameRulesChanged(GameManager.instance.gameRules);
         }
 
-        gameObject.SetActive(false);
+
+        UIManager.instance.DisableAllPanels();
+    }
+    public void OnMapChanged(int index)
+    {
+        localGameRules.map = (Map)index;
     }
 
     public void OnGameLengthChanged(float value)
     {
         localGameRules.gameLength = Mathf.RoundToInt(value);
-        Debug.Log(value);
+    }
+
+    public void OnHiderRespawnDelayChanged(float value)
+    {
+        localGameRules.hiderRespawnDelay = Mathf.RoundToInt(value);
     }
 
     public void OnNumberOfHuntersChanged(float value)

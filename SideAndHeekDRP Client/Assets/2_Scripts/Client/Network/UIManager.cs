@@ -199,12 +199,11 @@ public class UIManager : MonoBehaviour
         if (!isActive)
         {
             customisationPanel.gameObject.SetActive(true);
+            m_IsUIActive = true;
+
+            lastActivePanel = activePanel;
+            activePanel = customisationPanel.gameObject;
         }
-
-        m_IsUIActive = true;
-
-        lastActivePanel = activePanel;
-        activePanel = customisationPanel.gameObject;
     }
 
     public void DisplayGameRulesPanel()
@@ -214,12 +213,13 @@ public class UIManager : MonoBehaviour
         if (!isActive)
         {
             gameRulesPanel.gameObject.SetActive(true);
+            gameRulesPanel.SetGameRules(GameManager.instance.gameRules);
+
+            m_IsUIActive = true;
+
+            lastActivePanel = activePanel;
+            activePanel = gameRulesPanel.gameObject;
         }
-
-        m_IsUIActive = true;
-
-        lastActivePanel = activePanel;
-        activePanel = gameRulesPanel.gameObject;
     }
 
     public void RemovePlayerReady(int _playerId)

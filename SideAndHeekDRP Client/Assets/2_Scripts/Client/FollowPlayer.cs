@@ -13,6 +13,8 @@ public class FollowPlayer : MonoBehaviour
     [SerializeField] private float orthographicSize;
     [SerializeField] private bool isOrthographic;
 
+    private bool canFollow = true;
+
     private void Start()
     {
         transform.position = LobbyManager.instance.sceneCamera.transform.position;
@@ -27,7 +29,10 @@ public class FollowPlayer : MonoBehaviour
 
     void FixedUpdate()
     {
-        FollowTarget();
+        if (canFollow)
+        {
+            FollowTarget();
+        }
     }
 
     private void FollowTarget()
@@ -44,8 +49,18 @@ public class FollowPlayer : MonoBehaviour
         }
     }
 
-    public void PlayerTeleportedToPosition(Vector3 position)
+    public void PlayerTeleportedToPosition(Vector3 position, bool hasTeleportDelay)
     {
         transform.position = position + distanceToPlayer;
+
+        if (hasTeleportDelay)
+        {
+            canFollow = false;
+        }
+    }
+
+    public void ResetCanFollow()
+    {
+        canFollow = true;
     }
 }

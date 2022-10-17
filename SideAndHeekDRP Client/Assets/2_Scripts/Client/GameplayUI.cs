@@ -44,21 +44,49 @@ public class GameplayUI : MonoBehaviour
 
     public void UpdatePlayerTypeViews()
     {
+        List<Color> sortedPlayerColours = new List<Color>();
+        foreach (PlayerManager player in LobbyManager.players.Values)
+        {
+            if (player.playerType == PlayerType.Hider)
+            {
+                sortedPlayerColours.Insert(0, player.hiderColour);
+            } else if (player.playerType == PlayerType.Hunter)
+            {
+                sortedPlayerColours.Add(player.seekerColour);
+            } else
+            {
+                sortedPlayerColours.Add(Color.grey);
+            }
+        }
+
         for (int i = 0; i < playerTypeViews.Length; i++)
         {
-            if (LobbyManager.players.ContainsKey(i))
+            if (i < sortedPlayerColours.Count)
+            {
+                playerTypeViews[i].gameObject.SetActive(true);
+
+                playerTypeViews[i].SetPlayerTypeViewColour(sortedPlayerColours[i]);
+            } else
+            {
+                playerTypeViews[i].gameObject.SetActive(false);
+            }
+
+            /*if (LobbyManager.players.ContainsKey(i))
             {
                 playerTypeViews[i].gameObject.SetActive(true);
 
                 if (LobbyManager.players[i].playerType != PlayerType.Default)
                 {
                     playerTypeViews[i].SetPlayerTypeViewColour(LobbyManager.players[i].playerType == PlayerType.Hider? LobbyManager.players[i].hiderColour : LobbyManager.players[i].seekerColour);
+                } else
+                {
+                    playerTypeViews[i].SetPlayerTypeViewColour(Color.grey);
                 }
             }
             else
             {
                 playerTypeViews[i].gameObject.SetActive(false);
-            }
+            }*/
         }
     }
 

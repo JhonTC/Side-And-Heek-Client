@@ -32,4 +32,11 @@ public class DropdownTextSetter : MonoBehaviour
 
         baseValueDisplay.text = dropdown.options[index].text + valueSuffix;
     }
+
+    public void SetValue(int value)
+    {
+        dropdown.value = value;
+
+        baseValueDisplay.text = dropdown.options[value].text + valueSuffix;
+    }
 }

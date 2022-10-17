@@ -14,16 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pickupDetails:
   - pickupSO: {fileID: 11400000, guid: b7c546730e950754ebfc872279ff85a3, type: 2}
-    numberOfUses: 1
+    numberOfUses: 3
   - pickupSO: {fileID: 11400000, guid: b81d26dee65778a47b128184fafb0d38, type: 2}
-    numberOfUses: 1
+    numberOfUses: 3
   - pickupSO: {fileID: 11400000, guid: 2dc06454a567d26499885395ce3620b0, type: 2}
-    numberOfUses: 1
+    numberOfUses: 4
   - pickupSO: {fileID: 11400000, guid: 72c93566d1ca19b4db40f3f0e43839f2, type: 2}
-    numberOfUses: 0
+    numberOfUses: 6
   - pickupSO: {fileID: 11400000, guid: e33fa98ecfadbeb4eb75bc6f05b5c935, type: 2}
-    numberOfUses: 0
+    numberOfUses: 4
   - pickupSO: {fileID: 11400000, guid: c825861384c72494c8cdc0fa935c7810, type: 2}
-    numberOfUses: 0
+    numberOfUses: 2
   - pickupSO: {fileID: 11400000, guid: 1983ea728c831424fa3b9c0f15b496a0, type: 2}
-    numberOfUses: 1
+    numberOfUses: 4

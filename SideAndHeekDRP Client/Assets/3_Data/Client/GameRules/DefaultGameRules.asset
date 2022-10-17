@@ -14,8 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 0
   gameLength: 180
+  hiderRespawnDelay: 1
   numberOfHunters: 1
   catchType: 1
   hidingTime: 20
   speedBoostType: 1
   speedMultiplier: 1.1
+  fallRespawnType: 0
+  fallRespawnLocation: 0
+  continuousFlop: 0

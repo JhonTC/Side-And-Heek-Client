@@ -8,6 +8,7 @@ namespace Server
     public class BasePickup
     {
         public PickupSO pickupSO;
+        public bool inProgress = false;
 
         public BasePickup(PickupSO _pickupSO)
         {
@@ -164,6 +165,22 @@ namespace Server
             //todo (only neeed for singleplayer mode)
 
             //ServerSend.SetPlayerColour(owner.id, owner.activeColour, false);
+        }
+    }
+
+    public class BearTrapItem : BasePickup
+    {
+        Player owner;
+
+        public BearTrapItem(PickupSO _pickupSO) : base(_pickupSO) { }
+        public BearTrapItem(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
+        {
+            owner = _owner;
+        }
+
+        public override void PickupUsed()
+        {
+            //todo (only neeed for singleplayer mode)
         }
     }
 }

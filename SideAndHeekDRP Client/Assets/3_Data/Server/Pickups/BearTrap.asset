@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c62e21d0c0af5334fb7575f877d865ab, type: 3}
-  m_Name: Morph
+  m_Name: BearTrap
   m_EditorClassIdentifier: 
-  pickupName: Morph
-  pickupContent: I'm one of you guys... for 10 seconds
+  pickupName: Football
+  pickupContent: Oh...!
   pickupIcon: {fileID: 0}
   pickupLevel: {fileID: 11400000, guid: 11267e2058cdfcd449954910c6f8067f, type: 2}
-  userType: 2
-  pickupCode: 9
+  userType: 1
+  pickupCode: 10
   power: 0
-  duration: 15
+  duration: 0

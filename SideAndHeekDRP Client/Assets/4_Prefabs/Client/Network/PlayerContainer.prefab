@@ -4971,7 +4971,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -5482,6 +5482,7 @@ MonoBehaviour:
   seekerColour: {r: 0.94509804, g: 0.32723713, b: 0.27502355, a: 1}
   activePickup:
     pickupSO: {fileID: 0}
+    inProgress: 0
   clickRange: 0
   walkingAudioSource: {fileID: 2272461442986635504}
   walkingDustParticles: {fileID: 1839886057}
@@ -5493,6 +5494,7 @@ MonoBehaviour:
   invisiblePlayerClientMaterial: {fileID: 2100000, guid: df19799750ecb8244bd32ef08db67e7a,
     type: 2}
   materialType: 0
+  isActivePickupInProgress: 0
 --- !u!1001 &68622656946434583
 PrefabInstance:
   m_ObjectHideFlags: 0

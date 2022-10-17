@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     public PickupSpawner pickupSpawnerPrefab;
 
     public bool gameStarted = false;
+    public bool gameEndInProgress = false;
 
     protected int currentTime = 0;
 

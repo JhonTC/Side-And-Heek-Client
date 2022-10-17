@@ -8,11 +8,11 @@ using UnityEngine.AI;
 public class PlayerMotor : MonoBehaviour
 {
     public Transform root;
-    public Transform head;
-    public Transform leftLeg;
+    //public Transform head;
+    /*public Transform leftLeg;
     public Transform rightLeg;
     public Transform leftFoot;
-    public Transform rightFoot;
+    public Transform rightFoot;*/
 
     public float turnSpeed;
 
@@ -45,12 +45,6 @@ public class PlayerMotor : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(1))
-        {
-            //isUsingAbility = true;
-            playerManager.UsePickup();
-        } 
-
         if (Input.GetAxisRaw("Jump") != 0)
         {
             isJumping = true;
@@ -94,7 +88,22 @@ public class PlayerMotor : MonoBehaviour
             {
                 UIManager.instance.DisplayGameRulesPanel();
             }
-        } 
+        }  else
+        {
+            if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
+                playerManager.UsePickup();
+            }
+        }
+
+        //FOR TESTING PICKUPS IN LOBBY
+        if (!GameManager.instance.gameStarted)
+        {
+            if (Input.GetMouseButtonDown(1))
+            {
+                playerManager.UsePickup();
+            }
+        }
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {

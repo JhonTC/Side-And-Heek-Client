@@ -365,7 +365,9 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.sendErrorResponseCode, ClientHandle.RecieveErrorResponse },
             { (int)ServerPackets.gameStart, ClientHandle.GameStart },
             { (int)ServerPackets.gameOver, ClientHandle.GameOver },
-            { (int)ServerPackets.playerTeleported, ClientHandle.PlayerTeleported },
+            { (int)ServerPackets.resetGame, ClientHandle.ResetGameAndReturnToLobby },
+            { (int)ServerPackets.playerTeleportStart, ClientHandle.PlayerTeleportStart },
+            { (int)ServerPackets.playerTeleportComplete, ClientHandle.PlayerTeleportComplete },
             { (int)ServerPackets.gameRulesChanged, ClientHandle.GameRulesChanged }
         };
         Debug.Log("Initialised packets.");
@@ -379,7 +381,9 @@ public class Client : MonoBehaviour
             tcp.socket.Close();
             udp.socket.Close();
 
+            UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
             UIManager.instance.customisationPanel.hiderColourSelector.ClearAll();
+
             GameManager.instance.FadeMusic(false);
 
             foreach (Pickup pickup in PickupHandler.pickups.Values)
@@ -387,12 +391,14 @@ public class Client : MonoBehaviour
                 Destroy(pickup.gameObject);
             }
             PickupHandler.pickups.Clear();
+            PickupHandler.pickupLog.Clear();
 
-            foreach (SpawnableObject spawnable in ItemHandler.items.Values)
+            foreach (SpawnableObject item in ItemHandler.items.Values)
             {
-                Destroy(spawnable.gameObject);
+                Destroy(item.gameObject);
             }
             ItemHandler.items.Clear();
+            ItemHandler.itemLog.Clear();
 
             //foreach (PlayerManager player in GameManager.players.Values)
             //{

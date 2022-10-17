@@ -29,7 +29,7 @@ public class ColourSelectorUI : MonoBehaviour
     {
         for (int i = colourItems.Count - 1; i >= 0; i--)
         {
-            Destroy(colourItems[i]);
+            Destroy(colourItems[i].gameObject);
         }
         colourItems.Clear();
     }

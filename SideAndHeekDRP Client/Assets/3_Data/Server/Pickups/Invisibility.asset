@@ -16,7 +16,7 @@ MonoBehaviour:
   pickupContent: Nothing to see here... for 5 seconds
   pickupIcon: {fileID: 0}
   pickupLevel: {fileID: 11400000, guid: c32a7d0d01676234185f4fc6565418a2, type: 2}
-  userType: 1
+  userType: 0
   pickupCode: 7
   power: 0
   duration: 5

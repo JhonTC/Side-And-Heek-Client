@@ -30,7 +30,7 @@ public class ClientHandle : MonoBehaviour
 
         UIManager.instance.DisplayGameplayPanel();
         UIManager.instance.customisationPanel.hiderColourSelector.Init(_hiderColours);
-        //UIManager.instance.gameRulesPanel.SetGameRules(_gameRules, false);
+        UIManager.instance.gameRulesPanel.SetGameRules(_gameRules);
 
         ClientSend.WelcomeReceived();
     }
@@ -57,7 +57,7 @@ public class ClientHandle : MonoBehaviour
     {
         int _id = _packet.ReadInt();
         Vector3 _headPosition = _packet.ReadVector3();
-        Vector3 _rightFootPosition = _packet.ReadVector3();
+        /*Vector3 _rightFootPosition = _packet.ReadVector3();
         Vector3 _leftFootPosition = _packet.ReadVector3();
         Vector3 _rightLegPosition = _packet.ReadVector3();
         Vector3 _leftLegPosition = _packet.ReadVector3();
@@ -65,12 +65,12 @@ public class ClientHandle : MonoBehaviour
         Quaternion _rightFootRotation = _packet.ReadQuaternion();
         Quaternion _leftFootRotation = _packet.ReadQuaternion();
         Quaternion _rightLegRotation = _packet.ReadQuaternion();
-        Quaternion _leftLegRotation = _packet.ReadQuaternion();
+        Quaternion _leftLegRotation = _packet.ReadQuaternion();*/
 
         if (LobbyManager.players.ContainsKey(_id))
         {
-            LobbyManager.players[_id].SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
-            LobbyManager.players[_id].SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
+            LobbyManager.players[_id].SetPlayerPositions(_headPosition /*, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition*/);
+            //LobbyManager.players[_id].SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
         } else
         {
             Debug.Log($"No player with id {_id}");
@@ -384,8 +384,43 @@ public class ClientHandle : MonoBehaviour
     public static void GameOver(Packet _packet)
     {
         bool isHunterVictory = _packet.ReadBool();
+        int _showPlayerId = _packet.ReadInt();
 
         GameManager.instance.gameStarted = false;
+        GameManager.instance.gameEndInProgress = true;
+
+        PlayerManager localPlayer = LobbyManager.instance.GetLocalPlayer();
+        if (localPlayer.id != _showPlayerId)
+        {
+            localPlayer.thirdPersonCamera.GetComponent<FollowPlayer>().target = LobbyManager.players[_showPlayerId].playerMotor.root;
+        }
+
+        //disable input
+        //show gameover panel
+        //enable option to go back to the lobby 
+    }
+
+    public static void ResetGameAndReturnToLobby(Packet _packet)
+    {
+
+        PlayerManager localPlayer = LobbyManager.instance.GetLocalPlayer();
+        localPlayer.thirdPersonCamera.GetComponent<FollowPlayer>().target = localPlayer.playerMotor.root;
+
+        GameManager.instance.gameEndInProgress = false;
+
+        foreach (Pickup pickup in PickupHandler.pickups.Values)
+        {
+            Destroy(pickup.gameObject);
+        }
+        PickupHandler.pickups.Clear();
+        PickupHandler.pickupLog.Clear();
+
+        foreach (SpawnableObject item in ItemHandler.items.Values)
+        {
+            Destroy(item.gameObject);
+        }
+        ItemHandler.items.Clear();
+        ItemHandler.itemLog.Clear();
 
         foreach (PlayerManager player in LobbyManager.players.Values)
         {
@@ -393,27 +428,31 @@ public class ClientHandle : MonoBehaviour
         }
 
         Debug.Log("Game Over!");
-
-        //disable input
-        //show gameover panel
-        //enable option to go back to the lobby 
-
-        /*  - what happens to the other players?
-            - stop receiveing input and teleport them all to the starting spawnpoints
-                - what about one player moving the others?
-                - lock the players in place?
-        */
-
     }
 
-    public static void PlayerTeleported(Packet _packet)
+    public static void PlayerTeleportStart(Packet _packet)
     {
         int _playerId = _packet.ReadInt();
         Vector3 _teleportPosition = _packet.ReadVector3();
+        bool _hasTeleportDelay = _packet.ReadBool();
 
         if (LobbyManager.players.ContainsKey(_playerId))
         {
-            LobbyManager.players[_playerId].PlayerTeleported(_teleportPosition);
+            LobbyManager.players[_playerId].PlayerTeleportStart(_teleportPosition, _hasTeleportDelay);
+        }
+        else
+        {
+            Debug.Log($"No player with id {_playerId}");
+        }
+    }
+
+    public static void PlayerTeleportComplete(Packet _packet)
+    {
+        int _playerId = _packet.ReadInt();
+
+        if (LobbyManager.players.ContainsKey(_playerId))
+        {
+            LobbyManager.players[_playerId].PlayerTeleportComplete();
         }
         else
         {

@@ -34,7 +34,8 @@ public class ItemHandler
             { PickupCode.SuperSpeed_9, SuperSpeed },
             { PickupCode.Invisibility, Invisibility },
             { PickupCode.Teleport, Teleport },
-            { PickupCode.Morph, Morph }
+            { PickupCode.Morph, Morph },
+            { PickupCode.BearTrap, BearTrap }
         };
         Debug.Log("Initialised packets.");
     }
@@ -173,6 +174,17 @@ public class ItemHandler
         else
         {
             return new Morph(_pickupSO);
+        }
+    }
+    private BasePickup BearTrap(PickupSO _pickupSO, Player _player)
+    {
+        if (_player)
+        {
+            return new BearTrapItem(_pickupSO, _player);
+        }
+        else
+        {
+            return new BearTrapItem(_pickupSO);
         }
     }
 }

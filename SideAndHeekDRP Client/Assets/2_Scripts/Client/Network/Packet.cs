@@ -28,7 +28,9 @@ public enum ServerPackets
     sendErrorResponseCode,
     gameStart,
     gameOver,
-    playerTeleported,
+    resetGame,
+    playerTeleportStart,
+    playerTeleportComplete,
     gameRulesChanged
 }
 
@@ -218,7 +220,11 @@ public class Packet : IDisposable
     /// <param name="_value">The Colour to add.</param>
     public void Write(GameRules _value)
     {
+        Write((int)_value.map);
+
         Write(_value.gameLength);
+
+        Write(_value.hiderRespawnDelay);
 
         Write(_value.numberOfHunters);
         Write((int)_value.catchType);
@@ -431,7 +437,9 @@ public class Packet : IDisposable
     {
         GameRules rules = ScriptableObject.CreateInstance<GameRules>();
 
+        rules.map = (Map)ReadInt(_moveReadPos);
         rules.gameLength = ReadInt(_moveReadPos);
+        rules.hiderRespawnDelay = ReadInt(_moveReadPos);
         rules.numberOfHunters = ReadInt(_moveReadPos);
         rules.catchType = (CatchType)ReadInt(_moveReadPos);
         rules.hidingTime = ReadInt(_moveReadPos);

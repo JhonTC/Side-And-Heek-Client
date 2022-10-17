@@ -70,8 +70,8 @@ public class PlayerManager : MonoBehaviour
         {
             ray = thirdPersonCamera.ScreenPointToRay(Input.mousePosition);
 
-            if (!UIManager.instance.isUIActive)
-            {
+            //if (!UIManager.instance.isUIActive)
+            //{
                 if (Physics.Raycast(ray, out hit))
                 {
                     Debug.DrawRay(ray.origin, ray.direction);
@@ -122,14 +122,14 @@ public class PlayerManager : MonoBehaviour
                         }
                     }
                 }
-            }
+            //}
         }
     }
 
     protected virtual void FixedUpdate()
     {
-        playerMotor.head.position = Vector3.Lerp(playerMotor.head.position, playerMotor.root.position, 1f);
-        playerMotor.head.rotation = Quaternion.Lerp(playerMotor.head.rotation, playerMotor.root.rotation, 1f);
+        //playerMotor.head.position = Vector3.Lerp(playerMotor.head.position, playerMotor.root.position, 1f);
+        //playerMotor.head.rotation = Quaternion.Lerp(playerMotor.head.rotation, playerMotor.root.rotation, 1f);
     }
 
     public virtual void Init(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHost)
@@ -193,24 +193,24 @@ public class PlayerManager : MonoBehaviour
     {
         playerMotor.root.rotation = _rootRotation;
     }
-    public void SetPlayerPositions(Vector3 _headPos, Vector3 _rightFootPos, Vector3 _leftFootPos, Vector3 _rightLegPos, Vector3 _leftLegPos)
+    public void SetPlayerPositions(Vector3 _headPos/*, Vector3 _rightFootPos, Vector3 _leftFootPos, Vector3 _rightLegPos, Vector3 _leftLegPos*/)
     {
         playerMotor.root.position = _headPos;
-        playerMotor.rightFoot.position = _rightFootPos;
+        /*playerMotor.rightFoot.position = _rightFootPos;
         playerMotor.leftFoot.position = _leftFootPos;
         playerMotor.rightLeg.position = _rightLegPos;
-        playerMotor.leftLeg.position = _leftLegPos;
+        playerMotor.leftLeg.position = _leftLegPos;*/
     }
     public void SetPlayerRotations(Quaternion _rightFootRot, Quaternion _leftFootRot, Quaternion _rightLegRot, Quaternion _leftLegRot)
     {
-        playerMotor.rightFoot.rotation = _rightFootRot;
+        /*playerMotor.rightFoot.rotation = _rightFootRot;
         playerMotor.leftFoot.rotation = _leftFootRot;
         playerMotor.rightLeg.rotation = _rightLegRot;
-        playerMotor.leftLeg.rotation = _leftLegRot;
+        playerMotor.leftLeg.rotation = _leftLegRot;*/
     }
     public void SetPlayerState(bool _isGrounded, float _inputSpeed, bool _isJumping, bool _isFlopping, bool _isSneaking)
     {
-        if (_isGrounded && (_inputSpeed != 0 || lastIsGrounded != _isGrounded) && !_isFlopping && !_isJumping && !_isSneaking)
+        /*if (_isGrounded && (_inputSpeed != 0 || lastIsGrounded != _isGrounded) && !_isFlopping && !_isJumping && !_isSneaking)
         {
             if (!walkingDustParticles.isPlaying)
             {
@@ -225,7 +225,7 @@ public class PlayerManager : MonoBehaviour
             }
         }
 
-        lastIsGrounded = _isGrounded;
+        lastIsGrounded = _isGrounded;*/
     }
 
     /*public void PlayFootstepSound(FootstepType footstepType)
@@ -338,7 +338,18 @@ public class PlayerManager : MonoBehaviour
 
     public virtual void SetPlayerType(PlayerType _playerType)
     {
-        playerType = _playerType;
+        if (_playerType != playerType)
+        {
+            playerType = _playerType;
+
+            if (activePickup != null)
+            {
+                activePickup.inProgress = false;
+                activePickup = null;
+
+                UIManager.instance.gameplayPanel.SetItemDetails(null);
+            }
+        }
 
         if (materialType == MaterialType.Default)
         {
@@ -381,9 +392,16 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void PlayerTeleported(Vector3 position)
+    public void PlayerTeleportStart(Vector3 position, bool hasTeleportDelay)
     {
-        thirdPersonCamera.GetComponent<FollowPlayer>().PlayerTeleportedToPosition(position);
+        if (!GameManager.instance.gameEndInProgress)
+        {
+            thirdPersonCamera.GetComponent<FollowPlayer>().PlayerTeleportedToPosition(position, hasTeleportDelay);
+        }
+    }
+    public void PlayerTeleportComplete()
+    {
+        thirdPersonCamera.GetComponent<FollowPlayer>().ResetCanFollow();
     }
 
     public void PickupSpawned(int _pickupId, int _creatorId, int _code, Vector3 _position, Quaternion _rotation)

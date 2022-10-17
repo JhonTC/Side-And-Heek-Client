@@ -6,8 +6,13 @@ using UnityEngine;
 public class GameRules : ScriptableObject
 {
     public int id;
+
+    public Map map;
+
     [Range(60, 360)]
     public int gameLength;
+    [Range(0, 3)]
+    public int hiderRespawnDelay;
 
     [HideInInspector] public int numberOfHunters;                     //* - requires more hunter spawns
     public CatchType catchType;
@@ -48,4 +53,10 @@ public enum HiderFallRespawnType
     Hider,
     Hunter,
     Spectator
+}
+
+public enum Map
+{
+    Map1,
+    Map2
 }

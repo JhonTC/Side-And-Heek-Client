@@ -17,7 +17,7 @@ public class SliderTextSetter : MonoBehaviour
 
     private void Start()
     {
-        if (LobbyManager.instance.isHost && hostOnly)
+        if (LobbyManager.instance.isHost || !hostOnly)
         {
             slider.gameObject.SetActive(true);
             if (baseValueDisplay)
@@ -42,6 +42,17 @@ public class SliderTextSetter : MonoBehaviour
         {
             value = Mathf.Round(value * 100) / 100;
         }
+
+        sliderValueDisplay.text = value + valueSuffix;
+        if (baseValueDisplay)
+        {
+            baseValueDisplay.text = value + valueSuffix;
+        }
+    }
+
+    public void SetValue(float value)
+    {
+        slider.value = value;
 
         sliderValueDisplay.text = value + valueSuffix;
         if (baseValueDisplay)
