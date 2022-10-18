@@ -7,10 +7,11 @@ public class LobbyManager : MonoBehaviour
 {
     public static LobbyManager instance;
 
-    public static Dictionary<int, PlayerManager> players = new Dictionary<int, PlayerManager>();
+    public static Dictionary<ushort, Player> players = new Dictionary<ushort, Player>();
+    public static Player localPlayer;
 
     public GameObject sceneCamera;
-    public PlayerManager playerPrefab;
+    public Player playerPrefab;
 
     public Color unreadyColour;
     public Color unreadyTextColour;
@@ -39,9 +40,9 @@ public class LobbyManager : MonoBehaviour
 
     public void OnLocalPlayerDisconnection()
     {
-        foreach (PlayerManager player in players.Values)
+        foreach (Player player in players.Values)
         {
-            UIManager.instance.RemovePlayerReady(player.id);
+            UIManager.instance.RemovePlayerReady(player.Id);
             Destroy(player.gameObject);
         }
         players.Clear();
@@ -58,37 +59,27 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    public void SpawnPlayer(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHost, Vector3 _position, Quaternion _rotation, Color _colour)
+    public void OnPlayerSpawned(Player _player)
     {
-        if (_hasAuthority) {
-            isHost = _isHost;
-        }
-
-        PlayerManager _player;
-        _player = Instantiate(playerPrefab, _position, _rotation);
-        _player.Init(_id, _username, _isReady, _hasAuthority, _isHost);
-
-        players.Add(_id, _player);
-
-        _player.ChangeBodyColour(_colour, _player.playerType == PlayerType.Hunter);
-
-        if (_hasAuthority)
+        if (_player.IsLocal)
         {
             GameManager.instance.ResetLocalPlayerCamera(sceneCamera.transform.position, true);
             sceneCamera.SetActive(false);
 
-            if (_isHost && GameManager.instance.gameType == GameType.Multiplayer)
+            if (_player.isHost && GameManager.instance.gameType == GameType.Multiplayer)
             {
                 ClientSend.GameRulesChanged(GameManager.instance.gameRules);
             }
         }
+
+        players.Add(_player.Id, _player);
     }
 
-    public PlayerManager GetLocalPlayer()
+    public Player GetLocalPlayer()
     {
-        foreach (PlayerManager player in players.Values)
+        foreach (Player player in players.Values)
         {
-            if (player.hasAuthority)
+            if (player.IsLocal)
             {
                 return player;
             }

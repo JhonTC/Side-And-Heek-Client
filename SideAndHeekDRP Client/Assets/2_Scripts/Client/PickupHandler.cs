@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class PickupHandler
 {
-    public static Dictionary<int, Pickup> pickups = new Dictionary<int, Pickup>();
+    public static Dictionary<ushort, Pickup> pickups = new Dictionary<ushort, Pickup>();
 
     public static Dictionary<PickupCode, int> pickupLog = new Dictionary<PickupCode, int>();
 
@@ -19,7 +19,7 @@ public class PickupHandler
         InitialisePickupData();
     }
 
-    public Pickup SpawnPickup(int _pickupId, int _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
+    public Pickup SpawnPickup(ushort _pickupId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
     {
         Pickup pickup = NetworkObjectsManager.instance.SpawnPickup(_position, _rotation);
         pickup.Init(_pickupId, _spawner, _creatorId, _code);

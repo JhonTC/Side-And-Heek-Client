@@ -13,7 +13,7 @@ public class JellyBomb : SpawnableObject
     private float currentExplosionSize;
     private float startExplosionSize;
     private bool isExploding = false;
-    private List<PlayerManager> trappedPlayers = new List<PlayerManager>();
+    private List<Player> trappedPlayers = new List<Player>();
 
     private void Start()
     {
@@ -41,7 +41,7 @@ public class JellyBomb : SpawnableObject
         }
     }
 
-    public void Init(int _id, int _creatorId, int _code, Vector3 throwDirection, float throwForce)
+    public void Init(ushort _id, ushort _creatorId, int _code, Vector3 throwDirection, float throwForce)
     {
         base.Init(_id, _creatorId, _code);
         rigidbody.AddForce(throwDirection * throwForce * throwForceMultiplier);
@@ -59,7 +59,7 @@ public class JellyBomb : SpawnableObject
            
         if (other.CompareTag("BodyCollider"))
         {
-            PlayerManager player = other.GetComponentInParent<PlayerManager>();
+            Player player = other.GetComponentInParent<Player>();
             //trap them
 
 

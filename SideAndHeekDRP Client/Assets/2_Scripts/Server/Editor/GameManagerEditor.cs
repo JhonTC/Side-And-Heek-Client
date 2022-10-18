@@ -16,7 +16,7 @@ namespace Server
 
             if (GUILayout.Button("END GAME"))
             {
-                gameManager.GameOver(true);
+                //gameManager.GameOver(true);
             }
         }
     }

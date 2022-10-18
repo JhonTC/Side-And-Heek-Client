@@ -1,28 +1,27 @@
-﻿using System.Net;
+﻿using Riptide;
+using System.Net;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ClientHandle : MonoBehaviour
 {
-    public static void Welcome(Packet _packet)
+    
+    [MessageHandler((ushort)ServerToClientId.welcome)]
+    public static void Welcome(Message message)
     {
-        Client.instance.isConnected = true;
+        string _msg = message.GetString();
+        ushort _myId = message.GetUShort();
 
-        string _msg = _packet.ReadString();
-        int _myId = _packet.ReadInt();
+        GameRules _gameRules = message.GetGameRules();
 
-        GameRules _gameRules = _packet.ReadGameRules();
-
-        int _hiderColourCount = _packet.ReadInt();
+        int _hiderColourCount = message.GetInt();
         Color[] _hiderColours = new Color[_hiderColourCount];
         for (int i = 0; i < _hiderColours.Length; i++)
         {
-            _hiderColours[i] = _packet.ReadColour();
+            _hiderColours[i] = message.GetColour();
         }
 
         Debug.Log($"Message from server: {_msg}");
-        Client.instance.myId = _myId;
-        Client.instance.udp.Connect(((IPEndPoint)Client.instance.tcp.socket.Client.LocalEndPoint).Port);
 
         GameManager.instance.gameRules = _gameRules;
         GameManager.instance.hiderColours = _hiderColours;
@@ -31,41 +30,49 @@ public class ClientHandle : MonoBehaviour
         UIManager.instance.DisplayGameplayPanel();
         UIManager.instance.customisationPanel.hiderColourSelector.Init(_hiderColours);
         //UIManager.instance.gameRulesPanel.SetGameRules(_gameRules, false);
-
-        ClientSend.WelcomeReceived();
     }
 
-    public static void SpawnPlayer(Packet _packet)
+    /*public static void SpawnPlayer(Message message)
     {
-        int _id = _packet.ReadInt();
-        string _username = _packet.ReadString();
-        bool _isReady = _packet.ReadBool();
-        bool _isHost = _packet.ReadBool();
-        Vector3 _position = _packet.ReadVector3();
-        Quaternion _rotation = _packet.ReadQuaternion();
-        Color _colour = _packet.ReadColour();
+        int _id = message.GetInt();
+        string _username = message.GetString();
+        bool _isReady = message.GetBool();
+        bool _isHost = message.GetBool();
+        Vector3 _position = message.GetVector3();
+        Quaternion _rotation = message.GetQuaternion();
+        Color _colour = message.GetColour();
 
         bool _hasAuthority = _id == Client.instance.myId;
 
         Debug.Log($"Message from server: Spawn Player with id: {_id}");
-        LobbyManager.instance.SpawnPlayer(_id, _username, _isReady, _hasAuthority, _isHost, _position, _rotation, _colour);
+        //LobbyManager.instance.SpawnPlayer(_id, _username, _isReady, _hasAuthority, _isHost, _position, _rotation, _colour);
 
+        UIManager.instance.AddPlayerReady(_id);
+    }*/
+
+    [MessageHandler((ushort)ServerToClientId.playerSpawned)]
+    private static void SpawnPlayer(Message message)
+    {
+        ushort _id = message.GetUShort();
+
+        Player.Spawn(_id, message.GetString(), message.GetBool(), message.GetVector3(), message.GetColour());
         UIManager.instance.AddPlayerReady(_id);
     }
 
-    public static void PlayerPositions(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.playerPosition)]
+    public static void PlayerPositions(Message message)
     {
-        int _id = _packet.ReadInt();
-        Vector3 _headPosition = _packet.ReadVector3();
-        Vector3 _rightFootPosition = _packet.ReadVector3();
-        Vector3 _leftFootPosition = _packet.ReadVector3();
-        Vector3 _rightLegPosition = _packet.ReadVector3();
-        Vector3 _leftLegPosition = _packet.ReadVector3();
+        ushort _id = message.GetUShort();
+        Vector3 _headPosition = message.GetVector3();
+        Vector3 _rightFootPosition = message.GetVector3();
+        Vector3 _leftFootPosition = message.GetVector3();
+        Vector3 _rightLegPosition = message.GetVector3();
+        Vector3 _leftLegPosition = message.GetVector3();
 
-        Quaternion _rightFootRotation = _packet.ReadQuaternion();
-        Quaternion _leftFootRotation = _packet.ReadQuaternion();
-        Quaternion _rightLegRotation = _packet.ReadQuaternion();
-        Quaternion _leftLegRotation = _packet.ReadQuaternion();
+        Quaternion _rightFootRotation = message.GetQuaternion();
+        Quaternion _leftFootRotation = message.GetQuaternion();
+        Quaternion _rightLegRotation = message.GetQuaternion();
+        Quaternion _leftLegRotation = message.GetQuaternion();
 
         if (LobbyManager.players.ContainsKey(_id))
         {
@@ -77,10 +84,11 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void PlayerRotation(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.playerRotation)]
+    public static void PlayerRotation(Message message)
     {
-        int _id = _packet.ReadInt();
-        Quaternion _rootRotation = _packet.ReadQuaternion();
+        ushort _id = message.GetUShort();
+        Quaternion _rootRotation = message.GetQuaternion();
 
         if (LobbyManager.players.ContainsKey(_id))
         {
@@ -92,16 +100,17 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void PlayerState(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.playerState)]
+    public static void PlayerState(Message message)
     {
-        int _id = _packet.ReadInt();
+        ushort _id = message.GetUShort();
 
-        bool _isGrounded = _packet.ReadBool();
-        float _inputSpeed = _packet.ReadFloat();
+        bool _isGrounded = message.GetBool();
+        float _inputSpeed = message.GetFloat();
 
-        bool _isJumping = _packet.ReadBool();
-        bool _isFlopping = _packet.ReadBool();
-        bool _isSneaking = _packet.ReadBool();
+        bool _isJumping = message.GetBool();
+        bool _isFlopping = message.GetBool();
+        bool _isSneaking = message.GetBool();
 
         if (LobbyManager.players.ContainsKey(_id))
         {
@@ -113,15 +122,16 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void PlayerDisconnected(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.playerDisconnected)]
+    public static void PlayerDisconnected(Message message)
     {
-        int _id = _packet.ReadInt();
-        
+        ushort _id = message.GetUShort();
+
         UIManager.instance.RemovePlayerReady(_id);
 
         if (LobbyManager.players.ContainsKey(_id))
         {
-            if (Client.instance.myId != _id)
+            if (LobbyManager.localPlayer.Id != _id)
             {
                 Destroy(LobbyManager.players[_id].gameObject);
                 LobbyManager.players.Remove(_id);
@@ -140,23 +150,25 @@ public class ClientHandle : MonoBehaviour
         UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
 
-    public static void CreatePickupSpawner(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.createItemSpawner)]
+    public static void CreatePickupSpawner(Message message)
     {
-        int _spawnerId = _packet.ReadInt();
-        Vector3 _position = _packet.ReadVector3();
+        ushort _spawnerId = message.GetUShort();
+        Vector3 _position = message.GetVector3();
 
         GameManager.instance.CreatePickupSpawner(_spawnerId, _position);
     }
 
-    public static void PickupSpawned(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.pickupSpawned)]
+    public static void PickupSpawned(Message message)
     {
-        int _pickupId = _packet.ReadInt();
-        bool _bySpawner = _packet.ReadBool();
-        int _creatorId = _packet.ReadInt();
-        Vector3 _position = _packet.ReadVector3();
-        Quaternion _rotation = _packet.ReadQuaternion();
+        ushort _pickupId = message.GetUShort();
+        bool _bySpawner = message.GetBool();
+        ushort _creatorId = message.GetUShort();
+        Vector3 _position = message.GetVector3();
+        Quaternion _rotation = message.GetQuaternion();
 
-        int _code = _packet.ReadInt();
+        int _code = message.GetInt();
 
         if (!PickupHandler.pickups.ContainsKey(_pickupId))
         {
@@ -185,14 +197,15 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void ItemSpawned(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.itemSpawned)]
+    public static void ItemSpawned(Message message)
     {
-        int _itemId = _packet.ReadInt();
-        int _creatorId = _packet.ReadInt();
-        Vector3 _position = _packet.ReadVector3();
-        Quaternion _rotation = _packet.ReadQuaternion();
+        ushort _itemId = message.GetUShort();
+        ushort _creatorId = message.GetUShort();
+        Vector3 _position = message.GetVector3();
+        Quaternion _rotation = message.GetQuaternion();
 
-        int _code = _packet.ReadInt();
+        int _code = message.GetInt();
 
         if (!ItemHandler.items.ContainsKey(_itemId))
         {
@@ -206,13 +219,15 @@ public class ClientHandle : MonoBehaviour
             }
         }
     }
-    public static void ItemTransform(Packet _packet)
-    {
-        int _itemId = _packet.ReadInt();
 
-        Vector3 _position = _packet.ReadVector3();
-        Quaternion _rotation = _packet.ReadQuaternion();
-        Vector3 _scale = _packet.ReadVector3();
+    [MessageHandler((ushort)ServerToClientId.itemTransform)]
+    public static void ItemTransform(Message message)
+    {
+        ushort _itemId = message.GetUShort();
+
+        Vector3 _position = message.GetVector3();
+        Quaternion _rotation = message.GetQuaternion();
+        Vector3 _scale = message.GetVector3();
 
         if (ItemHandler.items.ContainsKey(_itemId))
         {
@@ -224,9 +239,10 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void ItemUseComplete(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.itemUseComplete)]
+    public static void ItemUseComplete(Message message)
     {
-        int _playerId = _packet.ReadInt();
+        ushort _playerId = message.GetUShort();
 
         if (LobbyManager.players.ContainsKey(_playerId))
         {
@@ -236,11 +252,12 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void PickupPickedUp(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.pickupPickedUp)]
+    public static void PickupPickedUp(Message message)
     {
-        int _pickupId = _packet.ReadInt();
-        int _byPlayer = _packet.ReadInt();
-        int _code = _packet.ReadInt();
+        ushort _pickupId = message.GetUShort();
+        ushort _byPlayer = message.GetUShort();
+        int _code = message.GetInt();
 
         if (PickupHandler.pickups.ContainsKey(_pickupId))
         {
@@ -257,10 +274,11 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void PlayerReadyToggled(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.playerReadyToggled)]
+    public static void PlayerReadyToggled(Message message)
     {
-        int _playerId = _packet.ReadInt();
-        bool _isReady = _packet.ReadBool();
+        ushort _playerId = message.GetUShort();
+        bool _isReady = message.GetBool();
 
         if (LobbyManager.players.ContainsKey(_playerId))
         {
@@ -272,24 +290,27 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void ChangeScene(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.changeScene)]
+    public static void ChangeScene(Message message)
     {
-        string _sceneToLoad = _packet.ReadString();
+        string _sceneToLoad = message.GetString();
 
         GameManager.instance.LoadScene(_sceneToLoad, LoadSceneMode.Additive);
     }
 
-    public static void UnloadScene(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.unloadScene)]
+    public static void UnloadScene(Message message)
     {
-        string _sceneToLoad = _packet.ReadString();
+        string _sceneToLoad = message.GetString();
 
         GameManager.instance.UnloadScene(_sceneToLoad, false);
     }
 
-    public static void SetPlayerType(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.setPlayerType)]
+    public static void SetPlayerType(Message message)
     {
-        int _playerId = _packet.ReadInt();
-        PlayerType _playerType = (PlayerType)_packet.ReadInt();
+        ushort _playerId = message.GetUShort();
+        PlayerType _playerType = (PlayerType)message.GetInt();
 
         if (LobbyManager.players.ContainsKey(_playerId))
         {
@@ -303,14 +324,16 @@ public class ClientHandle : MonoBehaviour
         UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
 
-    private static bool lastIsCountdownActive = false;
-    public static void SetSpecialCountdown(Packet _packet)
+    private static bool lastIsCountdownActive = false; //TODO: wtf is this doing here
+
+    [MessageHandler((ushort)ServerToClientId.setSpecialCountdown)]
+    public static void SetSpecialCountdown(Message message)
     {
-        int _specialId = _packet.ReadInt();
-        int _countdownValue = _packet.ReadInt();
-        bool _isCountdownActive = _packet.ReadBool();
+        ushort _specialId = message.GetUShort();
+        int _countdownValue = message.GetInt();
+        bool _isCountdownActive = message.GetBool();
         
-        if (_specialId == Client.instance.myId)
+        if (_specialId == LobbyManager.localPlayer.Id)
         {
             if (LobbyManager.players.ContainsKey(_specialId))
             {
@@ -325,23 +348,24 @@ public class ClientHandle : MonoBehaviour
         {
             if (_isCountdownActive)
             {
-                UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].username} is the hunter... Hide!");
+                //UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].username} is the hunter... Hide!");
             }
             else
             {
-                UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].username} has been released");
+                //UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].username} has been released");
             }
 
             lastIsCountdownActive = _isCountdownActive;
         }
     }
 
-    public static void SetPlayerColour(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.setPlayerColour)]
+    public static void SetPlayerColour(Message message)
     {
-        int _playerId = _packet.ReadInt();
-        Color _colour = _packet.ReadColour();
-        bool _isSeekerColour = _packet.ReadBool();
-        bool _isSpecialColour = _packet.ReadBool();
+        ushort _playerId = message.GetUShort();
+        Color _colour = message.GetColour();
+        bool _isSeekerColour = message.GetBool();
+        bool _isSpecialColour = message.GetBool();
 
         if (LobbyManager.players.ContainsKey(_playerId))
         {
@@ -353,10 +377,11 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void SetPlayerMaterialType(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.setPlayerMaterialType)]
+    public static void SetPlayerMaterialType(Message message)
     {
-        int _playerId = _packet.ReadInt();
-        MaterialType _materialType = (MaterialType)_packet.ReadInt();
+        ushort _playerId = message.GetUShort();
+        MaterialType _materialType = (MaterialType)message.GetInt();
 
         if (LobbyManager.players.ContainsKey(_playerId))
         {
@@ -364,16 +389,18 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void RecieveErrorResponse(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.sendErrorResponseCode)]
+    public static void RecieveErrorResponse(Message message)
     {
-        ErrorResponseCode responseCode = (ErrorResponseCode)_packet.ReadInt();
+        ErrorResponseCode responseCode = (ErrorResponseCode)message.GetInt();
 
         ErrorResponseHandler.HandleErrorResponse(responseCode);
     }
 
-    public static void GameStart(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.gameStart)]
+    public static void GameStart(Message message)
     {
-        int _gameDuration = _packet.ReadInt();
+        int _gameDuration = message.GetInt();
 
         Debug.Log("Game Start");
         LobbyManager.instance.tryStartGameActive = false;
@@ -381,16 +408,17 @@ public class ClientHandle : MonoBehaviour
         GameManager.instance.StartGameTimer(_gameDuration);
     }
 
-    public static void GameOver(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.gameOver)]
+    public static void GameOver(Message message)
     {
-        bool isHunterVictory = _packet.ReadBool();
+        bool isHunterVictory = message.GetBool();
 
         GameManager.instance.gameStarted = false;
 
-        foreach (PlayerManager player in LobbyManager.players.Values)
+        /*foreach (PlayerManager player in LobbyManager.players.Values)
         {
             player.GameOver();
-        }
+        }*/
 
         Debug.Log("Game Over!");
 
@@ -406,10 +434,11 @@ public class ClientHandle : MonoBehaviour
 
     }
 
-    public static void PlayerTeleported(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.playerTeleported)]
+    public static void PlayerTeleported(Message message)
     {
-        int _playerId = _packet.ReadInt();
-        Vector3 _teleportPosition = _packet.ReadVector3();
+        ushort _playerId = message.GetUShort();
+        Vector3 _teleportPosition = message.GetVector3();
 
         if (LobbyManager.players.ContainsKey(_playerId))
         {
@@ -421,10 +450,11 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    public static void GameRulesChanged(Packet _packet)
+    [MessageHandler((ushort)ServerToClientId.gameRulesChanged)]
+    public static void GameRulesChanged(Message message)
     {
-        int _playerId = _packet.ReadInt();
-        GameRules _gameRules = _packet.ReadGameRules();
+        ushort _playerId = message.GetUShort();
+        GameRules _gameRules = message.GetGameRules();
         GameManager.instance.GameRulesChanged(_gameRules);
 
         Debug.Log($"Game Rules Changed by player with id {_playerId}");

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 public class GameplayUI : MonoBehaviour
 {
@@ -30,10 +31,10 @@ public class GameplayUI : MonoBehaviour
 
         for (int i = 0; i < playerTypeViews.Length; i++)
         {
-            if (LobbyManager.players.ContainsKey(i))
+            if (LobbyManager.players.Count > i)
             {
                 playerTypeViews[i].gameObject.SetActive(true);
-                playerTypeViews[i].SetPlayerTypeViewColour(LobbyManager.players[i].hiderColour);
+                playerTypeViews[i].SetPlayerTypeViewColour(LobbyManager.players.ElementAt(i).Value.hiderColour);
             }
             else
             {
@@ -46,13 +47,15 @@ public class GameplayUI : MonoBehaviour
     {
         for (int i = 0; i < playerTypeViews.Length; i++)
         {
-            if (LobbyManager.players.ContainsKey(i))
+            if (LobbyManager.players.Count > i)
             {
                 playerTypeViews[i].gameObject.SetActive(true);
 
-                if (LobbyManager.players[i].playerType != PlayerType.Default)
+                Player player = LobbyManager.players.ElementAt(i).Value;
+
+                if (player.playerType != PlayerType.Default)
                 {
-                    playerTypeViews[i].SetPlayerTypeViewColour(LobbyManager.players[i].playerType == PlayerType.Hider? LobbyManager.players[i].hiderColour : LobbyManager.players[i].seekerColour);
+                    playerTypeViews[i].SetPlayerTypeViewColour(player.playerType == PlayerType.Hider? player.hiderColour : player.seekerColour);
                 }
             }
             else

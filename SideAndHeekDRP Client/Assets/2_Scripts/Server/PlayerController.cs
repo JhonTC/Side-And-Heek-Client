@@ -380,7 +380,7 @@ namespace Server
         {
             foreach (BodyCollisionDetection bcd in bodyCollisionDetectors)
             {
-                bcd.player = owner;
+                //bcd.player = owner;
             }
         }
     }

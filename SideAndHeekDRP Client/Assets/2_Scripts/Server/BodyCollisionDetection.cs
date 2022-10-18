@@ -6,7 +6,7 @@ namespace Server
 {
     public class BodyCollisionDetection : MonoBehaviour
     {
-        [HideInInspector] public Player player;
+        /*[HideInInspector] public Player player;
         [SerializeField] private bool isHeadCollider = false;
 
         private void OnCollisionEnter(Collision collision)
@@ -27,9 +27,9 @@ namespace Server
                         }
                         else if (player.playerType == PlayerType.Hunter)
                         {
-                            if (!player.activePlayerCollisionIds.Contains(other.id))
+                            if (!player.activePlayerCollisionIds.Contains(other.Id))
                             {
-                                player.activePlayerCollisionIds.Add(other.id);
+                                player.activePlayerCollisionIds.Add(other.Id);
 
                                 other.OnCollisionWithOther(5f, true);
                                 //send caught to other player
@@ -49,9 +49,9 @@ namespace Server
                     Player other = collision.gameObject.GetComponent<BodyCollisionDetection>().player;
                     if (other != player)
                     {
-                        if (player.activePlayerCollisionIds.Contains(other.id))
+                        if (player.activePlayerCollisionIds.Contains(other.Id))
                         {
-                            player.activePlayerCollisionIds.Remove(other.id);
+                            player.activePlayerCollisionIds.Remove(other.Id);
                         }
                     }
                 }
@@ -78,9 +78,9 @@ namespace Server
                             }
                             else if (player.playerType == PlayerType.Hunter)
                             {
-                                if (!player.activePlayerCollisionIds.Contains(other.id))
+                                if (!player.activePlayerCollisionIds.Contains(other.Id))
                                 {
-                                    player.activePlayerCollisionIds.Add(other.id);
+                                    player.activePlayerCollisionIds.Add(other.Id);
 
                                     other.OnCollisionWithOther(5f, true);
                                     //send caught to other player
@@ -115,13 +115,13 @@ namespace Server
                     Player other = collider.GetComponent<BodyCollisionDetection>().player;
                     if (other != player)
                     {
-                        if (player.activePlayerCollisionIds.Contains(other.id))
+                        if (player.activePlayerCollisionIds.Contains(other.Id))
                         {
-                            player.activePlayerCollisionIds.Remove(other.id);
+                            player.activePlayerCollisionIds.Remove(other.Id);
                         }
                     }
                 }
             }
-        }
+        }*/
     }
 }

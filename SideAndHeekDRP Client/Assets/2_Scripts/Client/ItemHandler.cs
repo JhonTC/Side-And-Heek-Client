@@ -6,9 +6,7 @@ using UnityEngine;
 
 public class ItemHandler
 {
-    public int currentItemId = 0;
-
-    public static Dictionary<int, SpawnableObject> items = new Dictionary<int, SpawnableObject>();
+    public static Dictionary<ushort, SpawnableObject> items = new Dictionary<ushort, SpawnableObject>();
 
     public static Dictionary<PickupCode, int> itemLog = new Dictionary<PickupCode, int>();
 
@@ -39,7 +37,7 @@ public class ItemHandler
         Debug.Log("Initialised packets.");
     }
 
-    public SpawnableObject SpawnItem(int itemId, int _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
+    public SpawnableObject SpawnItem(ushort itemId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
     {
         SpawnableObject item = NetworkObjectsManager.instance.SpawnItem((PickupCode)_code, _position, _rotation);
         item.Init(itemId, _creatorId, _code);

@@ -7,17 +7,17 @@ using UnityEngine.UI;
 
 public class PickupSpawner : MonoBehaviour
 {
-    public int spawnerId;
+    public ushort spawnerId;
     public bool hasPickup;
 
     protected Pickup activePickup;
 
-    public void Init(int _spawnerId)
+    public void Init(ushort _spawnerId)
     {
         spawnerId = _spawnerId;
     }
 
-    public void PickupSpawned(int _pickupId, int _creatorId, int _code, Vector3 _position, Quaternion _rotation)
+    public void PickupSpawned(ushort _pickupId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation)
     {
         hasPickup = true;
 

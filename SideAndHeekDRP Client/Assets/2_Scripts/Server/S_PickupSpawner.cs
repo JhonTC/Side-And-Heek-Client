@@ -6,8 +6,6 @@ namespace Server
 {
     public class S_PickupSpawner : PickupSpawner
     {
-        private static int nextSpawnerId = 1;
-
         public int maxSpawnCount = 0;
 
         public int code;
@@ -15,8 +13,6 @@ namespace Server
         private void Start()
         {
             hasPickup = false;
-            spawnerId = nextSpawnerId;
-            nextSpawnerId++;
             GameManager.pickupSpawners.Add(spawnerId, this);
 
             Init(spawnerId);
@@ -60,7 +56,7 @@ namespace Server
             }
         }
 
-        public void PickupPickedUp(int _byPlayer)
+        public void PickupPickedUp(ushort _byPlayer)
         {
             hasPickup = false;
 

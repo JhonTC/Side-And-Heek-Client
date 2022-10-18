@@ -84,11 +84,11 @@ public class ColourSelectorUI : MonoBehaviour
 
     private int DoesPlayerOwnColour(Color colour)
     {
-        foreach (PlayerManager player in LobbyManager.players.Values)
+        foreach (Player player in LobbyManager.players.Values)
         {
             if (player.hiderColour == colour)
             {
-                if (player.hasAuthority)
+                if (player.IsLocal)
                 {
                     return 1;
                 } else

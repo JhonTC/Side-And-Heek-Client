@@ -33,7 +33,7 @@ public class Pickup : SpawnableObject
 
     Camera camera;
 
-    public void Init(int _pickupId, PickupSpawner _spawner, int _creatorId, int _code)
+    public void Init(ushort _pickupId, PickupSpawner _spawner, ushort _creatorId, int _code)
     {
         base.Init(_pickupId, _creatorId, _code);
 

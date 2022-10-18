@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class SpawnableObject : MonoBehaviour
 {
-    public int objectId;
-    public int creatorId;
+    public ushort objectId;
+    public ushort creatorId;
 
     public PickupDetails activeObjectDetails;
 
-    public void Init(int _id, int _creatorId, int _code)
+    public void Init(ushort _id, ushort _creatorId, int _code)
     {
         objectId = _id;
         creatorId = _creatorId;

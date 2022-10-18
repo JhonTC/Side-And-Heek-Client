@@ -85,7 +85,7 @@ public class GameManager : MonoBehaviour
             gameStarted = true;
             gameStartCollider.SetActive(false);
 
-            foreach (PlayerManager player in LobbyManager.players.Values)
+            foreach (Player player in LobbyManager.players.Values)
             {
                 player.GameStart();
             }
@@ -109,7 +109,7 @@ public class GameManager : MonoBehaviour
         if (SceneManager.GetActiveScene().name == lobbyScene)
         {
             gameStartCollider.SetActive(true);
-            foreach (PlayerManager player in LobbyManager.players.Values)
+            foreach (Player player in LobbyManager.players.Values)
             {
                 player.activePickup = null;
             }
@@ -153,7 +153,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void CreatePickupSpawner(int _spawnerId, Vector3 _position)
+    public void CreatePickupSpawner(ushort _spawnerId, Vector3 _position)
     {
         PickupSpawner _spawner = Instantiate(pickupSpawnerPrefab, _position, pickupSpawnerPrefab.transform.rotation);
         _spawner.Init(_spawnerId);
