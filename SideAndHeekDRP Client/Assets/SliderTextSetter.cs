@@ -38,7 +38,11 @@ public class SliderTextSetter : MonoBehaviour
     {
         slider.value = value;
         sliderValueDisplay.text = value + valueSuffix;
-        baseValueDisplay.text = value + valueSuffix;
+
+        if (baseValueDisplay)
+        {
+            baseValueDisplay.text = value + valueSuffix;
+        }
     }
 
     public void OnValueChanged()
@@ -50,6 +54,10 @@ public class SliderTextSetter : MonoBehaviour
         }
 
         sliderValueDisplay.text = value + valueSuffix;
-        baseValueDisplay.text = value + valueSuffix;
+
+        if (baseValueDisplay)
+        {
+            baseValueDisplay.text = value + valueSuffix;
+        }
     }
 }

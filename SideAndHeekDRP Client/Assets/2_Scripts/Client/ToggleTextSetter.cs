@@ -18,19 +18,31 @@ public class ToggleTextSetter : MonoBehaviour
         if (!hostOnly || isLocalPlayerHost)
         {
             toggle.gameObject.SetActive(true);
-            icon.gameObject.SetActive(false);
+
+            if (icon)
+            {
+                icon.gameObject.SetActive(false);
+            }
         }
         else
         {
             toggle.gameObject.SetActive(false);
-            icon.gameObject.SetActive(true);
-            icon.sprite = (toggle.isOn) ? activeIcon : inactiveIcon;
+
+            if (icon)
+            {
+                icon.gameObject.SetActive(true);
+                icon.sprite = (toggle.isOn) ? activeIcon : inactiveIcon;
+            }
         }
     }
 
     public void ChangeValue(bool isOn)
     {
         toggle.isOn = isOn;
-        icon.sprite = (toggle.isOn) ? activeIcon : inactiveIcon;
+
+        if (icon)
+        {
+            icon.sprite = (toggle.isOn) ? activeIcon : inactiveIcon;
+        }
     }
 }

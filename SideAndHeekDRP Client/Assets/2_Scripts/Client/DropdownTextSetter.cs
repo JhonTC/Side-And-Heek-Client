@@ -18,24 +18,40 @@ public class DropdownTextSetter : MonoBehaviour
         if (!hostOnly || isLocalPlayerHost)
         {
             dropdown.gameObject.SetActive(true);
-            baseValueDisplay.gameObject.SetActive(false);
+
+            if (baseValueDisplay)
+            {
+                baseValueDisplay.gameObject.SetActive(false);
+            }
         }
         else
         {
             dropdown.gameObject.SetActive(false);
-            baseValueDisplay.gameObject.SetActive(true);
+
+            if (baseValueDisplay)
+            {
+                baseValueDisplay.gameObject.SetActive(true);
+            }
         }
     }
 
     public void ChangeValue(int index)
     {
         dropdown.value = index;
-        baseValueDisplay.text = dropdown.options[index].text + valueSuffix;
+
+        if (baseValueDisplay)
+        {
+            baseValueDisplay.text = dropdown.options[index].text + valueSuffix;
+        }
     }
 
     public void OnValueChanged()
     {
         int index = dropdown.value;
-        baseValueDisplay.text = dropdown.options[index].text + valueSuffix;
+
+        if (baseValueDisplay)
+        {
+            baseValueDisplay.text = dropdown.options[index].text + valueSuffix;
+        }
     }
 }
