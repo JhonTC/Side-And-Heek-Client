@@ -1721,7 +1721,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97296ec5f7fe6ec40936fb09c5066dda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  collection: {fileID: 11400000, guid: d4e6de60ac9c13d4787376905ad3eaa1, type: 2}
+  collection: {fileID: 11400000, guid: 8bf5f658bcc276446b101fc1965565c2, type: 2}
   gameRules: {fileID: 11400000, guid: 9f855c4b6f02ee34f91470af5e270a01, type: 2}
   pickupSpawnerPrefab: {fileID: 5150086428917620104, guid: 24286b2e16a5ab04fbc22c09499dffe8,
     type: 3}

@@ -129,6 +129,14 @@ public class ClientHandle : MonoBehaviour
         Vector3 _position = message.GetVector3();
 
         GameManager.instance.CreatePickupSpawner(_spawnerId, _position);
+
+        if (message.GetBool())
+        {
+            ushort _pickupId = message.GetUShort();
+            int _code = message.GetInt();
+
+            GameManager.pickupSpawners[_spawnerId].PickupSpawned(_pickupId, _spawnerId, _code, _position, Quaternion.identity);
+        }
     }
 
     [MessageHandler((ushort)ServerToClientId.pickupSpawned)]
