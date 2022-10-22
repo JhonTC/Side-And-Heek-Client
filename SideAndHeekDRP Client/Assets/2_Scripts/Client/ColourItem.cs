@@ -27,7 +27,7 @@ public class ColourItem : MonoBehaviour
         background.color = backgroundColour;
 
         chosenImage.color = outlineColour; //todo: check greyscale float, determine wether to use dark or light 'x'
-        chosenImage.enabled = chosenByOther;
+        chosenImage.enabled = !interactable;
 
         button.interactable = interactable;
     }

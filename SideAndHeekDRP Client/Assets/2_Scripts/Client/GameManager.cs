@@ -132,8 +132,6 @@ public class GameManager : MonoBehaviour
         SceneManager.UnloadSceneAsync(sceneName);
     }
 
-    
-
     public void ResetLocalPlayerCamera() { ResetLocalPlayerCamera(Vector3.zero, false); }
     public void ResetLocalPlayerCamera(Vector3 _position, bool _useSentPosition)
     {

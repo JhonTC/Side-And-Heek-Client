@@ -53,10 +53,10 @@ public class Player : MonoBehaviour
 
         player.isReady = false;
         player.Init();
-        
-        player.ChangeBodyColour(colour, player.playerType == PlayerType.Hunter);
 
         LobbyManager.instance.OnPlayerSpawned(player);
+
+        player.ChangeBodyColour(colour, player.playerType == PlayerType.Hunter);
     }
 
     public bool isReady = false;
@@ -305,6 +305,7 @@ public class Player : MonoBehaviour
             ChangeBodyColour(colour);
         }
 
+        UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
     public void ChangeBodyColour(bool isSeekerColour)
     {

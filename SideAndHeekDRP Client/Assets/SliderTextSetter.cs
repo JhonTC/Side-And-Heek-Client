@@ -6,18 +6,17 @@ using UnityEngine.UI;
 
 public class SliderTextSetter : MonoBehaviour
 {
-    [SerializeField] private Slider slider;
+    public Slider slider;
     [SerializeField] private TMP_Text sliderValueDisplay;
     [SerializeField] private TMP_Text baseValueDisplay;
 
-    [SerializeField] private float startValue;
     [SerializeField] private string valueSuffix;
 
     [SerializeField] private bool hostOnly = true;
 
-    private void Start()
+    public void OnDisplay(bool isLocalPlayerHost)
     {
-        if (LobbyManager.instance.isHost && hostOnly)
+        if (!hostOnly || isLocalPlayerHost)
         {
             slider.gameObject.SetActive(true);
             if (baseValueDisplay)
@@ -27,12 +26,19 @@ public class SliderTextSetter : MonoBehaviour
         }
         else
         {
-            slider.gameObject.SetActive(false); 
+            slider.gameObject.SetActive(false);
             if (baseValueDisplay)
             {
                 baseValueDisplay.gameObject.SetActive(true);
             }
         }
+    }
+
+    public void ChangeValue(float value)
+    {
+        slider.value = value;
+        sliderValueDisplay.text = value + valueSuffix;
+        baseValueDisplay.text = value + valueSuffix;
     }
 
     public void OnValueChanged()
@@ -44,9 +50,6 @@ public class SliderTextSetter : MonoBehaviour
         }
 
         sliderValueDisplay.text = value + valueSuffix;
-        if (baseValueDisplay)
-        {
-            baseValueDisplay.text = value + valueSuffix;
-        }
+        baseValueDisplay.text = value + valueSuffix;
     }
 }

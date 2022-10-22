@@ -6,15 +6,16 @@ using UnityEngine.UI;
 
 public class DropdownTextSetter : MonoBehaviour
 {
-    [SerializeField] private TMP_Dropdown dropdown;
+    public TMP_Dropdown dropdown;
     [SerializeField] private TMP_Text baseValueDisplay;
 
-    [SerializeField] private int startValue;
     [SerializeField] private string valueSuffix;
 
-    private void Start()
+    [SerializeField] private bool hostOnly = true;
+
+    public void OnDisplay(bool isLocalPlayerHost)
     {
-        if (LobbyManager.instance.isHost)
+        if (!hostOnly || isLocalPlayerHost)
         {
             dropdown.gameObject.SetActive(true);
             baseValueDisplay.gameObject.SetActive(false);
@@ -26,10 +27,15 @@ public class DropdownTextSetter : MonoBehaviour
         }
     }
 
+    public void ChangeValue(int index)
+    {
+        dropdown.value = index;
+        baseValueDisplay.text = dropdown.options[index].text + valueSuffix;
+    }
+
     public void OnValueChanged()
     {
         int index = dropdown.value;
-
         baseValueDisplay.text = dropdown.options[index].text + valueSuffix;
     }
 }

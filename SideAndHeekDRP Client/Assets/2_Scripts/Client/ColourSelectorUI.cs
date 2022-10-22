@@ -27,15 +27,16 @@ public class ColourSelectorUI : MonoBehaviour
 
     public void ClearAll()
     {
-        for (int i = colourItems.Count - 1; i >= 0; i--)
+        for (int i = 0; i < colourItems.Count; i++)
         {
-            Destroy(colourItems[i]);
+            Destroy(colourItems[i].gameObject);
         }
         colourItems.Clear();
     }
 
     public void UpdateAllButtons(bool chosenByOther, ColourItem exception = null)
     {
+        print("UpdateAllButtons");
         foreach (ColourItem item in colourItems)
         {
             if (item != exception)
@@ -50,6 +51,7 @@ public class ColourSelectorUI : MonoBehaviour
     }
     public void UpdateAllButtons(bool chosenByOther, Color exception)
     {
+        print("UpdateAllButtons");
         foreach (ColourItem item in colourItems)
         {
             if (item.colour != exception)

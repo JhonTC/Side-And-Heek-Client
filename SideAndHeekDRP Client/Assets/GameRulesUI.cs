@@ -6,19 +6,21 @@ using TMPro;
 
 public class GameRulesUI : MonoBehaviour
 {
-    [SerializeField] private Slider gameLengthSlider;
-    [SerializeField] private Slider numberOfHuntersSlider;
-    [SerializeField] private TMP_Dropdown catchTypeDropdown;
-    [SerializeField] private Slider hidingTimeSlider;
-    [SerializeField] private TMP_Dropdown speedBoostTypeDropdown;
-    [SerializeField] private Slider speedMultiplierSlider;
-    [SerializeField] private TMP_Dropdown fallRespawnTypeDropdown;
-    [SerializeField] private TMP_Dropdown fallRespawnLocationDropdown;
-    [SerializeField] private Toggle continuousFlopToggle;
+    [SerializeField] private SliderTextSetter gameLengthSlider;
+    [SerializeField] private SliderTextSetter numberOfHuntersSlider;
+    [SerializeField] private DropdownTextSetter catchTypeDropdown;
+    [SerializeField] private SliderTextSetter hidingTimeSlider;
+    [SerializeField] private DropdownTextSetter speedBoostTypeDropdown;
+    [SerializeField] private SliderTextSetter speedMultiplierSlider;
+    [SerializeField] private DropdownTextSetter fallRespawnTypeDropdown;
+    [SerializeField] private DropdownTextSetter fallRespawnLocationDropdown;
+    [SerializeField] private ToggleTextSetter continuousFlopToggle;
 
     public LocalGameRules localGameRules;
 
     [SerializeField] private GameObject saveButton;
+
+    public bool hostOnly = true;
 
     [System.Serializable]
     public class LocalGameRules
@@ -66,16 +68,23 @@ public class GameRulesUI : MonoBehaviour
     private void Start()
     {
         SetGameRules(GameManager.instance.gameRules);
-        //UpdateUIValues();
+    }
 
-        if (LobbyManager.instance.isHost)
-        {
-            saveButton.SetActive(true);
-        }
-        else
-        {
-            saveButton.SetActive(false);
-        }
+    public void OnDisplay()
+    {
+        bool isLocalPlayerHost = LobbyManager.instance.GetLocalPlayer().isHost;
+
+        saveButton.SetActive(!hostOnly || isLocalPlayerHost);
+
+        gameLengthSlider.OnDisplay(isLocalPlayerHost);
+        numberOfHuntersSlider.OnDisplay(isLocalPlayerHost);
+        catchTypeDropdown.OnDisplay(isLocalPlayerHost);
+        hidingTimeSlider.OnDisplay(isLocalPlayerHost);
+        speedBoostTypeDropdown.OnDisplay(isLocalPlayerHost);
+        speedMultiplierSlider.OnDisplay(isLocalPlayerHost);
+        fallRespawnTypeDropdown.OnDisplay(isLocalPlayerHost);
+        fallRespawnLocationDropdown.OnDisplay(isLocalPlayerHost);
+        continuousFlopToggle.OnDisplay(isLocalPlayerHost);
     }
 
     public void SetGameRules(GameRules gameRules)
@@ -87,15 +96,15 @@ public class GameRulesUI : MonoBehaviour
 
     private void UpdateUIValues()
     {
-        gameLengthSlider.value = localGameRules.gameLength;
-        numberOfHuntersSlider.value = localGameRules.numberOfHunters;
-        catchTypeDropdown.value = (int)localGameRules.catchType;
-        hidingTimeSlider.value = localGameRules.hidingTime;
-        speedBoostTypeDropdown.value = (int)localGameRules.speedBoostType;
-        speedMultiplierSlider.value = localGameRules.speedMultiplier;
-        fallRespawnTypeDropdown.value = (int)localGameRules.fallRespawnType;
-        fallRespawnLocationDropdown.value = (int)localGameRules.fallRespawnLocation;
-        continuousFlopToggle.isOn = localGameRules.continuousFlop;
+        gameLengthSlider.ChangeValue(localGameRules.gameLength);
+        numberOfHuntersSlider.ChangeValue(localGameRules.numberOfHunters);
+        catchTypeDropdown.ChangeValue((int)localGameRules.catchType);
+        hidingTimeSlider.ChangeValue(localGameRules.hidingTime);
+        speedBoostTypeDropdown.ChangeValue((int)localGameRules.speedBoostType);
+        speedMultiplierSlider.ChangeValue(localGameRules.speedMultiplier);
+        fallRespawnTypeDropdown.ChangeValue((int)localGameRules.fallRespawnType);
+        fallRespawnLocationDropdown.ChangeValue((int)localGameRules.fallRespawnLocation);
+        continuousFlopToggle.ChangeValue(localGameRules.continuousFlop);
     }
 
     public void OnSaveButtonPressed()
@@ -113,7 +122,6 @@ public class GameRulesUI : MonoBehaviour
     public void OnGameLengthChanged(float value)
     {
         localGameRules.gameLength = Mathf.RoundToInt(value);
-        Debug.Log(value);
     }
 
     public void OnNumberOfHuntersChanged(float value)

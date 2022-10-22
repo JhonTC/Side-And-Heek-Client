@@ -122,34 +122,6 @@ public class ClientHandle : MonoBehaviour
         }
     }
 
-    [MessageHandler((ushort)ServerToClientId.playerDisconnected)]
-    public static void PlayerDisconnected(Message message)
-    {
-        ushort _id = message.GetUShort();
-
-        UIManager.instance.RemovePlayerReady(_id);
-
-        if (LobbyManager.players.ContainsKey(_id))
-        {
-            if (LobbyManager.localPlayer.Id != _id)
-            {
-                Destroy(LobbyManager.players[_id].gameObject);
-                LobbyManager.players.Remove(_id);
-                UIManager.instance.customisationPanel.hiderColourSelector.UpdateAllButtons();
-            }
-            else
-            {
-                LobbyManager.instance.OnLocalPlayerDisconnection();
-            }
-        }
-        else
-        {
-            Debug.Log($"No player with id {_id}");
-        }
-
-        UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
-    }
-
     [MessageHandler((ushort)ServerToClientId.createItemSpawner)]
     public static void CreatePickupSpawner(Message message)
     {
@@ -415,10 +387,10 @@ public class ClientHandle : MonoBehaviour
 
         GameManager.instance.gameStarted = false;
 
-        /*foreach (PlayerManager player in LobbyManager.players.Values)
+        foreach (Player player in LobbyManager.players.Values)
         {
             player.GameOver();
-        }*/
+        }
 
         Debug.Log("Game Over!");
 
@@ -458,5 +430,24 @@ public class ClientHandle : MonoBehaviour
         GameManager.instance.GameRulesChanged(_gameRules);
 
         Debug.Log($"Game Rules Changed by player with id {_playerId}");
+    }
+
+    [MessageHandler((ushort)ServerToClientId.setPlayerHost)]
+    public static void SetPlayerHost(Message message)
+    {
+        ushort _playerId = message.GetUShort();
+
+        if (LobbyManager.players.ContainsKey(_playerId))
+        {
+            LobbyManager.players[_playerId].isHost = message.GetBool();
+            if (LobbyManager.players[_playerId].IsLocal)
+            {
+                UIManager.instance.gameRulesPanel.OnDisplay();
+            }
+        }
+        else
+        {
+            Debug.Log($"No player with id {_playerId}");
+        }
     }
 }

@@ -12,7 +12,6 @@ public enum ServerToClientId : ushort
     playerPosition,
     playerRotation,
     playerState,
-    playerDisconnected,
     createItemSpawner,
     pickupSpawned,
     pickupPickedUp,
@@ -30,7 +29,8 @@ public enum ServerToClientId : ushort
     gameStart,
     gameOver,
     playerTeleported,
-    gameRulesChanged
+    gameRulesChanged,
+    setPlayerHost
 }
 
 public enum ClientToServerId : ushort
@@ -96,8 +96,13 @@ public class NetworkManager : MonoBehaviour
         Client.Disconnect();
     }
 
-    public void Connect()
+    public void Connect(string _ip)
     {
+        if (_ip != "")
+        {
+            ip = _ip;
+        }
+
         Client.Connect($"{ip}:{port}");
     }
 
@@ -114,11 +119,49 @@ public class NetworkManager : MonoBehaviour
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
         Destroy(LobbyManager.players[e.Id].gameObject);
+        LobbyManager.players.Remove(e.Id);
+
+        UIManager.instance.RemovePlayerReady(e.Id);
+        UIManager.instance.customisationPanel.hiderColourSelector.UpdateAllButtons();
+        UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
 
-    private void DidDisconnect(object sender, EventArgs e)
+    public void DidDisconnect(object sender, EventArgs e)
     {
+        OnDisconnection();
+    }
+
+    public void OnDisconnection()
+    {
+        LobbyManager.instance.OnLocalPlayerDisconnection();
         UIManager.instance.BackToMenu();
+        GameManager.instance.FadeMusic(false);
+
+        foreach (Pickup pickup in PickupHandler.pickups.Values)
+        {
+            Destroy(pickup.gameObject);
+        }
+        PickupHandler.pickups.Clear();
+
+        foreach (SpawnableObject spawnable in ItemHandler.items.Values)
+        {
+            Destroy(spawnable.gameObject);
+        }
+        ItemHandler.items.Clear();
+
+        //foreach (PlayerManager player in GameManager.players.Values)
+        //{
+        //    Destroy(player.gameObject);
+        //}
+        //GameManager.players.Clear();
+        //UIManager.instance.playerReadyGems.Clear();
+
+        //GameManager.instance.LoadScene("Lobby", UnityEngine.SceneManagement.LoadSceneMode.Single);
+
+        //UIManager.instance.DisplayStartPanel();
+        //GameManager.instance.sceneCamera.SetActive(true);
+
+        Debug.Log("Disconnected from server.");
     }
 }
 

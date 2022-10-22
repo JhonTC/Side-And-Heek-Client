@@ -214,6 +214,7 @@ public class UIManager : MonoBehaviour
         DisableAllPanels();
         if (!isActive)
         {
+            gameRulesPanel.OnDisplay();
             gameRulesPanel.gameObject.SetActive(true);
         }
 
@@ -313,7 +314,7 @@ public class UIManager : MonoBehaviour
         connectTitlePanel.SetActive(false);
         connectLoadingPanel.SetActive(true);
 
-        NetworkManager.Instance.Connect();
+        NetworkManager.Instance.Connect(ipField.text);
     }
 
     public void BackToMenu()
@@ -321,6 +322,7 @@ public class UIManager : MonoBehaviour
         DisableAllPanels();
         gameplayPanel.gameObject.SetActive(false);
         connectPanel.SetActive(true);
+        customisationPanel.hiderColourSelector.ClearAll();
 
         connectTitlePanel.SetActive(true);
         connectLoadingPanel.SetActive(false); 
@@ -340,11 +342,7 @@ public class UIManager : MonoBehaviour
 
     public void OnDisconnectButtonPressed()
     {
-        gameplayPanel.gameObject.SetActive(false);
         NetworkManager.Instance.Client.Disconnect();
-        LobbyManager.instance.OnLocalPlayerDisconnection();
-
-        DisplayConnectPanel();
     }
 
     public void OnHiderColourChangeButtonPressed(ColourItem colourItem)
@@ -387,23 +385,14 @@ public class UIManager : MonoBehaviour
         m_IsUIActive = true;
     }
 
-    public void OnLeaveButtonPressed()
-    {
-        LobbyManager.instance.OnLocalPlayerDisconnection();
-        GameManager.instance.gameStarted = false;
-
-        DisplayStartPanel();
-    }
-
     public void OnQuitButtonPressed()
     {
-        //todo: handle something?
         Application.Quit();
     }
 
     private void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
     {
-        if (_scene.name == "Lobby") //needs replacing with enum or int
+        if (_scene.name == "Lobby") //TODO: needs replacing with enum or Id
         {
             DisplayConnectPanel();
         }

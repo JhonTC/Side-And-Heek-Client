@@ -131,16 +131,18 @@ public static class MessageExtensions
     /// <returns>The <see cref="GameRules"/> that was retrieved.</returns>
     public static GameRules GetGameRules(this Message message)
     {
-        return new GameRules(
-            message.GetInt(),
-            message.GetInt(),
-            (CatchType)message.GetInt(),
-            message.GetInt(),
-            (SpeedBoostType)message.GetInt(),
-            message.GetFloat(),
-            (HiderFallRespawnType)message.GetInt(),
-            (FallRespawnLocation)message.GetInt(),
-            message.GetBool());
+        GameRules gamerules = ScriptableObject.CreateInstance<GameRules>();
+        gamerules.gameLength = message.GetInt();
+        gamerules.numberOfHunters = message.GetInt();
+        gamerules.catchType = (CatchType)message.GetInt();
+        gamerules.hidingTime = message.GetInt();
+        gamerules.speedBoostType = (SpeedBoostType)message.GetInt();
+        gamerules.speedMultiplier = message.GetFloat();
+        gamerules.fallRespawnType = (HiderFallRespawnType)message.GetInt();
+        gamerules.fallRespawnLocation = (FallRespawnLocation)message.GetInt();
+        gamerules.continuousFlop = message.GetBool();
+
+        return gamerules;
     }
     #endregion
 }

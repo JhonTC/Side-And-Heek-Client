@@ -53,10 +53,7 @@ public class GameplayUI : MonoBehaviour
 
                 Player player = LobbyManager.players.ElementAt(i).Value;
 
-                if (player.playerType != PlayerType.Default)
-                {
-                    playerTypeViews[i].SetPlayerTypeViewColour(player.playerType == PlayerType.Hider? player.hiderColour : player.seekerColour);
-                }
+                playerTypeViews[i].SetPlayerTypeViewColour((player.playerType == PlayerType.Hider || player.playerType == PlayerType.Default) ? player.hiderColour : player.seekerColour);
             }
             else
             {
