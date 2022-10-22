@@ -6,9 +6,7 @@ using TMPro;
 
 public class GameRulesUI : MonoBehaviour
 {
-    [SerializeField] private DropdownTextSetter mapDropdown;
     [SerializeField] private SliderTextSetter gameLengthSlider;
-    [SerializeField] private SliderTextSetter hiderRespawnDelaySlider;
     [SerializeField] private SliderTextSetter numberOfHuntersSlider;
     [SerializeField] private DropdownTextSetter catchTypeDropdown;
     [SerializeField] private SliderTextSetter hidingTimeSlider;
@@ -16,18 +14,18 @@ public class GameRulesUI : MonoBehaviour
     [SerializeField] private SliderTextSetter speedMultiplierSlider;
     [SerializeField] private DropdownTextSetter fallRespawnTypeDropdown;
     [SerializeField] private DropdownTextSetter fallRespawnLocationDropdown;
-    [SerializeField] private Toggle continuousFlopToggle;
+    [SerializeField] private ToggleTextSetter continuousFlopToggle;
 
     public LocalGameRules localGameRules;
 
     [SerializeField] private GameObject saveButton;
 
+    public bool hostOnly = true;
+
     [System.Serializable]
     public class LocalGameRules
     {
-        public Map map;
         public int gameLength;
-        public int hiderRespawnDelay;
         public int numberOfHunters;
         public CatchType catchType;
         public int hidingTime;
@@ -39,9 +37,7 @@ public class GameRulesUI : MonoBehaviour
 
         public LocalGameRules(GameRules gameRules)
         {
-            map = gameRules.map;
             gameLength = gameRules.gameLength;
-            hiderRespawnDelay = gameRules.hiderRespawnDelay;
             numberOfHunters = gameRules.numberOfHunters;
             catchType = gameRules.catchType;
             hidingTime = gameRules.hidingTime;
@@ -55,9 +51,7 @@ public class GameRulesUI : MonoBehaviour
         public GameRules AsGameRules()
         {
             GameRules gameRules = ScriptableObject.CreateInstance<GameRules>();
-            gameRules.map = map;
             gameRules.gameLength = gameLength;
-            gameRules.hiderRespawnDelay = hiderRespawnDelay;
             gameRules.numberOfHunters = numberOfHunters;
             gameRules.catchType = catchType;
             gameRules.hidingTime = hidingTime;
@@ -74,16 +68,23 @@ public class GameRulesUI : MonoBehaviour
     private void Start()
     {
         SetGameRules(GameManager.instance.gameRules);
-        //UpdateUIValues();
+    }
 
-        if (LobbyManager.instance.isHost)
-        {
-            saveButton.SetActive(true);
-        }
-        else
-        {
-            saveButton.SetActive(false);
-        }
+    public void OnDisplay()
+    {
+        bool isLocalPlayerHost = LobbyManager.instance.GetLocalPlayer().isHost;
+
+        saveButton.SetActive(!hostOnly || isLocalPlayerHost);
+
+        gameLengthSlider.OnDisplay(isLocalPlayerHost);
+        numberOfHuntersSlider.OnDisplay(isLocalPlayerHost);
+        catchTypeDropdown.OnDisplay(isLocalPlayerHost);
+        hidingTimeSlider.OnDisplay(isLocalPlayerHost);
+        speedBoostTypeDropdown.OnDisplay(isLocalPlayerHost);
+        speedMultiplierSlider.OnDisplay(isLocalPlayerHost);
+        fallRespawnTypeDropdown.OnDisplay(isLocalPlayerHost);
+        fallRespawnLocationDropdown.OnDisplay(isLocalPlayerHost);
+        continuousFlopToggle.OnDisplay(isLocalPlayerHost);
     }
 
     public void SetGameRules(GameRules gameRules)
@@ -95,17 +96,15 @@ public class GameRulesUI : MonoBehaviour
 
     private void UpdateUIValues()
     {
-        mapDropdown.SetValue((int)localGameRules.map);
-        gameLengthSlider.SetValue(localGameRules.gameLength);
-        hiderRespawnDelaySlider.SetValue(localGameRules.hiderRespawnDelay);
-        numberOfHuntersSlider.SetValue(localGameRules.numberOfHunters);
-        catchTypeDropdown.SetValue((int)localGameRules.catchType);
-        hidingTimeSlider.SetValue(localGameRules.hidingTime);
-        speedBoostTypeDropdown.SetValue((int)localGameRules.speedBoostType);
-        speedMultiplierSlider.SetValue(localGameRules.speedMultiplier);
-        fallRespawnTypeDropdown.SetValue((int)localGameRules.fallRespawnType);
-        fallRespawnLocationDropdown.SetValue((int)localGameRules.fallRespawnLocation);
-        continuousFlopToggle.isOn = localGameRules.continuousFlop;
+        gameLengthSlider.ChangeValue(localGameRules.gameLength);
+        numberOfHuntersSlider.ChangeValue(localGameRules.numberOfHunters);
+        catchTypeDropdown.ChangeValue((int)localGameRules.catchType);
+        hidingTimeSlider.ChangeValue(localGameRules.hidingTime);
+        speedBoostTypeDropdown.ChangeValue((int)localGameRules.speedBoostType);
+        speedMultiplierSlider.ChangeValue(localGameRules.speedMultiplier);
+        fallRespawnTypeDropdown.ChangeValue((int)localGameRules.fallRespawnType);
+        fallRespawnLocationDropdown.ChangeValue((int)localGameRules.fallRespawnLocation);
+        continuousFlopToggle.ChangeValue(localGameRules.continuousFlop);
     }
 
     public void OnSaveButtonPressed()
@@ -117,22 +116,12 @@ public class GameRulesUI : MonoBehaviour
             ClientSend.GameRulesChanged(GameManager.instance.gameRules);
         }
 
-
-        UIManager.instance.DisableAllPanels();
-    }
-    public void OnMapChanged(int index)
-    {
-        localGameRules.map = (Map)index;
+        gameObject.SetActive(false);
     }
 
     public void OnGameLengthChanged(float value)
     {
         localGameRules.gameLength = Mathf.RoundToInt(value);
-    }
-
-    public void OnHiderRespawnDelayChanged(float value)
-    {
-        localGameRules.hiderRespawnDelay = Mathf.RoundToInt(value);
     }
 
     public void OnNumberOfHuntersChanged(float value)

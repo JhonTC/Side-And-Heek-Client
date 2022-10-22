@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 using Server;
+using Riptide;
 
 public class UIManager : MonoBehaviour
 {
@@ -24,7 +25,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private MeshRenderer[] readyGemRenderers;
     
-    public Dictionary<int, int> playerReadyGems = new Dictionary<int, int>();
+    public Dictionary<int, ushort> playerReadyGems = new Dictionary<int, ushort>();
 
     [SerializeField] private ColourSelectorUI hiderColourSelector;
     [SerializeField] private ColourSelectorUI seekerColourSelector;
@@ -157,7 +158,7 @@ public class UIManager : MonoBehaviour
     {
         //lobbyPanel.SetActive(true);
 
-        foreach (PlayerManager player in LobbyManager.players.Values)
+        foreach (Player player in LobbyManager.players.Values)
         {
             //playerReadyPanels.Add(player.id, Instantiate(playerReadyPanelPrefab, playerReadyParentPanel));
             //playerReadyPanels[player.id].color = player.isReady ? Color.green : Color.grey;
@@ -212,6 +213,7 @@ public class UIManager : MonoBehaviour
         DisableAllPanels();
         if (!isActive)
         {
+            gameRulesPanel.OnDisplay();
             gameRulesPanel.gameObject.SetActive(true);
             gameRulesPanel.SetGameRules(GameManager.instance.gameRules);
 
@@ -222,12 +224,12 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void RemovePlayerReady(int _playerId)
+    public void RemovePlayerReady(ushort _playerId)
     {
         if (playerReadyGems.ContainsValue(_playerId))
         {
             List<int> readyPlayerGemKeysToRemove = new List<int>();
-            foreach (KeyValuePair<int, int> playerReadyGem in playerReadyGems)
+            foreach (KeyValuePair<int, ushort> playerReadyGem in playerReadyGems)
             {
                 if (playerReadyGem.Value == _playerId)
                 {
@@ -244,7 +246,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void AddPlayerReady(int _playerId)
+    public void AddPlayerReady(ushort _playerId)
     {
         if (!playerReadyGems.ContainsValue(_playerId))
         {
@@ -295,7 +297,7 @@ public class UIManager : MonoBehaviour
         DisplayGameplayPanel();
 
         LocalGameManager localGameManager = GameManager.instance as LocalGameManager;
-        localGameManager.SpawnPlayer();
+        //localGameManager.SpawnPlayer();
     }
 
     public void OnConnectButtonPressed()
@@ -312,14 +314,15 @@ public class UIManager : MonoBehaviour
         connectTitlePanel.SetActive(false);
         connectLoadingPanel.SetActive(true);
 
-        Client.instance.ConnectToServer(ipField.text);
+        NetworkManager.Instance.Connect(ipField.text);
     }
 
-    public void OnConnectionFailed()
+    public void BackToMenu()
     {
         DisableAllPanels();
         gameplayPanel.gameObject.SetActive(false);
         connectPanel.SetActive(true);
+        customisationPanel.hiderColourSelector.ClearAll();
 
         connectTitlePanel.SetActive(true);
         connectLoadingPanel.SetActive(false); 
@@ -330,13 +333,16 @@ public class UIManager : MonoBehaviour
         m_IsUIActive = true;
     }
 
+    public void SendName()
+    {
+        Message message = Message.Create(MessageSendMode.Reliable, ClientToServerId.name);
+        message.AddString(usernameField.text);
+        NetworkManager.Instance.Client.Send(message);
+    }
+
     public void OnDisconnectButtonPressed()
     {
-        gameplayPanel.gameObject.SetActive(false);
-        Client.instance.Disconnect();
-        LobbyManager.instance.OnLocalPlayerDisconnection();
-
-        DisplayConnectPanel();
+        NetworkManager.Instance.Client.Disconnect();
     }
 
     public void OnHiderColourChangeButtonPressed(ColourItem colourItem)
@@ -379,23 +385,14 @@ public class UIManager : MonoBehaviour
         m_IsUIActive = true;
     }
 
-    public void OnLeaveButtonPressed()
-    {
-        LobbyManager.instance.OnLocalPlayerDisconnection();
-        GameManager.instance.gameStarted = false;
-
-        DisplayStartPanel();
-    }
-
     public void OnQuitButtonPressed()
     {
-        //todo: handle something?
         Application.Quit();
     }
 
     private void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
     {
-        if (_scene.name == "Lobby") //needs replacing with enum or int
+        if (_scene.name == "Lobby") //TODO: needs replacing with enum or Id
         {
             DisplayConnectPanel();
         }

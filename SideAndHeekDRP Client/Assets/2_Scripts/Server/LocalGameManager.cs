@@ -9,7 +9,7 @@ namespace Server
 {
     public class LocalGameManager : GameManager
     {
-        [SerializeField] private int specialSpawnDelay = 20;
+        /*[SerializeField] private int specialSpawnDelay = 20;
         private int specialSpawnCount = 0;
 
         public string activeSceneName;
@@ -113,14 +113,14 @@ namespace Server
                 bool areAllPlayersReady = AreAllPlayersReady();
                 if (areAllPlayersReady)
                 {
-                    int _randPlayerId = LobbyManager.players.ElementAt(Random.Range(0, LobbyManager.players.Count)).Value.id;
+                    int _randPlayerId = LobbyManager.players.ElementAt(Random.Range(0, LobbyManager.players.Count)).Value.Id;
 
                     foreach (PlayerManager playerManager in LobbyManager.players.Values)
                     {
                         Player player = playerManager as Player;
 
                         PlayerType _playerType = PlayerType.Default;
-                        if (player.id == _randPlayerId)
+                        if (player.Id == _randPlayerId)
                         {
                             _playerType = PlayerType.Hunter;
                         }
@@ -197,6 +197,6 @@ namespace Server
             //ServerSend.UnloadScene("Map_1");
 
             Debug.Log("Game Over, Hunters Win!");
-        }
+        }*/
     }
 }

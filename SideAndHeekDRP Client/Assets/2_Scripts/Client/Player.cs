@@ -5,6 +5,7 @@ using UnityEngine;
 using TMPro;
 using Server;
 using System;
+using Riptide;
 
 public enum CameraMode
 {
@@ -12,12 +13,53 @@ public enum CameraMode
     ThirdPerson
 }
 
-public class PlayerManager : MonoBehaviour
+public class Player : MonoBehaviour
 {
-    public int id;
-    public string username;
+    //public static Dictionary<ushort, Player> list = new Dictionary<ushort, Player>();
+
+    public ushort Id { get; private set; }
+    public bool IsLocal { get; private set; }
+
+    private string username;
+
+    private void OnDestroy()
+    {
+        LobbyManager.players.Remove(Id);
+    }
+
+    public static void Spawn(ushort id, string username, bool isHost, Vector3 position, Color colour)
+    {
+        Player player;
+        if (id == NetworkManager.Instance.Client.Id)
+        {
+            player = Instantiate(GameLogic.Instance.LocalPlayerPrefab, position, Quaternion.identity);
+            LobbyManager.localPlayer = player;
+            player.IsLocal = true;
+        }
+        else
+        {
+            player = Instantiate(GameLogic.Instance.PlayerPrefab, position, Quaternion.identity);
+            player.IsLocal = false;
+        }
+
+        player.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)}";
+        player.Id = id;
+        player.username = username;
+
+        if (player.IsLocal)
+        {
+            player.isHost = isHost;
+        }
+
+        player.isReady = false;
+        player.Init();
+
+        LobbyManager.instance.OnPlayerSpawned(player);
+
+        player.ChangeBodyColour(colour, player.playerType == PlayerType.Hunter);
+    }
+
     public bool isReady = false;
-    public bool hasAuthority = false;
     public bool isHost = false;
     public PlayerType playerType = PlayerType.Default;
 
@@ -66,7 +108,7 @@ public class PlayerManager : MonoBehaviour
     Ray ray;
     protected virtual void Update()
     {
-        if (hasAuthority)
+        if (IsLocal)
         {
             ray = thirdPersonCamera.ScreenPointToRay(Input.mousePosition);
 
@@ -111,7 +153,7 @@ public class PlayerManager : MonoBehaviour
                                 else if(GameManager.instance.gameType == GameType.Singleplayer)
                                 {
                                     LocalGameManager localGameManager = GameManager.instance as LocalGameManager;
-                                    localGameManager.TryStartGame(id);
+                                    //localGameManager.TryStartGame(Id);
                                 }
                             }
                             else
@@ -132,25 +174,14 @@ public class PlayerManager : MonoBehaviour
         //playerMotor.head.rotation = Quaternion.Lerp(playerMotor.head.rotation, playerMotor.root.rotation, 1f);
     }
 
-    public virtual void Init(int _id, string _username, bool _isReady, bool _hasAuthority, bool _isHost)
+    public virtual void Init()
     {
-        id = _id;
-        username = _username;
-        isReady = _isReady;
-        hasAuthority = _hasAuthority;
-        isHost = _isHost;
-
-        if (username == "")
-        {
-            username = $"Player {id}";
-        }
-
         if (usernameText)
         {
             usernameText.text = username;
         }
 
-        if (!hasAuthority)
+        if (!IsLocal)
         {
             DisableBaseComponents();
             thirdPersonCamera.gameObject.SetActive(false);
@@ -274,6 +305,7 @@ public class PlayerManager : MonoBehaviour
             ChangeBodyColour(colour);
         }
 
+        UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
     public void ChangeBodyColour(bool isSeekerColour)
     {
@@ -309,7 +341,7 @@ public class PlayerManager : MonoBehaviour
         Material newMaterial = defaultPlayerMaterial;
         if (materialType == MaterialType.Invisible)
         {
-            if (hasAuthority)
+            if (IsLocal)
             {
                 newMaterial = invisiblePlayerLocalMaterial;
             } else
@@ -404,11 +436,11 @@ public class PlayerManager : MonoBehaviour
         thirdPersonCamera.GetComponent<FollowPlayer>().ResetCanFollow();
     }
 
-    public void PickupSpawned(int _pickupId, int _creatorId, int _code, Vector3 _position, Quaternion _rotation)
+    public void PickupSpawned(ushort _pickupId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation)
     {
         NetworkObjectsManager.instance.pickupHandler.SpawnPickup(_pickupId, _creatorId, _code, _position, _rotation);
     }
-    public void ItemSpawned(int _itemId, int _creatorId, int _code, Vector3 _position, Quaternion _rotation)
+    public void ItemSpawned(ushort _itemId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation)
     {
         NetworkObjectsManager.instance.itemHandler.SpawnItem(_itemId, _creatorId, _code, _position, _rotation);
     }
@@ -417,7 +449,7 @@ public class PlayerManager : MonoBehaviour
     {
         activePickup = NetworkObjectsManager.instance.pickupHandler.HandlePickup(_pickupSO);
 
-        if (hasAuthority)
+        if (IsLocal)
         {
             UIManager.instance.gameplayPanel.SetItemDetails(_pickupSO);
         }

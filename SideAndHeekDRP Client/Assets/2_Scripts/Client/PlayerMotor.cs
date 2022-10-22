@@ -20,7 +20,7 @@ public class PlayerMotor : MonoBehaviour
     
     [SerializeField] private bool legacyControls = false;
 
-    public PlayerManager playerManager;
+    public Player playerManager;
     Player player;
 
     public MeshRenderer[] headRenderers;
@@ -195,11 +195,11 @@ public class PlayerMotor : MonoBehaviour
 
         if (GameManager.instance.gameType == GameType.Multiplayer)
         {
-            ClientSend.PlayerMovement(inputSpeed, new bool[] { isJumping, isFlopping, isSneaking }, rotation);
+            ClientSend.SetInputs(inputSpeed, new bool[] { isJumping, isFlopping, isSneaking }, rotation);
         }
         else
         {
-            player.SetInput(inputSpeed, new bool[] { isJumping, isFlopping }, rotation);
+            //player.SetInput(inputSpeed, new bool[] { isJumping, isFlopping }, rotation);
         }
     }
 }

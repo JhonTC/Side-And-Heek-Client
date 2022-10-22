@@ -30,8 +30,8 @@ namespace Server
 
         public override void PickupUsed()
         {
-            owner.movementController.flopForceMultiplier = pickupSO.power;
-            owner.movementController.OnFlop();
+            //owner.movementController.flopForceMultiplier = pickupSO.power;
+            //owner.movementController.OnFlop();
         }
     }
 
@@ -47,8 +47,8 @@ namespace Server
 
         public override void PickupUsed()
         {
-            owner.movementController.jumpForceMultiplier = pickupSO.power;
-            owner.movementController.OnJump();
+            //owner.movementController.jumpForceMultiplier = pickupSO.power;
+            //owner.movementController.OnJump();
         }
     }
 

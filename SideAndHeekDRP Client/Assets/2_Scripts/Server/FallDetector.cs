@@ -6,7 +6,7 @@ namespace Server
 {
     public class FallDetector : MonoBehaviour
     {
-        private void OnTriggerEnter(Collider other)
+        /*private void OnTriggerEnter(Collider other)
         {
             if (other.tag == "BodyCollider")
             {
@@ -14,8 +14,8 @@ namespace Server
                 LocalGameManager localGameManager = GameManager.instance as LocalGameManager;
                 player.TeleportPlayer(LevelManager.GetLevelManagerForScene(localGameManager.activeSceneName).GetNextSpawnpoint(true));
 
-                Debug.Log(player.username + " fell out of the map.");
+                Debug.Log(player.name + " fell out of the map.");
             }
-        }
+        }*/
     }
 }

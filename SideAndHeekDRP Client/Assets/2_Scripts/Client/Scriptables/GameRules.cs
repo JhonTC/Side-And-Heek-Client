@@ -27,6 +27,27 @@ public class GameRules : ScriptableObject
     public FallRespawnLocation fallRespawnLocation;
 
     public bool continuousFlop;
+
+    public GameRules(int _gameLength = 180,
+        int _numberOfHunters = 1, CatchType _catchType = CatchType.OnTouch, int _hidingTime = 20,
+        SpeedBoostType _speedBoostType = SpeedBoostType.FirstHunter, float _speedMultiplier = 1.1f,
+        HiderFallRespawnType _fallRespawnType = HiderFallRespawnType.Hider, FallRespawnLocation _fallRespawnLocation = FallRespawnLocation.Centre,
+        bool _continuousFlop = false)
+    {
+        gameLength = _gameLength;
+
+        numberOfHunters = _numberOfHunters;
+        catchType = _catchType;
+        hidingTime = _hidingTime;
+
+        speedBoostType = _speedBoostType;
+        speedMultiplier = _speedMultiplier; // Mathf.Clamp(_speedMultiplier, minSpeedMultiplier, maxSpeedMultiplier);
+
+        fallRespawnType = _fallRespawnType;
+        fallRespawnLocation = _fallRespawnLocation;
+
+        continuousFlop = _continuousFlop;
+    }
 }
 
 public enum CatchType
