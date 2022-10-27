@@ -19,6 +19,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject quitPanel;
     public CustomisationUI customisationPanel;
     public GameRulesUI gameRulesPanel;
+    public CurrencyUI currencyUI;
+
     //[SerializeField] private GameObject lobbyPanel;
     public TMP_InputField ipField;
     public TMP_InputField usernameField;
@@ -64,6 +66,8 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         DisplayStartPanel();
+        //DisplayCurrencyPanel();
+        settingsPanel.Init();
 
         if (PlayerPrefs.HasKey("Username"))
         {
@@ -93,6 +97,11 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    private void OnApplicationQuit()
+    {
+        settingsPanel.OnQuit();
+    }
+
     public void DisableAllPanels()
     {
         m_IsUIActive = false;
@@ -115,6 +124,11 @@ public class UIManager : MonoBehaviour
 
         lastActivePanel = startPanel;
         activePanel = startPanel;
+    }
+
+    public void DisplayCurrencyPanel()
+    {
+        currencyUI.gameObject.SetActive(true);
     }
 
     public void DisplayConnectPanel()

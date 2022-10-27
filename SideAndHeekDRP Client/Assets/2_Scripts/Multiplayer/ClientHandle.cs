@@ -109,6 +109,7 @@ public class ClientHandle : MonoBehaviour
         bool _headCollided = message.GetBool();
         float _collisionVolume = message.GetFloat();
         float _inputSpeed = message.GetFloat();
+        bool _footCollided = message.GetBool();
 
         bool _isJumping = message.GetBool();
         bool _isFlopping = message.GetBool();
@@ -116,7 +117,7 @@ public class ClientHandle : MonoBehaviour
 
         if (LobbyManager.players.ContainsKey(_id))
         {
-            LobbyManager.players[_id].SetPlayerState(_isGrounded, _inputSpeed, _isJumping, _isFlopping, _isSneaking, _headCollided, _collisionVolume);
+            LobbyManager.players[_id].SetPlayerState(_isGrounded, _inputSpeed, _isJumping, _isFlopping, _isSneaking, _headCollided, _collisionVolume, _footCollided);
         }
         else
         {

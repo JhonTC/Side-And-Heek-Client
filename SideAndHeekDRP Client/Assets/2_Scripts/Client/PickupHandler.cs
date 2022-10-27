@@ -81,7 +81,6 @@ public class PickupHandler
             { PickupCode.Teleport, Teleport },
             { PickupCode.Morph, Morph }
         };
-        Debug.Log("Initialised packets.");
     }
 
     public BasePickup HandlePickup(PickupSO _pickupSO)

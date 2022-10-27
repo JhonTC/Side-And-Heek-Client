@@ -27,3 +27,5 @@ MonoBehaviour:
     numberOfUses: 0
   - pickupSO: {fileID: 11400000, guid: 1983ea728c831424fa3b9c0f15b496a0, type: 2}
     numberOfUses: 1
+  - pickupSO: {fileID: 11400000, guid: db0a6fff1561b96449ca27674da0cf54, type: 2}
+    numberOfUses: 1

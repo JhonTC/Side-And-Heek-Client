@@ -34,7 +34,6 @@ public class ItemHandler
             { PickupCode.Teleport, Teleport },
             { PickupCode.Morph, Morph }
         };
-        Debug.Log("Initialised packets.");
     }
 
     public SpawnableObject SpawnItem(ushort itemId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)

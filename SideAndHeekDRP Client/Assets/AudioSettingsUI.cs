@@ -12,6 +12,24 @@ public class AudioSettingsUI : MonoBehaviour
     [SerializeField] private Slider musicVolumeSlider;
     [SerializeField] private Slider ambientVolumeSlider;
 
+    public void Init()
+    {
+        float masterVolume = PlayerPrefs.GetFloat("MasterVolume", 50);
+        masterVolumeSlider.value = masterVolume;
+        OnMasterVolumeChanged(masterVolume);
+
+        float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 50);
+        musicVolumeSlider.value = musicVolume;
+        OnMusicVolumeChanged(musicVolume);
+
+        float ambientVolume = PlayerPrefs.GetFloat("AmbientVolume", 50);
+        ambientVolumeSlider.value = ambientVolume;
+        OnAmbientVolumeChanged(ambientVolume);
+
+        float gameplayVolume = PlayerPrefs.GetFloat("GameplayVolume", 50);
+        gameplayVolumeSlider.value = gameplayVolume;
+        OnGameplayVolumeChanged(gameplayVolume);
+    }
 
     public void OnMasterVolumeChanged(float value)
     {
@@ -21,7 +39,9 @@ public class AudioSettingsUI : MonoBehaviour
             clampedValue = 0.0001f;
         }
 
-        mixer.SetFloat("MasterVolume", Mathf.Log10(clampedValue / 50) * 50);
+        clampedValue = Mathf.Log10(clampedValue / 50) * 50;
+
+        mixer.SetFloat("MasterVolume", clampedValue);
     }
     public void OnMusicVolumeChanged(float value)
     {
@@ -31,7 +51,9 @@ public class AudioSettingsUI : MonoBehaviour
             clampedValue = 0.0001f;
         }
 
-        mixer.SetFloat("MusicVolume", Mathf.Log10(clampedValue / 50) * 50);
+        clampedValue = Mathf.Log10(clampedValue / 50) * 50;
+
+        mixer.SetFloat("MusicVolume", clampedValue);
     }
     public void OnAmbientVolumeChanged(float value)
     {
@@ -41,7 +63,9 @@ public class AudioSettingsUI : MonoBehaviour
             clampedValue = 0.0001f;
         }
 
-        mixer.SetFloat("AmbientVolume", Mathf.Log10(clampedValue / 50) * 50);
+        clampedValue = Mathf.Log10(clampedValue / 50) * 50;
+
+        mixer.SetFloat("AmbientVolume", clampedValue);
     }
     public void OnGameplayVolumeChanged(float value)
     {
@@ -51,6 +75,16 @@ public class AudioSettingsUI : MonoBehaviour
             clampedValue = 0.0001f;
         }
 
-        mixer.SetFloat("GameplayVolume", Mathf.Log10(clampedValue / 50) * 50);
+        clampedValue = Mathf.Log10(clampedValue / 50) * 50;
+
+        mixer.SetFloat("GameplayVolume", clampedValue);
+    }
+
+    public void SaveSettings()
+    {
+        PlayerPrefs.SetFloat("MasterVolume", masterVolumeSlider.value);
+        PlayerPrefs.SetFloat("MusicVolume", musicVolumeSlider.value);
+        PlayerPrefs.SetFloat("AmbientVolume", ambientVolumeSlider.value);
+        PlayerPrefs.SetFloat("GameplayVolume", gameplayVolumeSlider.value);
     }
 }

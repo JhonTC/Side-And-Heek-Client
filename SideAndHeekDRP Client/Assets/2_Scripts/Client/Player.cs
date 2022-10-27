@@ -88,9 +88,10 @@ public class Player : MonoBehaviour
     [SerializeField] private float maxSoundDistance;
 
     [SerializeField] private AudioSource walkingAudioSource;
+    [SerializeField] private AudioClip[] walkingAudioClips;
 
-    [SerializeField] private AudioClip[] collidingAudioClips;
     [SerializeField] private AudioSource collidingAudioSource;
+    [SerializeField] private AudioClip[] collidingAudioClips;
     [Range(0, 0.5f)][SerializeField] private float collisionVolumeMultiplier;
 
     [SerializeField] private ParticleSystem walkingDustParticles;
@@ -245,7 +246,7 @@ public class Player : MonoBehaviour
         playerMotor.rightLeg.rotation = _rightLegRot;
         playerMotor.leftLeg.rotation = _leftLegRot;
     }
-    public void SetPlayerState(bool _isGrounded, float _inputSpeed, bool _isJumping, bool _isFlopping, bool _isSneaking, bool _headCollided, float _collisionVolume)
+    public void SetPlayerState(bool _isGrounded, float _inputSpeed, bool _isJumping, bool _isFlopping, bool _isSneaking, bool _headCollided, float _collisionVolume, bool _footCollided)
     {
         if (_isGrounded && (_inputSpeed != 0 || lastIsGrounded != _isGrounded) && !_isFlopping && !_isJumping && !_isSneaking)
         {
@@ -270,13 +271,21 @@ public class Player : MonoBehaviour
             {
                 collidingAudioSource.clip = collidingAudioClips[UnityEngine.Random.Range(0, collidingAudioClips.Length)];
 
-                Player localPlayer = LobbyManager.instance.GetLocalPlayer();
-                float distanceModifier = Mathf.Clamp01(maxSoundDistance - Mathf.Abs(Vector3.Distance(playerMotor.root.position, localPlayer.playerMotor.root.position)));
-                float volume = _collisionVolume * collisionVolumeMultiplier;// * distanceModifier;
+                float volume = _collisionVolume * collisionVolumeMultiplier;
                 collidingAudioSource.volume = Mathf.Clamp01(volume);
 
                 collidingAudioSource.pitch = (UnityEngine.Random.Range(0.8f, 1.2f));
                 collidingAudioSource.Play();
+            }
+        }
+
+        if (_footCollided)
+        {
+            if (!collidingAudioSource.isPlaying)
+            {
+                walkingAudioSource.clip = walkingAudioClips[UnityEngine.Random.Range(0, walkingAudioClips.Length)];
+                walkingAudioSource.pitch = (UnityEngine.Random.Range(0.4f, 0.8f));
+                walkingAudioSource.Play();
             }
         }
     }
