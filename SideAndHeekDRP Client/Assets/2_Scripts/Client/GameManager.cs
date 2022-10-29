@@ -68,6 +68,42 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneUnloaded -= OnLevelFinishedUnloading;
     }
 
+    public void GameStart(int gameDuration) //Todo:Make a roundManager separate to gameManager
+    {
+        Debug.Log("Game Start!");
+
+        UIManager.instance.CloseHistoryPanels();
+        StartGameTimer(gameDuration);
+    }
+
+    public void GameOver(bool isHunterVictory) //Todo:Make a roundManager separate to gameManager
+    {
+        gameStarted = false;
+
+        foreach (Player player in LobbyManager.players.Values)
+        {
+            player.OnGameOver();
+        }
+
+        DestroyPickupSpawners();
+        PickupHandler.ClearAllActivePickups();
+        ItemHandler.ClearAllActiveItems();
+
+        LobbyManager.instance.tryStartGameActive = false;
+
+        Debug.Log("Game Over!");
+
+        //disable input
+        //show gameover panel
+        //enable option to go back to the lobby 
+
+        /*  - what happens to the other players?
+            - stop receiveing input and teleport them all to the starting spawnpoints
+                - what about one player moving the others?
+                - lock the players in place?
+        */
+    }
+
     protected virtual void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
     {
         SceneManager.SetActiveScene(_scene);
@@ -87,10 +123,10 @@ public class GameManager : MonoBehaviour
 
             foreach (Player player in LobbyManager.players.Values)
             {
-                player.GameStart();
+                player.OnGameStart();
             }
 
-            UIManager.instance.DisableAllPanels();
+            UIManager.instance.CloseHistoryPanels(); //move call to gamestart
         } 
         else
         {
@@ -101,11 +137,6 @@ public class GameManager : MonoBehaviour
     bool destoryItemSpawners;
     protected virtual void OnLevelFinishedUnloading(Scene _scene)
     {
-        if (destoryItemSpawners)
-        {
-            DestroyItemSpawners();
-        }
-
         if (SceneManager.GetActiveScene().name == lobbyScene)
         {
             gameStartCollider.SetActive(true);
@@ -159,7 +190,7 @@ public class GameManager : MonoBehaviour
         pickupSpawners.Add(_spawnerId, _spawner);
     }
 
-    public void DestroyItemSpawners()
+    public void DestroyPickupSpawners()
     {
         foreach (PickupSpawner spawner in pickupSpawners.Values)
         {
@@ -200,7 +231,7 @@ public class GameManager : MonoBehaviour
         StartCoroutine(FadeMusic(fadeOut, 4));
     }
 
-    public float musicStartVolume;
+    public float musicStartVolume; //todo: why are these down here
     float fadeTime;
     IEnumerator FadeMusic(bool fadeOut, float fadeDuration)
     {

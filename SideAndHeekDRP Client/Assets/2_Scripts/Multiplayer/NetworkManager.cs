@@ -78,6 +78,7 @@ public class NetworkManager : MonoBehaviour
     private void Start()
     {
         RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.LogWarning, Debug.LogError, false);
+        ErrorResponseHandler.InitialiseErrorResponseData();
 
         Client = new Riptide.Client();
         Client.Connected += DidConnect;
@@ -108,7 +109,9 @@ public class NetworkManager : MonoBehaviour
 
     private void DidConnect(object sender, EventArgs e)
     {
-        UIManager.instance.SendName();
+        Message message = Message.Create(MessageSendMode.Reliable, ClientToServerId.name); //todo: move to clientSend
+        message.AddString(UIManager.instance.connectPanel.GetName());
+        Client.Send(message);
     }
 
     private void FailedToConnect(object sender, EventArgs e)
@@ -136,6 +139,7 @@ public class NetworkManager : MonoBehaviour
         LobbyManager.instance.OnLocalPlayerDisconnection();
         UIManager.instance.BackToMenu();
         GameManager.instance.FadeMusic(false);
+        GameManager.instance.gameStarted = false;
 
         foreach (Pickup pickup in PickupHandler.pickups.Values)
         {

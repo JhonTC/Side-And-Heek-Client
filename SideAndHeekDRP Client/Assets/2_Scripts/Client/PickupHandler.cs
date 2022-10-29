@@ -66,6 +66,15 @@ public class PickupHandler
         return true;
     }
 
+    public static void ClearAllActivePickups()
+    {
+        foreach (Pickup pickup in pickups.Values)
+        {
+            GameObject.Destroy(pickup.gameObject);
+        }
+        pickups.Clear();
+    }
+
     private void InitialisePickupData()
     {
         pickupHandlers = new Dictionary<PickupCode, PickupHandlerDelegate>()

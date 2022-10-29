@@ -3,7 +3,7 @@ using System.Net;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class ClientHandle : MonoBehaviour
+public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (Welcome is a good example of a message recieved function that is way too large)
 {
     
     [MessageHandler((ushort)ServerToClientId.welcome)]
@@ -27,35 +27,18 @@ public class ClientHandle : MonoBehaviour
         GameManager.instance.hiderColours = _hiderColours;
         GameManager.instance.FadeMusic(true);
 
-        UIManager.instance.DisplayGameplayPanel();
+        UIManager.instance.CloseAllPanels();
+        UIManager.instance.DisplayPanel(UIPanelType.Gameplay);
         UIManager.instance.customisationPanel.hiderColourSelector.Init(_hiderColours);
-        //UIManager.instance.gameRulesPanel.SetGameRules(_gameRules, false);
+        //UIManager.instance.gameRulesPanel.SetGameRules(_gameRules, false); //todo: why is this left here?
     }
-
-    /*public static void SpawnPlayer(Message message)
-    {
-        int _id = message.GetInt();
-        string _username = message.GetString();
-        bool _isReady = message.GetBool();
-        bool _isHost = message.GetBool();
-        Vector3 _position = message.GetVector3();
-        Quaternion _rotation = message.GetQuaternion();
-        Color _colour = message.GetColour();
-
-        bool _hasAuthority = _id == Client.instance.myId;
-
-        Debug.Log($"Message from server: Spawn Player with id: {_id}");
-        //LobbyManager.instance.SpawnPlayer(_id, _username, _isReady, _hasAuthority, _isHost, _position, _rotation, _colour);
-
-        UIManager.instance.AddPlayerReady(_id);
-    }*/
 
     [MessageHandler((ushort)ServerToClientId.playerSpawned)]
     private static void SpawnPlayer(Message message)
     {
         ushort _id = message.GetUShort();
 
-        Player.Spawn(_id, message.GetString(), message.GetBool(), message.GetVector3(), message.GetColour());
+        Player.Spawn(_id, message.GetString(), message.GetBool(), message.GetBool(), message.GetVector3(), message.GetColour());
         UIManager.instance.AddPlayerReady(_id);
     }
 
@@ -331,11 +314,11 @@ public class ClientHandle : MonoBehaviour
         {
             if (_isCountdownActive)
             {
-                //UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].username} is the hunter... Hide!");
+                UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].Username} is the hunter... Hide!");
             }
             else
             {
-                //UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].username} has been released");
+                UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].Username} has been released");
             }
 
             lastIsCountdownActive = _isCountdownActive;
@@ -383,38 +366,13 @@ public class ClientHandle : MonoBehaviour
     [MessageHandler((ushort)ServerToClientId.gameStart)]
     public static void GameStart(Message message)
     {
-        int _gameDuration = message.GetInt();
-
-        Debug.Log("Game Start");
-        LobbyManager.instance.tryStartGameActive = false;
-        UIManager.instance.DisableAllPanels();
-        GameManager.instance.StartGameTimer(_gameDuration);
+        GameManager.instance.GameStart(message.GetInt());
     }
 
     [MessageHandler((ushort)ServerToClientId.gameOver)]
     public static void GameOver(Message message)
     {
-        bool isHunterVictory = message.GetBool();
-
-        GameManager.instance.gameStarted = false;
-
-        foreach (Player player in LobbyManager.players.Values)
-        {
-            player.GameOver();
-        }
-
-        Debug.Log("Game Over!");
-
-        //disable input
-        //show gameover panel
-        //enable option to go back to the lobby 
-
-        /*  - what happens to the other players?
-            - stop receiveing input and teleport them all to the starting spawnpoints
-                - what about one player moving the others?
-                - lock the players in place?
-        */
-
+        GameManager.instance.GameOver(message.GetBool());
     }
 
     [MessageHandler((ushort)ServerToClientId.playerTeleported)]
@@ -438,8 +396,8 @@ public class ClientHandle : MonoBehaviour
     {
         ushort _playerId = message.GetUShort();
         GameRules _gameRules = message.GetGameRules();
-        GameManager.instance.GameRulesChanged(_gameRules);
 
+        GameManager.instance.GameRulesChanged(_gameRules);
         Debug.Log($"Game Rules Changed by player with id {_playerId}");
     }
 
@@ -453,7 +411,7 @@ public class ClientHandle : MonoBehaviour
             LobbyManager.players[_playerId].isHost = message.GetBool();
             if (LobbyManager.players[_playerId].IsLocal)
             {
-                UIManager.instance.gameRulesPanel.OnDisplay();
+                UIManager.instance.gameRulesPanel.UpdatePanelHost();
             }
         }
         else

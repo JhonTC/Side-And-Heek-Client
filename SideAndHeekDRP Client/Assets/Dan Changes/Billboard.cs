@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class Billboard : MonoBehaviour
 {
-    private Camera camera;
+    private Transform target;
 
     private void Start()
     {
-        camera = Camera.main;
+        target = LobbyManager.instance.billboardTarget;
     }
 
     void Update()
     {
-        transform.LookAt(camera.transform.position, Vector3.up);
+        transform.LookAt(target.position, Vector3.up);
     }
 }

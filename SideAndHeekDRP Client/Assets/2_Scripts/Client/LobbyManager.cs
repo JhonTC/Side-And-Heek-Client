@@ -13,6 +13,8 @@ public class LobbyManager : MonoBehaviour
     public GameObject sceneCamera;
     public Player playerPrefab;
 
+    public Transform billboardTarget;
+
     public Color unreadyColour;
     public Color unreadyTextColour;
     public Color readyColour;
@@ -40,6 +42,8 @@ public class LobbyManager : MonoBehaviour
 
     public void OnLocalPlayerDisconnection()
     {
+        billboardTarget.SetParent(transform, false);
+
         foreach (Player player in players.Values)
         {
             UIManager.instance.RemovePlayerReady(player.Id);
@@ -55,7 +59,9 @@ public class LobbyManager : MonoBehaviour
         }
         else
         {
-            GameManager.instance.DestroyItemSpawners();
+            GameManager.instance.DestroyPickupSpawners();
+            PickupHandler.ClearAllActivePickups();
+            ItemHandler.ClearAllActiveItems();
         }
     }
 
@@ -70,6 +76,8 @@ public class LobbyManager : MonoBehaviour
             {
                 ClientSend.GameRulesChanged(GameManager.instance.gameRules);
             }
+
+            billboardTarget.SetParent(Camera.main.transform, false);
         }
 
         players.Add(_player.Id, _player);

@@ -83,6 +83,14 @@ public class ItemHandler
         return true;
     }
 
+    public static void ClearAllActiveItems()
+    {
+        foreach (SpawnableObject spawnable in items.Values)
+        {
+            GameObject.Destroy(spawnable.gameObject);
+        }
+        items.Clear();
+    }
 
     public BasePickup HandleItem(PickupSO _pickupSO, Player _player)
     {
