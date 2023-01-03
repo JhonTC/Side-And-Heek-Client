@@ -166,11 +166,11 @@ public class Player : MonoBehaviour
 
                             LobbyManager.instance.tryStartGameActive = true;
 
-                            if (GameManager.instance.gameType == GameType.Multiplayer)
+                            if (GameManager.instance.networkType == NetworkType.Multiplayer)
                             {
                                 ClientSend.TryStartGame();
                             }
-                            else if (GameManager.instance.gameType == GameType.Singleplayer)
+                            else if (GameManager.instance.networkType == NetworkType.Singleplayer)
                             {
                                 LocalGameManager localGameManager = GameManager.instance as LocalGameManager;
                                 //localGameManager.TryStartGame(Id);

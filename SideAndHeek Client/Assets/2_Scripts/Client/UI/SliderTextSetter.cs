@@ -4,17 +4,12 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-public class SliderTextSetter : MonoBehaviour
+public class SliderTextSetter : BaseTextSetter
 {
     public Slider slider;
     [SerializeField] private TMP_Text sliderValueDisplay;
-    [SerializeField] private TMP_Text baseValueDisplay;
 
-    [SerializeField] private string valueSuffix;
-
-    [SerializeField] private bool hostOnly = true;
-
-    public void OnDisplay(bool isLocalPlayerHost)
+    public override void OnDisplay(bool isLocalPlayerHost)
     {
         if ((isLocalPlayerHost && hostOnly) || !hostOnly)
         {
@@ -34,9 +29,9 @@ public class SliderTextSetter : MonoBehaviour
         }
     }
 
-    public void ChangeValue(float value)
+    public override void ChangeValue(object value)
     {
-        slider.value = value;
+        slider.value = (float)value;
         sliderValueDisplay.text = value + valueSuffix;
 
         if (baseValueDisplay)
@@ -45,7 +40,7 @@ public class SliderTextSetter : MonoBehaviour
         }
     }
 
-    public void OnValueChanged()
+    public override void OnValueChanged()
     {
         float value = slider.value;
         if (!slider.wholeNumbers)
@@ -59,5 +54,10 @@ public class SliderTextSetter : MonoBehaviour
         {
             baseValueDisplay.text = value + valueSuffix;
         }
+    }
+
+    public override object GetValue()
+    {
+        return slider.value;
     }
 }

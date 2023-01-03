@@ -110,37 +110,19 @@ public static class MessageExtensions
     /// <returns>The message that the <see cref="GameRules"/> was added to.</returns>
     public static Message Add(this Message message, GameRules value)
     {
-        message.AddInt(value.gameLength);
-
-        message.AddInt(value.numberOfHunters);
-        message.AddInt((int)value.catchType);
-        message.AddInt(value.hidingTime);
-
-        message.AddInt((int)value.speedBoostType);
-        message.AddFloat(value.speedMultiplier);
-
-        message.AddInt((int)value.fallRespawnType);
-        message.AddInt((int)value.fallRespawnLocation);
-
-        message.AddBool(value.continuousFlop);
-
-        return message;
+        return value.AddMessageValues(message);
     }
 
     /// <summary>Retrieves a <see cref="GameRules"/> from the message.</summary>
     /// <returns>The <see cref="GameRules"/> that was retrieved.</returns>
     public static GameRules GetGameRules(this Message message)
     {
-        GameRules gamerules = ScriptableObject.CreateInstance<GameRules>();
-        gamerules.gameLength = message.GetInt();
-        gamerules.numberOfHunters = message.GetInt();
-        gamerules.catchType = (CatchType)message.GetInt();
-        gamerules.hidingTime = message.GetInt();
-        gamerules.speedBoostType = (SpeedBoostType)message.GetInt();
-        gamerules.speedMultiplier = message.GetFloat();
-        gamerules.fallRespawnType = (HiderFallRespawnType)message.GetInt();
-        gamerules.fallRespawnLocation = (FallRespawnLocation)message.GetInt();
-        gamerules.continuousFlop = message.GetBool();
+        GameManager.instance.gameType = (GameType)message.GetInt();
+        GameRules gamerules = GameRules.CreateGameRulesFromType(GameManager.instance.gameType);
+        if (gamerules != null)
+        {
+            gamerules.ReadMessageValues(message);
+        }
 
         return gamerules;
     }

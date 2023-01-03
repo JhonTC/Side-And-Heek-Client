@@ -40,7 +40,7 @@ public class PlayerMotor : MonoBehaviour
         cameraMode = playerManager.cameraMode;
         SetupCameraMode();
 
-        if (GameManager.instance.gameType != GameType.Multiplayer)
+        if (GameManager.instance.networkType != NetworkType.Multiplayer)
         {
             player = playerManager as Player;
         }
@@ -118,7 +118,7 @@ public class PlayerMotor : MonoBehaviour
         if (!GameManager.instance.gameStarted)
         {
             playerManager.SetPlayerReady(value.ReadValueAsButton());
-            if (GameManager.instance.gameType == GameType.Multiplayer)
+            if (GameManager.instance.networkType == NetworkType.Multiplayer)
             {
                 ClientSend.PlayerReady(playerManager.isReady);
             }
@@ -235,7 +235,7 @@ public class PlayerMotor : MonoBehaviour
                 playerManager.firstPersonCamera.transform.localRotation = tempRotation;
         }*/
 
-        if (GameManager.instance.gameType == GameType.Multiplayer)
+        if (GameManager.instance.networkType == NetworkType.Multiplayer)
         {
             ClientSend.SetInputs(inputSpeed, new bool[] { isJumping, isFlopping, isSneaking }, rotation);
         }

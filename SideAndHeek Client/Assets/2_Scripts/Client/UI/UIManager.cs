@@ -74,6 +74,7 @@ public class UIManager : MonoBehaviour
         //DisplayCurrencyPanel();
 
         settingsPanel.Init();
+        gameRulesPanel.Init();
     }
 
     private void InitPanelDictionary()
@@ -118,12 +119,10 @@ public class UIManager : MonoBehaviour
 
     public void DisplayPanel(UIPanelType panelType)
     {
-        print("DisplayPanel");
         DisplayPanel(panelDictionary[panelType]);
     }
     public void DisplayPanel(UIPanel panel)
     {
-        print("DisplayPanel");
         if (panel.autoToggle)
         {
             if (!panelHistory.Contains(panel))

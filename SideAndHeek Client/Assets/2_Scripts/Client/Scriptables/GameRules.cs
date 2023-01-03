@@ -1,48 +1,55 @@
-﻿using System.Collections;
+﻿using Riptide;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New GameRules", menuName = "Game/GameRules")]
 public class GameRules : ScriptableObject
 {
-    public int id;
-    [Range(60, 360)]
-    public int gameLength;
+    public ushort id;
+    public GameType gameType;
+    public string friendlyName;
 
-    [HideInInspector] public int numberOfHunters;                     //* - requires more hunter spawns
-    public CatchType catchType;
-    [Range(0, 60)]
-    public int hidingTime;
+    public virtual void UpdateUI(ref Dictionary<int, LocalGameRule> localGameRules) {}
 
-    public SpeedBoostType speedBoostType;
-    [Range(0.8f, 1.2f)]
-    public float speedMultiplier;
-
-    public HiderFallRespawnType fallRespawnType;
-    public FallRespawnLocation fallRespawnLocation;
-
-    public bool continuousFlop;
-
-    public GameRules(int _gameLength = 180,
-        int _numberOfHunters = 1, CatchType _catchType = CatchType.OnTouch, int _hidingTime = 20,
-        SpeedBoostType _speedBoostType = SpeedBoostType.FirstHunter, float _speedMultiplier = 1.1f,
-        HiderFallRespawnType _fallRespawnType = HiderFallRespawnType.Hider, FallRespawnLocation _fallRespawnLocation = FallRespawnLocation.Centre,
-        bool _continuousFlop = false)
+    public virtual Message AddMessageValues(Message message)
     {
-        gameLength = _gameLength;
+        message.AddInt((int)gameType);
 
-        numberOfHunters = _numberOfHunters;
-        catchType = _catchType;
-        hidingTime = _hidingTime;
-
-        speedBoostType = _speedBoostType;
-        speedMultiplier = _speedMultiplier; // Mathf.Clamp(_speedMultiplier, minSpeedMultiplier, maxSpeedMultiplier);
-
-        fallRespawnType = _fallRespawnType;
-        fallRespawnLocation = _fallRespawnLocation;
-
-        continuousFlop = _continuousFlop;
+        return message;
     }
+
+    public virtual void ReadMessageValues(Message message) {}
+
+    public virtual void UpdateValues(Dictionary<int, LocalGameRule> localGameRules) {}
+
+    public static GameRules CreateGameRulesFromType(GameType _gameType)
+    {
+        GameRules gameRules = null;
+        switch (_gameType)
+        {
+            case GameType.HideAndSeek:
+                gameRules = CreateInstance<GR_HideAndSeek>();
+                break;
+            case GameType.Deathmatch:
+                gameRules = CreateInstance<GR_Deathmatch>();
+                break;
+        }
+
+        if (gameRules != null)
+        {
+            gameRules.gameType = _gameType;
+        }
+
+        return gameRules;
+    }
+
+    public virtual void SetupUI(Transform parent, UIPanel uiPanel) {}
+}
+
+public enum GameType
+{
+    HideAndSeek,
+    Deathmatch
 }
 
 public enum CatchType

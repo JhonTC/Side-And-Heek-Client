@@ -97,7 +97,7 @@ public class Pickup : SpawnableObject
     {
         if (interractable)
         {
-            if (GameManager.instance.gameType == GameType.Multiplayer)
+            if (GameManager.instance.networkType == NetworkType.Multiplayer)
             {
                 ClientSend.PickupSelected(objectId);
             }

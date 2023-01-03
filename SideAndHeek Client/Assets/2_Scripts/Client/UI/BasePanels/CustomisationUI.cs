@@ -21,7 +21,7 @@ public class CustomisationUI : TabView
     {
         UIManager.instance.CloseHistoryPanels();
 
-        if (GameManager.instance.gameType == GameType.Multiplayer)
+        if (GameManager.instance.networkType == NetworkType.Multiplayer)
         {
             ClientSend.SetPlayerColour(colourItem.colour, false);
         }
@@ -37,7 +37,7 @@ public class CustomisationUI : TabView
 
         LobbyManager.localPlayer.ChangeBodyColour(colourItem.colour, true);
 
-        if (GameManager.instance.gameType == GameType.Multiplayer)
+        if (GameManager.instance.networkType == NetworkType.Multiplayer)
         {
             ClientSend.SetPlayerColour(colourItem.colour, true);
         }

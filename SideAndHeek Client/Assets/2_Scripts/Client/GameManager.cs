@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
 
     public PickupCollection collection;
     public GameRules gameRules;
+    public GameType gameType = GameType.HideAndSeek;
 
     public static Dictionary<int, PickupSpawner> pickupSpawners = new Dictionary<int, PickupSpawner>();
     public PickupSpawner pickupSpawnerPrefab;
@@ -17,7 +18,7 @@ public class GameManager : MonoBehaviour
 
     protected int currentTime = 0;
 
-    public GameType gameType;
+    public NetworkType networkType;
 
     public string lobbyScene;
 
@@ -46,6 +47,8 @@ public class GameManager : MonoBehaviour
     {
         music = GetComponent<AudioSource>();
         FadeMusic(false);
+
+        gameRules = GameRules.CreateGameRulesFromType(gameType);
     }
 
     private void OnApplicationQuit()
@@ -223,7 +226,7 @@ public class GameManager : MonoBehaviour
     public void GameRulesChanged(GameRules _gameRules)
     {
         gameRules = _gameRules;
-        UIManager.instance.gameRulesPanel.SetGameRules(gameRules);
+        UIManager.instance.gameRulesPanel.OnGameRulesUpdatedRemotely(gameRules);
     }
 
     public void FadeMusic(bool fadeOut)
@@ -266,7 +269,7 @@ public class GameManager : MonoBehaviour
     }
 }
 
-public enum GameType
+public enum NetworkType
 {
     Singleplayer,
     Multiplayer

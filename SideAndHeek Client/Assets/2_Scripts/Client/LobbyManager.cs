@@ -72,7 +72,7 @@ public class LobbyManager : MonoBehaviour
             GameManager.instance.ResetLocalPlayerCamera(sceneCamera.transform.position, true);
             sceneCamera.SetActive(false);
 
-            if (_player.isHost && GameManager.instance.gameType == GameType.Multiplayer)
+            if (_player.isHost && GameManager.instance.networkType == NetworkType.Multiplayer)
             {
                 ClientSend.GameRulesChanged(GameManager.instance.gameRules);
             }

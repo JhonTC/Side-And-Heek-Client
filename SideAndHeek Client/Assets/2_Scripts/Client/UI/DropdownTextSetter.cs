@@ -4,16 +4,11 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-public class DropdownTextSetter : MonoBehaviour
+public class DropdownTextSetter : BaseTextSetter
 {
     public TMP_Dropdown dropdown;
-    [SerializeField] private TMP_Text baseValueDisplay;
 
-    [SerializeField] private string valueSuffix;
-
-    [SerializeField] private bool hostOnly = true;
-
-    public void OnDisplay(bool isLocalPlayerHost)
+    public override void OnDisplay(bool isLocalPlayerHost)
     {
         if ((isLocalPlayerHost && hostOnly) || !hostOnly)
         {
@@ -35,17 +30,22 @@ public class DropdownTextSetter : MonoBehaviour
         }
     }
 
-    public void ChangeValue(int index)
+    public override void ChangeValue(object index)
     {
-        dropdown.value = index;
+        dropdown.value = (int)index;
 
         if (baseValueDisplay)
         {
-            baseValueDisplay.text = dropdown.options[index].text + valueSuffix;
+            baseValueDisplay.text = dropdown.options[(int)index].text + valueSuffix;
         }
     }
 
-    public void OnValueChanged()
+    public override object GetValue()
+    {
+        return dropdown.value;
+    }
+
+    public override void OnValueChanged()
     {
         int index = dropdown.value;
 

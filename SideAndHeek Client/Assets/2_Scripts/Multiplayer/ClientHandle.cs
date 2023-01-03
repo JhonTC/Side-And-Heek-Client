@@ -5,14 +5,20 @@ using UnityEngine.SceneManagement;
 
 public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (Welcome is a good example of a message recieved function that is way too large)
 {
-    
     [MessageHandler((ushort)ServerToClientId.welcome)]
     public static void Welcome(Message message)
     {
         string _msg = message.GetString();
         ushort _myId = message.GetUShort();
-
-        GameRules _gameRules = message.GetGameRules();
+        bool isHost = message.GetBool();
+        if (!isHost)
+        {
+            GameRules _gameRules = message.GetGameRules();
+            GameManager.instance.GameRulesChanged(_gameRules);
+        } else
+        {
+            ClientSend.GameRulesChanged(GameManager.instance.gameRules);
+        }
 
         int _hiderColourCount = message.GetInt();
         Color[] _hiderColours = new Color[_hiderColourCount];
@@ -23,14 +29,12 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
 
         Debug.Log($"Message from server: {_msg}");
 
-        GameManager.instance.gameRules = _gameRules;
         GameManager.instance.hiderColours = _hiderColours;
         GameManager.instance.FadeMusic(true);
 
         UIManager.instance.CloseAllPanels();
         UIManager.instance.DisplayPanel(UIPanelType.Gameplay);
         UIManager.instance.customisationPanel.Init(_hiderColours);
-        //UIManager.instance.gameRulesPanel.SetGameRules(_gameRules, false); //todo: why is this left here?
     }
 
     [MessageHandler((ushort)ServerToClientId.playerSpawned)]
