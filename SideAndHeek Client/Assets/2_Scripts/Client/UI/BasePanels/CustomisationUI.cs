@@ -19,7 +19,7 @@ public class CustomisationUI : TabView
 
     public void OnHiderColourChangeButtonPressed(ColourItem colourItem)
     {
-        UIManager.instance.CloseHistoryPanels();
+        UIManager.instance.OnBackButtonPressed();
 
         if (GameManager.instance.networkType == NetworkType.Multiplayer)
         {
@@ -33,7 +33,7 @@ public class CustomisationUI : TabView
 
     public void OnSeekerColourChangeButtonPressed(ColourItem colourItem)
     {
-        UIManager.instance.CloseHistoryPanels();
+        UIManager.instance.OnBackButtonPressed();
 
         LobbyManager.localPlayer.ChangeBodyColour(colourItem.colour, true);
 

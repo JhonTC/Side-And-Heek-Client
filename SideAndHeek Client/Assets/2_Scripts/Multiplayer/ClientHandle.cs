@@ -13,8 +13,8 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         bool isHost = message.GetBool();
         if (!isHost)
         {
-            GameRules _gameRules = message.GetGameRules();
-            GameManager.instance.GameRulesChanged(_gameRules);
+            GameManager.instance.GameTypeChanged((GameType)message.GetInt());
+            GameManager.instance.GameRulesChanged(message.GetGameRules());
         } else
         {
             ClientSend.GameRulesChanged(GameManager.instance.gameRules);
@@ -377,7 +377,8 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
     [MessageHandler((ushort)ServerToClientId.gameOver)]
     public static void GameOver(Message message)
     {
-        GameManager.instance.GameOver(message.GetBool());
+        GameManager.instance.gameMode.ReadGameOverMessageValues(message);
+        GameManager.instance.GameOver();
     }
 
     [MessageHandler((ushort)ServerToClientId.playerTeleported)]
@@ -400,6 +401,13 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
     public static void GameRulesChanged(Message message)
     {
         ushort _playerId = message.GetUShort();
+
+        GameType gameType = (GameType)message.GetInt();
+        if (GameManager.instance.gameType != gameType)
+        {
+            GameManager.instance.GameTypeChanged(gameType); //todo: this shouldnt be here
+        }
+
         GameRules _gameRules = message.GetGameRules();
 
         GameManager.instance.GameRulesChanged(_gameRules);

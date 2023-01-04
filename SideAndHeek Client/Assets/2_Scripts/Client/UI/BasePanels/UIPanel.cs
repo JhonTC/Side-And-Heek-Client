@@ -10,6 +10,8 @@ public class UIPanel : MonoBehaviour
     public bool autoToggle = true;
     public GameObject firstSelected;
 
+    public UIPanelType panelType;
+
     public UnityAction<int, int, BaseTextSetter> OnEnumValueChanged;
     public UnityAction<int, float, BaseTextSetter> OnFloatValueChanged;
     public UnityAction<int, bool, BaseTextSetter> OnBoolValueChanged;

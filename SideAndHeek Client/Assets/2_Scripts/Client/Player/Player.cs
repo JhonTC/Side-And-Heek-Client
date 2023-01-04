@@ -140,7 +140,6 @@ public class Player : MonoBehaviour
     public void OnAim(InputAction.CallbackContext value)
     {
         inputAim = value.ReadValue<Vector2>();
-        print(inputAim);
     }
 
     public void OnSelect(InputAction.CallbackContext value)

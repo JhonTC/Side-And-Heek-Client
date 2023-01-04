@@ -117,7 +117,6 @@ public static class MessageExtensions
     /// <returns>The <see cref="GameRules"/> that was retrieved.</returns>
     public static GameRules GetGameRules(this Message message)
     {
-        GameManager.instance.gameType = (GameType)message.GetInt();
         GameRules gamerules = GameRules.CreateGameRulesFromType(GameManager.instance.gameType);
         if (gamerules != null)
         {

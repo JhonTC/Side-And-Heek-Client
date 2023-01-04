@@ -44,14 +44,17 @@ public class GameRulesUI : TabView
         ActiveGameRules.SetupUI(settingsParent, this);
     }
 
-    public void OnGameTypeChangedRemotely()
+    public void OnGameTypeChangedRemotely(bool resetLocalGameRules = true)
     {
-        if (LobbyManager.localPlayer != null && !LobbyManager.localPlayer.isHost) //update gametype of other clients but not host, as they chnaged the setting
+        if (LobbyManager.localPlayer == null || (LobbyManager.localPlayer != null && !LobbyManager.localPlayer.isHost)) //update gametype of other clients but not host, as they chnaged the setting
         {
             gameTypeTextSetter.ChangeValue(ActiveGameType);
         }
 
-        ResetLocalGameRulesUI();
+        if (resetLocalGameRules)
+        {
+            ResetLocalGameRulesUI();
+        }
     }
 
     public void ResetLocalGameRulesUI()
@@ -67,11 +70,14 @@ public class GameRulesUI : TabView
         localGameRules.Clear();
 
         ActiveGameRules.SetupUI(settingsParent, this);
+
+        UpdatePanelHost();
     }
 
     public void ChangeGameType(int id, int newGameType, BaseTextSetter setter)
     {
         GameManager.instance.gameType = (GameType)newGameType;
+        GameManager.instance.gameMode = GameMode.CreateGameModeFromType(ActiveGameType);
         GameManager.instance.gameRules = GameRules.CreateGameRulesFromType(ActiveGameType);
 
         ResetLocalGameRulesUI();
@@ -108,7 +114,10 @@ public class GameRulesUI : TabView
 
     public void UpdatePanelHost()
     {
-        bool isLocalPlayerHost = LobbyManager.localPlayer.isHost;
+        bool isLocalPlayerHost = (LobbyManager.localPlayer != null) ? LobbyManager.localPlayer.isHost : false;
+
+        gameTypeTextSetter.OnDisplay(isLocalPlayerHost);
+
         foreach (LocalGameRule localGameRule in localGameRules.Values)
         {
             localGameRule.textSetter.OnDisplay(isLocalPlayerHost);

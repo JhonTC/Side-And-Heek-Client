@@ -47,8 +47,7 @@ public class TabView : UIPanel
         {
             if (currentTabIndex < tabs.Length - 1)
             {
-                currentTabIndex++;
-                OnTabPressed(currentTabIndex);
+                OnTabPressed(currentTabIndex + 1);
             }
         }
     }
@@ -59,8 +58,7 @@ public class TabView : UIPanel
         {
             if (currentTabIndex > 0)
             {
-                currentTabIndex--;
-                OnTabPressed(currentTabIndex);
+                OnTabPressed(currentTabIndex - 1);
             }
         }
     }

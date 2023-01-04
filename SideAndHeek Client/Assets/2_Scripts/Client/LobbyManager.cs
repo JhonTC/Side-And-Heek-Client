@@ -55,7 +55,7 @@ public class LobbyManager : MonoBehaviour
 
         if (GameManager.instance.gameStarted)
         {
-            GameManager.instance.UnloadScene(mapScene, true);
+            GameManager.instance.UnloadScene(SceneManager.GetActiveScene().name, true);
         }
         else
         {

@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public PickupCollection collection;
     public GameRules gameRules;
     public GameType gameType = GameType.HideAndSeek;
+    public GameMode gameMode;
 
     public static Dictionary<int, PickupSpawner> pickupSpawners = new Dictionary<int, PickupSpawner>();
     public PickupSpawner pickupSpawnerPrefab;
@@ -48,7 +49,8 @@ public class GameManager : MonoBehaviour
         music = GetComponent<AudioSource>();
         FadeMusic(false);
 
-        gameRules = GameRules.CreateGameRulesFromType(gameType);
+        gameMode = GameMode.CreateGameModeFromType(gameType);
+        gameRules = GameRules.CreateGameRulesFromType(gameType); //todo:move inside gameMode
     }
 
     private void OnApplicationQuit()
@@ -76,10 +78,10 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game Start!");
 
         UIManager.instance.CloseHistoryPanels();
-        StartGameTimer(gameDuration);
+        StartGameTimer(gameDuration); //todo:needs moving inside gameMode for gamemodes without a duration
     }
 
-    public void GameOver(bool isHunterVictory) //Todo:Make a roundManager separate to gameManager
+    public void GameOver() //Todo:Make a roundManager separate to gameManager
     {
         gameStarted = false;
 
@@ -221,6 +223,13 @@ public class GameManager : MonoBehaviour
         }
 
         UIManager.instance.SetMessage("Game Over", 2f, true);
+    }
+
+    public void GameTypeChanged(GameType _gameType)
+    {
+        gameType = _gameType;
+        UIManager.instance.gameRulesPanel.OnGameTypeChangedRemotely(false);
+        gameMode = GameMode.CreateGameModeFromType(gameType);
     }
 
     public void GameRulesChanged(GameRules _gameRules)

@@ -79,14 +79,14 @@ public class UIManager : MonoBehaviour
 
     private void InitPanelDictionary()
     {
-        panelDictionary.Add(UIPanelType.Start, startPanel);
-        panelDictionary.Add(UIPanelType.Connect, connectPanel);
-        panelDictionary.Add(UIPanelType.Gameplay, gameplayPanel);
-        panelDictionary.Add(UIPanelType.Settings, settingsPanel);
-        panelDictionary.Add(UIPanelType.Pause, pausePanel);
-        panelDictionary.Add(UIPanelType.Quit, quitPanel);
-        panelDictionary.Add(UIPanelType.Customisation, customisationPanel);
-        panelDictionary.Add(UIPanelType.Game_Rules, gameRulesPanel);
+        panelDictionary.Add(startPanel.panelType, startPanel);
+        panelDictionary.Add(connectPanel.panelType, connectPanel);
+        panelDictionary.Add(gameplayPanel.panelType, gameplayPanel);
+        panelDictionary.Add(settingsPanel.panelType, settingsPanel);
+        panelDictionary.Add(pausePanel.panelType, pausePanel);
+        panelDictionary.Add(quitPanel.panelType, quitPanel);
+        panelDictionary.Add(customisationPanel.panelType, customisationPanel);
+        panelDictionary.Add(gameRulesPanel.panelType, gameRulesPanel);
     }
 
     private void FixedUpdate()
@@ -146,6 +146,28 @@ public class UIManager : MonoBehaviour
                 otherActivePanels.Add(panel);
                 panel.EnablePanel();
             }
+        }
+    }
+
+    public void TogglePanel(UIPanelType panelType)
+    {
+        bool toggleValue = true;
+        if (panelHistory.Count > 0)
+        {
+            UIPanel peekPanel = panelHistory.Peek();
+            if (peekPanel.panelType == panelType)
+            {
+                toggleValue = false;
+            }
+        }
+
+        if (toggleValue)
+        {
+            DisplayPanel(panelDictionary[panelType]);
+        }
+        else
+        {
+            OnBackButtonPressed();
         }
     }
 

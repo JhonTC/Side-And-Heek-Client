@@ -61,6 +61,14 @@ public class InputHandler : MonoBehaviour
         }
     }
 
+    public void OnSelect(InputAction.CallbackContext value)
+    {
+        if (localPlayer != null)
+        {
+            localPlayer.OnSelect(value);
+        }
+    }
+
     public void OnUse(InputAction.CallbackContext value)
     {
         if (localPlayer != null)
@@ -73,7 +81,10 @@ public class InputHandler : MonoBehaviour
     {
         if (localPlayer != null)
         {
-            localPlayer.playerMotor.OnReady(value);
+            if (value.phase == InputActionPhase.Started)
+            {
+                localPlayer.playerMotor.OnReady(value);
+            }
         }
     }
 

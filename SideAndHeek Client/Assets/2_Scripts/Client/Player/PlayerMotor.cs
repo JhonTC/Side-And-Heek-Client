@@ -117,7 +117,7 @@ public class PlayerMotor : MonoBehaviour
     {
         if (!GameManager.instance.gameStarted)
         {
-            playerManager.SetPlayerReady(value.ReadValueAsButton());
+            playerManager.SetPlayerReady(!playerManager.isReady);
             if (GameManager.instance.networkType == NetworkType.Multiplayer)
             {
                 ClientSend.PlayerReady(playerManager.isReady);
@@ -131,7 +131,7 @@ public class PlayerMotor : MonoBehaviour
         {
             if (value.phase == InputActionPhase.Started)
             {
-                UIManager.instance.DisplayPanel(UIPanelType.Customisation);
+                UIManager.instance.TogglePanel(UIPanelType.Customisation);
             }
         }
     }
@@ -142,7 +142,7 @@ public class PlayerMotor : MonoBehaviour
         {
             if (value.phase == InputActionPhase.Started)
             {
-                UIManager.instance.DisplayPanel(UIPanelType.Game_Rules);
+                UIManager.instance.TogglePanel(UIPanelType.Game_Rules);
             }
         }
     }
@@ -151,7 +151,7 @@ public class PlayerMotor : MonoBehaviour
     {
         if (value.phase == InputActionPhase.Started)
         {
-            UIManager.instance.DisplayPanel(UIPanelType.Pause);
+            UIManager.instance.TogglePanel(UIPanelType.Pause);
         }
     }
 
