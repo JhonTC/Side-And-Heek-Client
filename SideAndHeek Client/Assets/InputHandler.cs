@@ -29,9 +29,22 @@ public class InputHandler : MonoBehaviour
         print(playerInput.currentActionMap.name);
     }
 
-    public void OnMove(InputAction.CallbackContext value)
+    public bool CanMove()
     {
         if (localPlayer != null)
+        {
+            if (localPlayer.playerType != PlayerType.Spectator)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void OnMove(InputAction.CallbackContext value)
+    {
+        if (CanMove())
         {
             localPlayer.playerMotor.OnMove(value);
         }
@@ -39,7 +52,7 @@ public class InputHandler : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext value)
     {
-        if (localPlayer != null)
+        if (CanMove())
         {
             localPlayer.playerMotor.OnJump(value);
         }
@@ -47,7 +60,7 @@ public class InputHandler : MonoBehaviour
 
     public void OnFlop(InputAction.CallbackContext value)
     {
-        if (localPlayer != null)
+        if (CanMove())
         {
             localPlayer.playerMotor.OnFlop(value);
         }

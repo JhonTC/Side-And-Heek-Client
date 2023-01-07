@@ -91,8 +91,7 @@ public class GameManager : MonoBehaviour
         }
 
         DestroyPickupSpawners();
-        PickupHandler.ClearAllActivePickups();
-        ItemHandler.ClearAllActiveItems();
+        NetworkObjectsManager.instance.ClearAllSpawnedNetworkObjects();
 
         LobbyManager.instance.tryStartGameActive = false;
 

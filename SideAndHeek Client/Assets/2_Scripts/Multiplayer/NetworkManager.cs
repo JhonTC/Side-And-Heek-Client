@@ -16,8 +16,9 @@ public enum ServerToClientId : ushort
     pickupSpawned,
     pickupPickedUp,
     itemSpawned,
-    itemTransform,
+    networkObjectTransform,
     itemUseComplete,
+    networkObjectDestroyed,
     playerReadyToggled,
     changeScene,
     unloadScene,
@@ -141,29 +142,7 @@ public class NetworkManager : MonoBehaviour
         GameManager.instance.FadeMusic(false);
         GameManager.instance.gameStarted = false;
 
-        foreach (Pickup pickup in PickupHandler.pickups.Values)
-        {
-            Destroy(pickup.gameObject);
-        }
-        PickupHandler.pickups.Clear();
-
-        foreach (SpawnableObject spawnable in ItemHandler.items.Values)
-        {
-            Destroy(spawnable.gameObject);
-        }
-        ItemHandler.items.Clear();
-
-        //foreach (PlayerManager player in GameManager.players.Values)
-        //{
-        //    Destroy(player.gameObject);
-        //}
-        //GameManager.players.Clear();
-        //UIManager.instance.playerReadyGems.Clear();
-
-        //GameManager.instance.LoadScene("Lobby", UnityEngine.SceneManagement.LoadSceneMode.Single);
-
-        //UIManager.instance.DisplayStartPanel();
-        //GameManager.instance.sceneCamera.SetActive(true);
+        NetworkObjectsManager.instance.ClearAllNetworkObjects();
 
         Debug.Log("Disconnected from server.");
     }

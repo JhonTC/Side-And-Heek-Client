@@ -141,7 +141,7 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
 
         int _code = message.GetInt();
 
-        if (!PickupHandler.pickups.ContainsKey(_pickupId))
+        if (!NetworkObjectsManager.networkObjects.ContainsKey(_pickupId))
         {
             if (_bySpawner)
             {
@@ -178,7 +178,7 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
 
         int _code = message.GetInt();
 
-        if (!ItemHandler.items.ContainsKey(_itemId))
+        if (!NetworkObjectsManager.networkObjects.ContainsKey(_itemId))
         {
             if (LobbyManager.players.ContainsKey(_creatorId))
             {
@@ -191,22 +191,37 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         }
     }
 
-    [MessageHandler((ushort)ServerToClientId.itemTransform)]
-    public static void ItemTransform(Message message)
+    [MessageHandler((ushort)ServerToClientId.networkObjectTransform)]
+    public static void NetworkObjectTransform(Message message)
     {
-        ushort _itemId = message.GetUShort();
+        ushort _objectId = message.GetUShort();
 
         Vector3 _position = message.GetVector3();
         Quaternion _rotation = message.GetQuaternion();
         Vector3 _scale = message.GetVector3();
 
-        if (ItemHandler.items.ContainsKey(_itemId))
+        if (NetworkObjectsManager.networkObjects.ContainsKey(_objectId))
         {
-            ItemHandler.items[_itemId].SetItemTransform(_position, _rotation, _scale);
+            NetworkObjectsManager.networkObjects[_objectId].SetObjectTransform(_position, _rotation, _scale);
         }
         else
         {
-            Debug.Log($"No item with id {_itemId}");
+            Debug.Log($"No network object with id {_objectId}");
+        }
+    }
+
+    [MessageHandler((ushort)ServerToClientId.networkObjectDestroyed)]
+    public static void NetworkObjectDestroyed(Message message)
+    {
+        ushort _objectId = message.GetUShort();
+
+        if (NetworkObjectsManager.networkObjects.ContainsKey(_objectId))
+        {
+            NetworkObjectsManager.instance.DestoryObject(NetworkObjectsManager.networkObjects[_objectId]);
+        }
+        else
+        {
+            Debug.Log($"No network object with id {_objectId}");
         }
     }
 
@@ -230,14 +245,18 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         ushort _byPlayer = message.GetUShort();
         int _code = message.GetInt();
 
-        if (PickupHandler.pickups.ContainsKey(_pickupId))
+        if (NetworkObjectsManager.networkObjects.ContainsKey(_pickupId))
         {
-            PickupHandler.pickups[_pickupId].PickupPickedUp();
+            Pickup pickup = NetworkObjectsManager.networkObjects[_pickupId] as Pickup;
+            if (pickup != null)
+            {
+                pickup.PickupPickedUp();
+            }
         }
 
         if (LobbyManager.players.ContainsKey(_byPlayer))
         {
-            LobbyManager.players[_byPlayer].PickupPickedUp(GameManager.instance.collection.GetPickupByCode((PickupCode)_code).pickupSO);
+            LobbyManager.players[_byPlayer].PickupPickedUp(GameManager.instance.collection.GetPickupByCode((PickupType)_code).pickupSO);
         }
         else
         {

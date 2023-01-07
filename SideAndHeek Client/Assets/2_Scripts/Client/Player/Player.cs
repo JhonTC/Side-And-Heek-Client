@@ -60,6 +60,7 @@ public class Player : MonoBehaviour
     public bool isReady = false;
     public bool isHost = false;
     public PlayerType playerType = PlayerType.Default;
+    public PlayerType lastPlayerType = PlayerType.Default;
 
     [SerializeField] private TextMeshProUGUI usernameText;
 
@@ -82,6 +83,8 @@ public class Player : MonoBehaviour
     public Color seekerColour;
 
     public BasePickup activePickup = null;
+
+    public Player activeSpectatingPlayer = null;
 
     public float clickRange;
 
@@ -390,7 +393,10 @@ public class Player : MonoBehaviour
 
     public virtual void SetPlayerType(PlayerType _playerType)
     {
+        lastPlayerType = playerType;
         playerType = _playerType;
+
+        GameManager.instance.gameMode.OnPlayerTypeChanged(this);
 
         if (materialType == MaterialType.Default)
         {
@@ -496,6 +502,23 @@ public class Player : MonoBehaviour
                     }
                 }
             }
+        }
+    }
+
+    public void SpectatePlayer(Player spectatePlayer = null)
+    {
+        activeSpectatingPlayer = spectatePlayer;
+
+        if (activeSpectatingPlayer == null)
+        {
+            UIManager.instance.ClosePanel(UIPanelType.Spectate, true);
+            print($"Spectator camera reset to self");
+            thirdPersonCamera.GetComponent<FollowPlayer>().target = playerMotor.root;
+        } 
+        else
+        {
+            print($"Spectating player: {activeSpectatingPlayer}");
+            thirdPersonCamera.GetComponent<FollowPlayer>().target = activeSpectatingPlayer.playerMotor.root;
         }
     }
 }

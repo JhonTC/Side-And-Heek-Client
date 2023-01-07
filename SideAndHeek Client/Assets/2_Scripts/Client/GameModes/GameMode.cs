@@ -12,6 +12,10 @@ public class GameMode
     {
 
     }
+    public virtual void OnPlayerTypeChanged(Player player)
+    {
+
+    }
 
     public virtual void ReadGameOverMessageValues(Message message)
     {

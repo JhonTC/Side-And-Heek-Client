@@ -60,8 +60,6 @@ public class LobbyManager : MonoBehaviour
         else
         {
             GameManager.instance.DestroyPickupSpawners();
-            PickupHandler.ClearAllActivePickups();
-            ItemHandler.ClearAllActiveItems();
         }
     }
 

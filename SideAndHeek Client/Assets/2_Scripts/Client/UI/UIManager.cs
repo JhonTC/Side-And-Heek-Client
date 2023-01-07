@@ -16,7 +16,8 @@ public enum UIPanelType
     Pause,
     Quit,
     Customisation,
-    Game_Rules
+    Game_Rules,
+    Spectate
 }
 
 public class UIManager : MonoBehaviour
@@ -31,6 +32,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private UIPanel quitPanel;
     public CustomisationUI customisationPanel;
     public GameRulesUI gameRulesPanel;
+    public SpectateUI spectatePanel;
     public CurrencyUI currencyUI;
 
     [SerializeField] private MeshRenderer[] readyGemRenderers;
@@ -87,6 +89,7 @@ public class UIManager : MonoBehaviour
         panelDictionary.Add(quitPanel.panelType, quitPanel);
         panelDictionary.Add(customisationPanel.panelType, customisationPanel);
         panelDictionary.Add(gameRulesPanel.panelType, gameRulesPanel);
+        panelDictionary.Add(spectatePanel.panelType, spectatePanel);
     }
 
     private void FixedUpdate()
@@ -117,11 +120,15 @@ public class UIManager : MonoBehaviour
         return panelHistory.Count > 0;
     }
 
-    public void DisplayPanel(UIPanelType panelType)
+    public void DisplayPanel(UIPanelType panelType, bool overrideInputToUI = false)
     {
-        DisplayPanel(panelDictionary[panelType]);
+        DisplayPanel(panelDictionary[panelType], overrideInputToUI);
     }
-    public void DisplayPanel(UIPanel panel)
+    public void DisplayPanel(UIPanel panel) //for ui event calls in editor
+    {
+        DisplayPanel(panel, false);
+    }
+    public void DisplayPanel(UIPanel panel, bool overrideInputToUI = false)
     {
         if (panel.autoToggle)
         {
@@ -145,6 +152,11 @@ public class UIManager : MonoBehaviour
             {
                 otherActivePanels.Add(panel);
                 panel.EnablePanel();
+
+                if (overrideInputToUI)
+                {
+                    InputHandler.instance.SwitchInput("UI");
+                }
             }
         }
     }
@@ -180,6 +192,18 @@ public class UIManager : MonoBehaviour
         }
 
         UpdateBackButton();
+    }
+
+    public void ClosePanel(UIPanelType panelType, bool overrideInputToPlayerControls = false)
+    {
+        UIPanel panel = panelDictionary[panelType];
+        panelDictionary[panelType].gameObject.SetActive(false);
+        otherActivePanels.Remove(panel);
+
+        if (overrideInputToPlayerControls)
+        {
+            InputHandler.instance.SwitchInput("PlayerControls");
+        }
     }
 
     public void CloseAllPanels()
@@ -329,7 +353,7 @@ public class UIManager : MonoBehaviour
         Application.Quit();
     }
 
-    private void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
+    private void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode) //todo:remove?
     {
         if (_scene.name == "Lobby") //TODO: needs replacing with enum or Id
         {

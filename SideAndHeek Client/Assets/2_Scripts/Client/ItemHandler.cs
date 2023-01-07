@@ -6,13 +6,11 @@ using UnityEngine;
 
 public class ItemHandler
 {
-    public static Dictionary<ushort, SpawnableObject> items = new Dictionary<ushort, SpawnableObject>();
-
-    public static Dictionary<PickupCode, int> itemLog = new Dictionary<PickupCode, int>();
+    public static Dictionary<PickupType, int> itemLog = new Dictionary<PickupType, int>();
 
     private delegate BasePickup ItemHandlerDelegate(PickupSO _pickupSO, Player _player);
 
-    private static Dictionary<PickupCode, ItemHandlerDelegate> itemHandlers;
+    private static Dictionary<PickupType, ItemHandlerDelegate> itemHandlers;
 
     public ItemHandler()
     {
@@ -21,26 +19,28 @@ public class ItemHandler
 
     private void InitialiseItemData()
     {
-        itemHandlers = new Dictionary<PickupCode, ItemHandlerDelegate>()
+        itemHandlers = new Dictionary<PickupType, ItemHandlerDelegate>()
         {
-            { PickupCode.NULL,  NullItem },
-            { PickupCode.SuperFlop, SuperFlop },
-            { PickupCode.SuperJump, SuperJump },
-            { PickupCode.JellyBomb, JellyBomb },
-            { PickupCode.SuperSpeed_3, SuperSpeed },
-            { PickupCode.SuperSpeed_6, SuperSpeed },
-            { PickupCode.SuperSpeed_9, SuperSpeed },
-            { PickupCode.Invisibility, Invisibility },
-            { PickupCode.Teleport, Teleport },
-            { PickupCode.Morph, Morph }
+            { PickupType.NULL,  NullItem },
+            { PickupType.SuperFlop, SuperFlop },
+            { PickupType.SuperJump, SuperJump },
+            { PickupType.JellyBomb, JellyBomb },
+            { PickupType.SuperSpeed_3, SuperSpeed },
+            { PickupType.SuperSpeed_6, SuperSpeed },
+            { PickupType.SuperSpeed_9, SuperSpeed },
+            { PickupType.Invisibility, Invisibility },
+            { PickupType.Teleport, Teleport },
+            { PickupType.Morph, Morph }
         };
     }
 
     public SpawnableObject SpawnItem(ushort itemId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
     {
-        SpawnableObject item = NetworkObjectsManager.instance.SpawnItem((PickupCode)_code, _position, _rotation);
-        item.Init(itemId, _creatorId, _code);
-        items.Add(item.objectId, item);
+        SpawnableObject item = NetworkObjectsManager.instance.SpawnObject(itemId, NetworkedObjectType.Item, _position, _rotation, (PickupType)_code) as SpawnableObject;
+        if (item != null)
+        {
+            item.Init(_creatorId, _code);
+        }
 
         return item;
     }
@@ -65,7 +65,7 @@ public class ItemHandler
             return false;
         }
 
-        foreach (PickupCode pickupCode in itemLog.Keys)
+        foreach (PickupType pickupCode in itemLog.Keys)
         {
             if (itemLog.ContainsKey(pickupCode))
             {
@@ -81,15 +81,6 @@ public class ItemHandler
         }
 
         return true;
-    }
-
-    public static void ClearAllActiveItems()
-    {
-        foreach (SpawnableObject spawnable in items.Values)
-        {
-            GameObject.Destroy(spawnable.gameObject);
-        }
-        items.Clear();
     }
 
     public BasePickup HandleItem(PickupSO _pickupSO, Player _player)

@@ -32,9 +32,9 @@ public class Pickup : SpawnableObject
 
     Camera camera;
 
-    public void Init(ushort _pickupId, PickupSpawner _spawner, ushort _creatorId, int _code)
+    public void Init(PickupSpawner _spawner, ushort _creatorId, int _code)
     {
-        base.Init(_pickupId, _creatorId, _code);
+        base.Init(_creatorId, _code);
 
         spawner = _spawner;
         
@@ -118,11 +118,6 @@ public class Pickup : SpawnableObject
             spawner.PickupPickedUp();
         }
 
-        if (PickupHandler.pickups.ContainsKey(objectId))
-        {
-            PickupHandler.pickups.Remove(objectId);
-        }
-
-        Destroy(gameObject);
+        NetworkObjectsManager.instance.DestoryObject(this);
     }
 }

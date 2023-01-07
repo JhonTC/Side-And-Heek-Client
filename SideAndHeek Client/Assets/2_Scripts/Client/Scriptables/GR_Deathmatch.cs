@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class GR_Deathmatch : GameRules
 {
-    [Range(60, 360)]
+    [Range(10, 360)]
     public float gameLength = 180;
     [Range(0, 10)]
     public float playerLives = 0;
@@ -47,7 +47,7 @@ public class GR_Deathmatch : GameRules
 
     public override void SetupUI(Transform parent, UIPanel uiPanel)
     {
-        UIUtils.CreateUIForInt(     0, "Game Length", gameLength, 60, 360, uiPanel.OnFloatValueChanged, parent, "s");
+        UIUtils.CreateUIForInt(     0, "Game Length", gameLength, 10, 360, uiPanel.OnFloatValueChanged, parent, "s");
         UIUtils.CreateUIForInt(     1, "Player Lives", playerLives, 1, 2, uiPanel.OnFloatValueChanged, parent);
         UIUtils.CreateUIForBool(    2, "Continuous Flop", continuousFlop, uiPanel.OnBoolValueChanged, parent);
     }

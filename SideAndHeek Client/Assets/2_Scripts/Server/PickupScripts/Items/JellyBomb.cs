@@ -41,9 +41,10 @@ public class JellyBomb : SpawnableObject
         }
     }
 
-    public void Init(ushort _id, ushort _creatorId, int _code, Vector3 throwDirection, float throwForce)
+    public void Init(ushort _creatorId, int _code, Vector3 throwDirection, float throwForce)
     {
-        base.Init(_id, _creatorId, _code);
+        Init(_creatorId, _code);
+
         rigidbody.AddForce(throwDirection * throwForce * throwForceMultiplier);
     }
 

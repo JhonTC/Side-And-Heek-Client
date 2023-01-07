@@ -6,13 +6,11 @@ using UnityEngine;
 
 public class PickupHandler
 {
-    public static Dictionary<ushort, Pickup> pickups = new Dictionary<ushort, Pickup>();
-
-    public static Dictionary<PickupCode, int> pickupLog = new Dictionary<PickupCode, int>();
+    public static Dictionary<PickupType, int> pickupLog = new Dictionary<PickupType, int>();
 
     private delegate BasePickup PickupHandlerDelegate(PickupSO _item, Player _player);
 
-    private static Dictionary<PickupCode, PickupHandlerDelegate> pickupHandlers;
+    private static Dictionary<PickupType, PickupHandlerDelegate> pickupHandlers;
 
     public PickupHandler()
     {
@@ -21,9 +19,11 @@ public class PickupHandler
 
     public Pickup SpawnPickup(ushort _pickupId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
     {
-        Pickup pickup = NetworkObjectsManager.instance.SpawnPickup(_position, _rotation);
-        pickup.Init(_pickupId, _spawner, _creatorId, _code);
-        pickups.Add(_pickupId, pickup);
+        Pickup pickup = NetworkObjectsManager.instance.SpawnObject(_pickupId, NetworkedObjectType.Pickup, _position, _rotation) as Pickup;
+        if (pickup != null)
+        {
+            pickup.Init(_spawner, _creatorId, _code);
+        }
 
         return pickup;
     }
@@ -48,7 +48,7 @@ public class PickupHandler
             return false;
         }
 
-        foreach (PickupCode itemCode in pickupLog.Keys)
+        foreach (PickupType itemCode in pickupLog.Keys)
         {
             if (pickupLog.ContainsKey(itemCode))
             {
@@ -66,29 +66,20 @@ public class PickupHandler
         return true;
     }
 
-    public static void ClearAllActivePickups()
-    {
-        foreach (Pickup pickup in pickups.Values)
-        {
-            GameObject.Destroy(pickup.gameObject);
-        }
-        pickups.Clear();
-    }
-
     private void InitialisePickupData()
     {
-        pickupHandlers = new Dictionary<PickupCode, PickupHandlerDelegate>()
+        pickupHandlers = new Dictionary<PickupType, PickupHandlerDelegate>()
         {
-            { PickupCode.NULL,  NullItem },
-            { PickupCode.SuperFlop, SuperFlop },
-            { PickupCode.SuperJump, SuperJump },
-            { PickupCode.JellyBomb, JellyBomb },
-            { PickupCode.SuperSpeed_3, SuperSpeed },
-            { PickupCode.SuperSpeed_6, SuperSpeed },
-            { PickupCode.SuperSpeed_9, SuperSpeed },
-            { PickupCode.Invisibility, Invisibility },
-            { PickupCode.Teleport, Teleport },
-            { PickupCode.Morph, Morph }
+            { PickupType.NULL,  NullItem },
+            { PickupType.SuperFlop, SuperFlop },
+            { PickupType.SuperJump, SuperJump },
+            { PickupType.JellyBomb, JellyBomb },
+            { PickupType.SuperSpeed_3, SuperSpeed },
+            { PickupType.SuperSpeed_6, SuperSpeed },
+            { PickupType.SuperSpeed_9, SuperSpeed },
+            { PickupType.Invisibility, Invisibility },
+            { PickupType.Teleport, Teleport },
+            { PickupType.Morph, Morph }
         };
     }
 
