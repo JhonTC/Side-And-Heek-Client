@@ -59,7 +59,7 @@ public class LobbyManager : MonoBehaviour
         }
         else
         {
-            GameManager.instance.DestroyPickupSpawners();
+            PickupSpawner.DestroyPickupSpawners();
         }
     }
 
@@ -67,7 +67,7 @@ public class LobbyManager : MonoBehaviour
     {
         if (_player.IsLocal)
         {
-            GameManager.instance.ResetLocalPlayerCamera(sceneCamera.transform.position, true);
+            //GameManager.instance.ResetLocalPlayerCamera(sceneCamera.transform.position, true);
             sceneCamera.SetActive(false);
 
             if (_player.isHost && GameManager.instance.networkType == NetworkType.Multiplayer)

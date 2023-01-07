@@ -119,14 +119,14 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         ushort _spawnerId = message.GetUShort();
         Vector3 _position = message.GetVector3();
 
-        GameManager.instance.CreatePickupSpawner(_spawnerId, _position);
+        PickupSpawner.CreatePickupSpawner(_spawnerId, _position);
 
         if (message.GetBool())
         {
             ushort _pickupId = message.GetUShort();
             int _code = message.GetInt();
 
-            GameManager.pickupSpawners[_spawnerId].PickupSpawned(_pickupId, _spawnerId, _code, _position, Quaternion.identity);
+            PickupSpawner.pickupSpawners[_spawnerId].PickupSpawned(_pickupId, _spawnerId, _code, _position, Quaternion.identity);
         }
     }
 
@@ -145,9 +145,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         {
             if (_bySpawner)
             {
-                if (GameManager.pickupSpawners.ContainsKey(_creatorId))
+                if (PickupSpawner.pickupSpawners.ContainsKey(_creatorId))
                 {
-                    GameManager.pickupSpawners[_creatorId].PickupSpawned(_pickupId, _creatorId, _code, _position, _rotation); //todo these can be merged into one
+                    PickupSpawner.pickupSpawners[_creatorId].PickupSpawned(_pickupId, _creatorId, _code, _position, _rotation); //todo these can be merged into one
                 }
                 else
                 {

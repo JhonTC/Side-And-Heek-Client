@@ -13,7 +13,7 @@ namespace Server
         private void Start()
         {
             hasPickup = false;
-            GameManager.pickupSpawners.Add(spawnerId, this);
+            pickupSpawners.Add(spawnerId, this);
 
             Init(spawnerId);
 
@@ -22,9 +22,9 @@ namespace Server
 
         private void OnDestroy()
         {
-            if (GameManager.pickupSpawners.ContainsKey(spawnerId))
+            if (pickupSpawners.ContainsKey(spawnerId))
             {
-                GameManager.pickupSpawners.Remove(spawnerId);
+                pickupSpawners.Remove(spawnerId);
             }
         }
 

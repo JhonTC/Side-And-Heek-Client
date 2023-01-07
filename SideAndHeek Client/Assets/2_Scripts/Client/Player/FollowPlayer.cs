@@ -34,7 +34,10 @@ public class FollowPlayer : MonoBehaviour
     {
         if (target)
         {
-            transform.position = Vector3.Lerp(transform.position, target.position + distanceToPlayer, followSpeed);
+            Vector3 targetPosition = target.position + distanceToPlayer;
+            targetPosition.y = Mathf.Clamp(targetPosition.y, 0, float.MaxValue);
+
+            transform.position = Vector3.Lerp(transform.position, targetPosition, followSpeed);
 
             if (isOrthographic)
             {

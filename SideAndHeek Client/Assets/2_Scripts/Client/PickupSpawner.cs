@@ -7,6 +7,26 @@ using UnityEngine.UI;
 
 public class PickupSpawner : MonoBehaviour
 {
+    public static Dictionary<int, PickupSpawner> pickupSpawners = new Dictionary<int, PickupSpawner>();
+    public static void CreatePickupSpawner(ushort _spawnerId, Vector3 _position)
+    {
+        PickupSpawner _spawner = Instantiate(GameManager.instance.pickupSpawnerPrefab, _position, Quaternion.identity);
+        _spawner.Init(_spawnerId);
+
+        pickupSpawners.Add(_spawnerId, _spawner);
+    }
+    public static void DestroyPickupSpawners()
+    {
+        foreach (PickupSpawner spawner in PickupSpawner.pickupSpawners.Values)
+        {
+            if (spawner != null)
+            {
+                Destroy(spawner.gameObject);
+            }
+        }
+        pickupSpawners.Clear();
+    }
+
     public ushort spawnerId;
     public bool hasPickup;
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpawnableObject : NetworkObject
+public class SpawnableObject : NetworkObject //todo: rename to SpawnableNetworkObject
 {
     public ushort creatorId;
 

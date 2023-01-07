@@ -12,7 +12,6 @@ public class GameManager : MonoBehaviour
     public GameType gameType = GameType.HideAndSeek;
     public GameMode gameMode;
 
-    public static Dictionary<int, PickupSpawner> pickupSpawners = new Dictionary<int, PickupSpawner>();
     public PickupSpawner pickupSpawnerPrefab;
 
     public bool gameStarted = false;
@@ -73,7 +72,7 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneUnloaded -= OnLevelFinishedUnloading;
     }
 
-    public void GameStart(int gameDuration) //Todo:Make a roundManager separate to gameManager
+    public void GameStart(int gameDuration) //Todo:Make a roundManager separate to gameManager.....||.....should not receive a duration, gamemode should handle incoming messgae
     {
         Debug.Log("Game Start!");
 
@@ -90,7 +89,7 @@ public class GameManager : MonoBehaviour
             player.OnGameOver();
         }
 
-        DestroyPickupSpawners();
+        PickupSpawner.DestroyPickupSpawners();
         NetworkObjectsManager.instance.ClearAllSpawnedNetworkObjects();
 
         LobbyManager.instance.tryStartGameActive = false;
@@ -111,14 +110,6 @@ public class GameManager : MonoBehaviour
     protected virtual void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
     {
         SceneManager.SetActiveScene(_scene);
-
-        if (LobbyManager.players.Count > 0)
-        {
-            if (LobbyManager.localPlayer.playerType == PlayerType.Hider) //TODO: Move this to PlayerManager, called when a player is teleported
-            {
-                ResetLocalPlayerCamera();
-            }
-        }
 
         if (_scene.name != lobbyScene)
         {
@@ -167,45 +158,6 @@ public class GameManager : MonoBehaviour
         SceneManager.UnloadSceneAsync(sceneName);
     }
 
-    public void ResetLocalPlayerCamera() { ResetLocalPlayerCamera(Vector3.zero, false); }
-    public void ResetLocalPlayerCamera(Vector3 _position, bool _useSentPosition)
-    {
-        if (!_useSentPosition)
-        {
-            if (SceneManager.GetActiveScene().name.Contains(lobbyScene))
-            {
-                //GetLocalPlayer().thirdPersonCamera.transform.position = new Vector3(-1000, 100, 0);
-            }
-            else
-            {
-                //GetLocalPlayer().thirdPersonCamera.transform.position = new Vector3(0, 100, 0);
-            }
-        } else
-        {
-            //GetLocalPlayer().thirdPersonCamera.transform.position = _position;
-        }
-    }
-
-    public void CreatePickupSpawner(ushort _spawnerId, Vector3 _position)
-    {
-        PickupSpawner _spawner = Instantiate(pickupSpawnerPrefab, _position, pickupSpawnerPrefab.transform.rotation);
-        _spawner.Init(_spawnerId);
-
-        pickupSpawners.Add(_spawnerId, _spawner);
-    }
-
-    public void DestroyPickupSpawners()
-    {
-        foreach (PickupSpawner spawner in pickupSpawners.Values)
-        {
-            if (spawner != null)
-            {
-                Destroy(spawner.gameObject);
-            }
-        }
-        pickupSpawners.Clear();
-    }
-
     public void StartGameTimer(int _duration) 
     {
         StartCoroutine(GameTimeCountdown(_duration));
@@ -244,7 +196,7 @@ public class GameManager : MonoBehaviour
 
     public float musicStartVolume; //todo: why are these down here
     float fadeTime;
-    IEnumerator FadeMusic(bool fadeOut, float fadeDuration)
+    IEnumerator FadeMusic(bool fadeOut, float fadeDuration) //todo: should be in an audiomanager!
     {
         if (fadeOut)
         {
