@@ -47,8 +47,15 @@ public class FollowPlayer : MonoBehaviour
         }
     }
 
-    public void PlayerTeleportedToPosition(Vector3 position)
+    public void ChangeTarget(Transform newTarget)
+    {
+        target = newTarget;
+        TeleportCameraToTarget(target.position);
+    }
+
+    public void TeleportCameraToTarget(Vector3 position)
     {
         transform.position = position + distanceToPlayer;
+        print("TeleportCameraToTarget");
     }
 }

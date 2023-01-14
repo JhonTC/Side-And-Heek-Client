@@ -330,20 +330,11 @@ public class Player : MonoBehaviour
 
         UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
-    public void ChangeBodyColour(bool isSeekerColour)
+    public void ChangeBodyColour(bool isSeekerColour = false, Material newMaterial = null)
     {
-        if (materialType == MaterialType.Default)
-        {
-            foreach (MeshRenderer mr in GetComponentsInChildren<MeshRenderer>())
-            {
-                if (mr.tag != "Eye")
-                {
-                    mr.material.SetColor("_EmissionColor", isSeekerColour ? seekerColour : hiderColour);
-                }
-            }
-        }
+        ChangeBodyColour(isSeekerColour ? seekerColour : hiderColour, newMaterial);
     }
-    public void ChangeBodyColour(Color colour)
+    public void ChangeBodyColour(Color colour, Material newMaterial = null)
     {
         if (materialType == MaterialType.Default)
         {
@@ -351,7 +342,19 @@ public class Player : MonoBehaviour
             {
                 if (mr.tag != "Eye")
                 {
-                    mr.material.SetColor("_EmissionColor", colour);
+                    if (newMaterial)
+                    {
+                        mr.material = newMaterial;
+                    }
+
+                    mr.material.color = colour; //mr.material.SetColor("_EmissionColor", colour);
+                }
+                else
+                {
+                    if (newMaterial)
+                    {
+                        mr.material = defaultEyeMaterial;
+                    }
                 }
             }
         }
@@ -373,22 +376,7 @@ public class Player : MonoBehaviour
             }
         }
 
-        foreach (MeshRenderer mr in GetComponentsInChildren<MeshRenderer>())
-        {
-            mr.material = newMaterial;
-            
-            if (materialType == MaterialType.Default)
-            {
-                if (mr.tag != "Eye")
-                {
-                    mr.material.SetColor("_EmissionColor", playerType == PlayerType.Hunter ? seekerColour : hiderColour);
-                }
-                else
-                {
-                    mr.material = defaultEyeMaterial;
-                }
-            }
-        }
+        ChangeBodyColour(playerType == PlayerType.Hunter, newMaterial);
     }
 
     public virtual void SetPlayerType(PlayerType _playerType)
@@ -451,7 +439,7 @@ public class Player : MonoBehaviour
 
     public void PlayerTeleported(Vector3 position)
     {
-        thirdPersonCamera.GetComponent<FollowPlayer>().PlayerTeleportedToPosition(position);
+        thirdPersonCamera.GetComponent<FollowPlayer>().TeleportCameraToTarget(position);
     }
 
     public void PickupSpawned(ushort _pickupId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation)
@@ -513,12 +501,13 @@ public class Player : MonoBehaviour
         {
             UIManager.instance.ClosePanel(UIPanelType.Spectate, true);
             print($"Spectator camera reset to self");
-            thirdPersonCamera.GetComponent<FollowPlayer>().target = playerMotor.root;
+            thirdPersonCamera.GetComponent<FollowPlayer>().ChangeTarget(playerMotor.root);
+
         } 
         else
         {
             print($"Spectating player: {activeSpectatingPlayer}");
-            thirdPersonCamera.GetComponent<FollowPlayer>().target = activeSpectatingPlayer.playerMotor.root;
+            thirdPersonCamera.GetComponent<FollowPlayer>().ChangeTarget(activeSpectatingPlayer.playerMotor.root);
         }
     }
 }

@@ -21,10 +21,6 @@ public class LobbyManager : MonoBehaviour
 
     public bool tryStartGameActive = false;
 
-    public string mapScene;
-
-    public bool isHost = false;
-
     private void Awake()
     {
         if (instance == null)

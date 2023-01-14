@@ -33,6 +33,9 @@ public class GameRules : ScriptableObject
             case GameType.Deathmatch:
                 gameRules = CreateInstance<GR_Deathmatch>();
                 break;
+            case GameType.CaptureTheFlag:
+                gameRules = CreateInstance<GR_CaptureTheFlag>();
+                break;
         }
 
         if (gameRules != null)
@@ -49,7 +52,8 @@ public class GameRules : ScriptableObject
 public enum GameType
 {
     HideAndSeek,
-    Deathmatch
+    Deathmatch,
+    CaptureTheFlag
 }
 
 public enum CatchType
@@ -76,4 +80,10 @@ public enum HiderFallRespawnType
     Hider,
     Hunter,
     Spectator
+}
+
+public enum GameEndType
+{
+    Time,
+    Score
 }

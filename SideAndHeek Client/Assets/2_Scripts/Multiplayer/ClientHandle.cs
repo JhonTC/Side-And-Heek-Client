@@ -401,7 +401,7 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
     }
 
     [MessageHandler((ushort)ServerToClientId.playerTeleported)]
-    public static void PlayerTeleported(Message message)
+    public static void PlayerTeleported(Message message) //todo: doing nothing with player... maybe move them clientside for clientside prediction
     {
         ushort _playerId = message.GetUShort();
         Vector3 _teleportPosition = message.GetVector3();

@@ -496,7 +496,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: -3
-  far clip plane: 100
+  far clip plane: 300
   field of view: 60
   orthographic: 1
   orthographic size: 11.5
@@ -644,6 +644,7 @@ MonoBehaviour:
   isReady: 0
   isHost: 0
   playerType: 0
+  lastPlayerType: 0
   usernameText: {fileID: 9177270361263510911}
   playerMotor: {fileID: 6520526793263130413}
   layersToChange: []
@@ -661,6 +662,7 @@ MonoBehaviour:
   seekerColour: {r: 0.94509804, g: 0.32723713, b: 0.27502355, a: 1}
   activePickup:
     pickupSO: {fileID: 0}
+  activeSpectatingPlayer: {fileID: 0}
   clickRange: 0
   maxSoundDistance: 0
   walkingAudioSource: {fileID: 2272461442986635504}

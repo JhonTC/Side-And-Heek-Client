@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class UIUtils : MonoBehaviour
 {
@@ -109,6 +110,13 @@ public class UIUtils : MonoBehaviour
         {
             newDropdown.dropdown.options.Add(new TMPro.TMP_Dropdown.OptionData(enumContentNames[i]));
         }
+        ScrollRect scrollRect = newDropdown.dropdown.GetComponentInChildren<ScrollRect>(true);
+        if (scrollRect != null)
+        {
+            RectTransform rectTrans = scrollRect.transform as RectTransform;
+            rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, (newDropdown.dropdown.options.Count + 1) * 30); //todo: stop using magic numbers here
+        }
+
         newDropdown.dropdown.value = value;
 
         newDropdown.dropdown.onValueChanged.AddListener((int result) => {

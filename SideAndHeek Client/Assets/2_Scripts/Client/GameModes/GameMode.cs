@@ -33,6 +33,9 @@ public class GameMode
             case GameType.Deathmatch:
                 gameMode = new GM_Deathmatch();
                 break;
+            case GameType.CaptureTheFlag:
+                gameMode = new GM_CaptureTheFlag();
+                break;
         }
         gameMode.Init();
 
