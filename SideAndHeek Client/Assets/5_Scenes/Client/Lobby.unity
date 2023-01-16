@@ -19207,6 +19207,7 @@ GameObject:
   - component: {fileID: 968377460}
   - component: {fileID: 968377459}
   - component: {fileID: 968377458}
+  - component: {fileID: 968377462}
   m_Layer: 8
   m_Name: Camera
   m_TagString: Untagged
@@ -19356,6 +19357,39 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &968377462
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 968377456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
 --- !u!1 &990062568
 GameObject:
   m_ObjectHideFlags: 0
@@ -30956,8 +30990,6 @@ MonoBehaviour:
   unreadyTextColour: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 1}
   readyColour: {r: 0.40329275, g: 1, b: 0.4009434, a: 1}
   tryStartGameActive: 0
-  mapScene: Map_1
-  isHost: 0
 --- !u!1 &1590155488
 GameObject:
   m_ObjectHideFlags: 0
