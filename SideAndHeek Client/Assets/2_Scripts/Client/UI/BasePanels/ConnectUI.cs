@@ -10,6 +10,10 @@ public class ConnectUI : UIPanel
     [SerializeField] private GameObject connectTitlePanel;
     [SerializeField] private Button connectButton;
 
+    [SerializeField] private GameObject jtsLoadingPanel;
+    [SerializeField] private GameObject jtsTitlePanel;
+    [SerializeField] private Button joinTestServerButton;
+
     public TMP_InputField ipField;
     public TMP_InputField usernameField;
 
@@ -28,6 +32,10 @@ public class ConnectUI : UIPanel
         usernameField.interactable = true;
         ipField.interactable = true;
         connectButton.interactable = true;
+
+        jtsTitlePanel.SetActive(true);
+        jtsLoadingPanel.SetActive(false);
+        joinTestServerButton.interactable = true;
     }
 
     public void OnConnectButtonPressed()
@@ -35,6 +43,7 @@ public class ConnectUI : UIPanel
         usernameField.interactable = false;
         ipField.interactable = false;
         connectButton.interactable = false;
+        joinTestServerButton.interactable = false;
 
         PlayerPrefs.SetString("Username", usernameField.text);
         PlayerPrefs.SetString("LastRoomCode", ipField.text);
@@ -45,6 +54,24 @@ public class ConnectUI : UIPanel
         connectLoadingPanel.SetActive(true);
 
         NetworkManager.Instance.Connect(ipField.text);
+    }
+
+    public void OnJoinTestServerButtonPressed()
+    {
+        usernameField.interactable = false;
+        ipField.interactable = false;
+        connectButton.interactable = false;
+        joinTestServerButton.interactable = false;
+
+        PlayerPrefs.SetString("Username", usernameField.text);
+        PlayerPrefs.SetString("LastRoomCode", ipField.text);
+        PlayerPrefs.Save();
+
+        //start swirler
+        jtsTitlePanel.SetActive(false);
+        jtsLoadingPanel.SetActive(true);
+
+        NetworkManager.Instance.Connect("3.10.164.103");
     }
 
     public string GetName()

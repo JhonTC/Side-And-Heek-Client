@@ -37,14 +37,14 @@ public enum ServerToClientId : ushort
 public enum ClientToServerId : ushort
 {
     name = 1,
-    //welcomeReceived,
     playerMovement,
     playerReady,
     tryStartGame,
     setPlayerColour,
     pickupSelected,
     itemUsed,
-    gameRulesChanged
+    gameRulesChanged,
+    command
 }
 
 public class NetworkManager : MonoBehaviour

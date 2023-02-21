@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
         FadeMusic(false);
 
         gameMode = GameMode.CreateGameModeFromType(gameType);
-        gameRules = GameRules.CreateGameRulesFromType(gameType); //todo:move inside gameMode
+        gameRules = GameRules.CreateGameRulesFromType(gameType); //todo: move inside gameMode
     }
 
     private void OnApplicationQuit()
@@ -77,7 +77,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game Start!");
 
         UIManager.instance.CloseHistoryPanels();
-        StartGameTimer(gameDuration); //todo:needs moving inside gameMode for gamemodes without a duration
+        StartGameTimer(gameDuration); //todo:needs moving inside gameMode-util class for gamemodes without a duration
     }
 
     public void GameOver() //Todo:Make a roundManager separate to gameManager

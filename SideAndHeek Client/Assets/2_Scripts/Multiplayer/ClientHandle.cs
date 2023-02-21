@@ -314,7 +314,7 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
 
-    private static bool lastIsCountdownActive = false; //TODO: wtf is this doing here
+    private static bool lastIsCountdownActive = false; //TODO: what is this doing here?
 
     [MessageHandler((ushort)ServerToClientId.setSpecialCountdown)]
     public static void SetSpecialCountdown(Message message)

@@ -88,4 +88,13 @@ public class ClientSend : MonoBehaviour
 
         NetworkManager.Instance.Client.Send(message);
     }
+
+    public static void Command(string command)
+    {
+        Debug.Log("Command");
+        Message message = Message.Create(MessageSendMode.Reliable, ClientToServerId.command);
+        message.AddString(command);
+
+        NetworkManager.Instance.Client.Send(message);
+    }
 }
