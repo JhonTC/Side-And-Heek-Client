@@ -30,5 +30,6 @@ public enum PickupType
     Invisibility,
     Teleport,
     Morph,
-    BearTrap
+    BearTrap,
+    Iceball
 }

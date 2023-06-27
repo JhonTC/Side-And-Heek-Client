@@ -31,7 +31,8 @@ public enum ServerToClientId : ushort
     gameOver,
     playerTeleported,
     gameRulesChanged,
-    setPlayerHost
+    setPlayerHost,
+    setVisualEffect
 }
 
 public enum ClientToServerId : ushort

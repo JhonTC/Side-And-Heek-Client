@@ -17,7 +17,7 @@ public class PickupCollection : ScriptableObject
             }
         }
 
-        throw new System.Exception($"ERROR: No task exists with code {code}.");
+        throw new System.Exception($"ERROR: No task exists with code {code}. Are you using the wrong collection in GameManager?");
     }
 
     public PickupDetails GetRandomItem()

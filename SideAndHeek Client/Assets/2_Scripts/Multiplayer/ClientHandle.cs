@@ -451,4 +451,25 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
             Debug.Log($"No player with id {_playerId}");
         }
     }
+
+    [MessageHandler((ushort)ServerToClientId.setVisualEffect)]
+    public static void SetVisualEffect(Message message)
+    {
+        ushort effectId = message.GetUShort();
+        bool toggleValue = message.GetBool();
+        VisualEffect effect = null;
+        if (toggleValue)
+        {
+           effect = VisualEffects.CreateVisualEffectFromMessage(message);
+        }
+
+        if (toggleValue)
+        {
+            VisualEffects.AddEffect(effectId, effect);
+        }
+        else
+        {
+            VisualEffects.RemoveEffect(effectId);
+        }
+    }
 }

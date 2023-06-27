@@ -55,7 +55,7 @@ public class GameManager : MonoBehaviour
     private void OnApplicationQuit()
     {
         if (PlayerPrefs.HasKey("LastRoomCode"))
-        {
+        {   
             PlayerPrefs.DeleteKey("LastRoomCode");
         }
     }

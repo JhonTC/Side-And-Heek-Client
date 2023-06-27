@@ -166,4 +166,31 @@ namespace Server
             //ServerSend.SetPlayerColour(owner.id, owner.activeColour, false);
         }
     }
+
+    public class IceballItem : BasePickup
+    {
+        Player owner;
+
+        public IceballItem(PickupSO _pickupSO) : base(_pickupSO) { }
+        public IceballItem(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
+        {
+            owner = _owner;
+        }
+
+        public override void PickupUsed()
+        {
+            //todo (only neeed for singleplayer mode)
+
+            //ServerSend.SetPlayerColour(owner.id, new Color(1, 1, 1, 0), false);
+
+            //NetworkObjectsManager.instance.PerformSecondsCountdown((int)pickupSO.duration, OnComplete);
+        }
+
+        public void OnComplete()
+        {
+            //todo (only neeed for singleplayer mode)
+
+            //ServerSend.SetPlayerColour(owner.id, owner.activeColour, false);
+        }
+    }
 }

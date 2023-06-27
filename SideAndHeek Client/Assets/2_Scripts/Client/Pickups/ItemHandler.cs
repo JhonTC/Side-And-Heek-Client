@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemHandler
+public class ItemHandler //todo:check how much of this script is being used...
 {
     public static Dictionary<PickupType, int> itemLog = new Dictionary<PickupType, int>();
 
@@ -30,7 +30,8 @@ public class ItemHandler
             { PickupType.SuperSpeed_9, SuperSpeed },
             { PickupType.Invisibility, Invisibility },
             { PickupType.Teleport, Teleport },
-            { PickupType.Morph, Morph }
+            { PickupType.Morph, Morph },
+            { PickupType.Iceball, Iceball },
         };
     }
 
@@ -169,6 +170,18 @@ public class ItemHandler
         else
         {
             return new Morph(_pickupSO);
+        }
+    }
+
+    private BasePickup Iceball(PickupSO _pickupSO, Player _player)
+    {
+        if (_player)
+        {
+            return new IceballItem(_pickupSO, _player);
+        }
+        else
+        {
+            return new IceballItem(_pickupSO);
         }
     }
 }

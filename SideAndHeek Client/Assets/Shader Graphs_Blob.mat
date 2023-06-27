@@ -20,12 +20,20 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - Texture:
+        m_Texture: {fileID: 2800000, guid: bc0b105e85a64084b95639eae8769438, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - Texture2D_b0ff2c1a29dc4f01ad0623456492d04e:
         m_Texture: {fileID: 2800000, guid: bc0b105e85a64084b95639eae8769438, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - Texture2D_d6085670b9e0454ea4c34c72365d69c4:
         m_Texture: {fileID: 2800000, guid: e0ee3797186194616bb2634cfa8fc6c1, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EffectOverlayLoopCustomFunction_5678b16eb17a4989a61eaa1850542b56_PositionTexture_0:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SampleTexture2D_a42cbdbbdbd14be2a0a8d4e3df32c375_Texture_1:
@@ -45,10 +53,22 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - Vector1_bc4a39dfaebc43779cd0eebb0065c3f2: 1050
+    - Radius: 4
+    - Vector1_07a4449313ac4674a02f7f9375df8f43: 1
+    - Vector1_47a080416bb24253b1b7cfa4a359e1ba: 0
+    - Vector1_48fe15662b534b379074d0c38b8cffd4: 0.6
+    - Vector1_49ce9faad74343e7a382cfcb0a027eb1: 0.5
+    - Vector1_574a9dc2af634fc39a8f7166f6ce995d: 18
+    - Vector1_a7f506a895b5465bacaf879dbcd8c68d: 0
+    - Vector1_ad7ca828ba2343d3b9f8fd7d5eef392e: 0.39
+    - Vector1_bc4a39dfaebc43779cd0eebb0065c3f2: 20
     m_Colors:
     - Color_27b1c66ab9824ee7815d3fe51517d710: {r: 0.49056602, g: 0.3679245, b: 0.3679245,
         a: 1}
-    - Color_33af6d3e320942dab47802d14b4f9099: {r: 0, g: 0.98978424, b: 1, a: 1}
+    - Color_33af6d3e320942dab47802d14b4f9099: {r: 0, g: 1, b: 0.9600265, a: 1}
+    - Colour: {r: 0, g: 0.8324022, b: 1, a: 1}
+    - Colour_1: {r: 0.33361518, g: 0.37127906, b: 0.4811321, a: 1}
+    - Position: {r: -1000, g: 2.14, b: 0, a: 0}
+    - Vector3_60255d22d63845a18cbcbc5e0ab54d11: {r: 0, g: 2.14, b: 0, a: 0}
     - Vector3_8e83b97088a145569bea5c239101f326: {r: -1000, g: 2.27, b: 0, a: 0}
   m_BuildTextureStacks: []

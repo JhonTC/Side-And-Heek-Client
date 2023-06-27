@@ -202,7 +202,7 @@ public class UIManager : MonoBehaviour
 
         if (overrideInputToPlayerControls)
         {
-            InputHandler.instance.SwitchInput("PlayerControls");
+            InputHandler.instance.SwitchInput("PlayerControls"); //Todo: make constant
         }
     }
 

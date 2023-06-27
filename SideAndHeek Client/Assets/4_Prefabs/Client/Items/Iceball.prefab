@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7127619368429244595}
   - component: {fileID: 213601956}
   m_Layer: 0
-  m_Name: JellyBomb
+  m_Name: Iceball
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -60,7 +60,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 6fe4e744ed6dc454a92f55fb51b7381d, type: 2}
+  - {fileID: 2100000, guid: 7badd54b4f7deba49ab8e8f535f3f3a8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

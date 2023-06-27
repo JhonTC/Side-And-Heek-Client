@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: PickupTesting_Collection
   m_EditorClassIdentifier: 
   pickupDetails:
-  - pickupSO: {fileID: 11400000, guid: db0a6fff1561b96449ca27674da0cf54, type: 2}
+  - pickupSO: {fileID: 11400000, guid: 204570bc20f7bc64a8e5b6dddfe4ef39, type: 2}
     numberOfUses: 10
