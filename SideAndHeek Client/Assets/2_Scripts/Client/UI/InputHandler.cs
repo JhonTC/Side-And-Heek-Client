@@ -9,7 +9,7 @@ public class InputHandler : MonoBehaviour
 
     public PlayerInput playerInput;
 
-    private Player localPlayer { get { return LobbyManager.localPlayer; } }
+    private Player localPlayer => Player.LocalPlayer;
 
     private void Awake()
     {

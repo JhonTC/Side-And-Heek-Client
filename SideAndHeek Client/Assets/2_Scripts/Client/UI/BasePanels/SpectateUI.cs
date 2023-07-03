@@ -15,9 +15,9 @@ public class SpectateUI : UIPanel
     { 
         get 
         { 
-            if (LobbyManager.localPlayer != null)
+            if (Player.LocalPlayer != null)
             {
-                return LobbyManager.localPlayer.activeSpectatingPlayer;
+                return Player.LocalPlayer.activeSpectatingPlayer;
             }
 
             return null; 
@@ -39,7 +39,7 @@ public class SpectateUI : UIPanel
         }
 
         int specatatablePlayersCount = 0;
-        foreach (Player player in LobbyManager.players.Values)
+        foreach (Player player in Player.list.Values)
         {
             if (player.playerType != PlayerType.Spectator)
             {
@@ -56,13 +56,13 @@ public class SpectateUI : UIPanel
         List<Player> spectatablePlayers = new List<Player>();
         int activeSpectatingPlayerIndex = 0;
 
-        foreach (Player player in LobbyManager.players.Values)
+        foreach (Player player in Player.list.Values)
         {
             if (player.playerType != PlayerType.Spectator)
             {
                 spectatablePlayers.Add(player);
 
-                if (player == LobbyManager.localPlayer.activeSpectatingPlayer)
+                if (player == Player.LocalPlayer.activeSpectatingPlayer)
                 {
                     activeSpectatingPlayerIndex = spectatablePlayers.Count - 1;
                 }
@@ -77,7 +77,7 @@ public class SpectateUI : UIPanel
                 activeSpectatingPlayerIndex = 0;
             }
 
-            LobbyManager.localPlayer.SpectatePlayer(spectatablePlayers[activeSpectatingPlayerIndex]);
+            Player.LocalPlayer.SpectatePlayer(spectatablePlayers[activeSpectatingPlayerIndex]);
 
             UpdateUI();
         } else
@@ -91,13 +91,13 @@ public class SpectateUI : UIPanel
         List<Player> spectatablePlayers = new List<Player>();
         int activeSpectatingPlayerIndex = 0;
 
-        foreach (Player player in LobbyManager.players.Values)
+        foreach (Player player in Player.list.Values)
         {
             if (player.playerType != PlayerType.Spectator)
             {
                 spectatablePlayers.Add(player);
 
-                if (player == LobbyManager.localPlayer.activeSpectatingPlayer)
+                if (player == Player.LocalPlayer.activeSpectatingPlayer)
                 {
                     activeSpectatingPlayerIndex = spectatablePlayers.Count - 1;
                 }
@@ -112,7 +112,7 @@ public class SpectateUI : UIPanel
                 activeSpectatingPlayerIndex = spectatablePlayers.Count - 1;
             }
 
-            LobbyManager.localPlayer.SpectatePlayer(spectatablePlayers[activeSpectatingPlayerIndex]);
+            Player.LocalPlayer.SpectatePlayer(spectatablePlayers[activeSpectatingPlayerIndex]);
 
             UpdateUI();
         }

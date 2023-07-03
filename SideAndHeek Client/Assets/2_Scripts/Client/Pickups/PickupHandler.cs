@@ -1,14 +1,12 @@
 ﻿using Server;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PickupHandler //todo:check how much of this script is being used...
+public class PickupHandler //TODO: Make into Singleton
 {
     public static Dictionary<PickupType, int> pickupLog = new Dictionary<PickupType, int>();
 
-    private delegate BasePickup PickupHandlerDelegate(PickupSO _item, Player _player);
+    private delegate BasePickup PickupHandlerDelegate(PickupSO _pickupSO, Player _player);
 
     private static Dictionary<PickupType, PickupHandlerDelegate> pickupHandlers;
 
@@ -17,22 +15,56 @@ public class PickupHandler //todo:check how much of this script is being used...
         InitialisePickupData();
     }
 
+    private void InitialisePickupData()
+    {
+        pickupHandlers = new Dictionary<PickupType, PickupHandlerDelegate>()
+        {
+            { PickupType.NULL,  NullPickup },
+            { PickupType.SuperFlop, SuperFlop },
+            { PickupType.SuperJump, SuperJump },
+            { PickupType.JellyBomb, JellyBomb },
+            { PickupType.SuperSpeed_3, SuperSpeed },
+            { PickupType.SuperSpeed_6, SuperSpeed },
+            { PickupType.SuperSpeed_9, SuperSpeed },
+            { PickupType.Invisibility, Invisibility },
+            { PickupType.Teleport, Teleport },
+            { PickupType.Morph, Morph },
+            { PickupType.Iceball, Iceball }
+        };
+        Debug.Log("Initialised packets.");
+    }
+
     public Pickup SpawnPickup(ushort _pickupId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
     {
-        Pickup pickup = NetworkObjectsManager.instance.SpawnObject(_pickupId, NetworkedObjectType.Pickup, _position, _rotation) as Pickup;
+        Pickup pickup = NetworkObjectsManager.instance.SpawnObject(_pickupId, NetworkedObjectType.Pickup, _position, _rotation, false) as Pickup;
         if (pickup != null)
         {
             pickup.Init(_spawner, _creatorId, _code);
+
+            ServerSend.PickupSpawned(pickup.objectId, true, pickup.creatorId, pickup.activeObjectDetails.pickupSO, _position, _rotation);
         }
 
         return pickup;
     }
 
-    public static bool CanPickupCodeBeUsed(PickupDetails itemDetails)
+    public Pickup SpawnPickup(ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
     {
-        if (pickupLog.ContainsKey(itemDetails.pickupSO.pickupCode))
+        Pickup pickup = NetworkObjectsManager.instance.SpawnObject(NetworkedObjectType.Pickup, _position, _rotation, false) as Pickup;
+        if (pickup != null)
         {
-            if (pickupLog[itemDetails.pickupSO.pickupCode] >= itemDetails.numberOfUses)
+            pickup.Init(_spawner, _creatorId, _code);
+
+            ServerSend.PickupSpawned(pickup.objectId, true, pickup.creatorId, pickup.activeObjectDetails.pickupSO, _position, _rotation);
+        }
+
+        return pickup;
+    }
+
+    public static bool CanPickupCodeBeUsed(PickupDetails pickupDetails)
+    {
+        if (pickupLog.ContainsKey(pickupDetails.pickupSO.pickupCode))
+        {
+            if (pickupLog[pickupDetails.pickupSO.pickupCode] >= pickupDetails.numberOfUses)
             {
                 return false;
             }
@@ -48,11 +80,11 @@ public class PickupHandler //todo:check how much of this script is being used...
             return false;
         }
 
-        foreach (PickupType itemCode in pickupLog.Keys)
+        foreach (PickupType pickupCode in pickupLog.Keys)
         {
-            if (pickupLog.ContainsKey(itemCode))
+            if (pickupLog.ContainsKey(pickupCode))
             {
-                if (pickupLog[itemCode] < GameManager.instance.collection.GetPickupByCode(itemCode).numberOfUses)
+                if (pickupLog[pickupCode] < GameManager.instance.collection.GetPickupByCode(pickupCode).numberOfUses)
                 {
                     return false;
                 }
@@ -66,127 +98,59 @@ public class PickupHandler //todo:check how much of this script is being used...
         return true;
     }
 
-    private void InitialisePickupData()
-    {
-        pickupHandlers = new Dictionary<PickupType, PickupHandlerDelegate>()
-        {
-            { PickupType.NULL,  NullItem },
-            { PickupType.SuperFlop, SuperFlop },
-            { PickupType.SuperJump, SuperJump },
-            { PickupType.JellyBomb, JellyBomb },
-            { PickupType.SuperSpeed_3, SuperSpeed },
-            { PickupType.SuperSpeed_6, SuperSpeed },
-            { PickupType.SuperSpeed_9, SuperSpeed },
-            { PickupType.Invisibility, Invisibility },
-            { PickupType.Teleport, Teleport },
-            { PickupType.Morph, Morph },
-            { PickupType.Iceball, Iceball }
-        };
-    }
-
-    public BasePickup HandlePickup(PickupSO _pickupSO)
-    {
-        BasePickup ret = pickupHandlers[_pickupSO.pickupCode](_pickupSO, null);
-        return ret;
-    }
     public BasePickup HandlePickup(PickupSO _pickupSO, Player _player)
     {
         BasePickup ret = pickupHandlers[_pickupSO.pickupCode](_pickupSO, _player);
         return ret;
     }
 
-    private BasePickup NullItem(PickupSO _pickupSO, Player _player)
+    public static void ResetPickupLog()
+    {
+        pickupLog.Clear();
+    }
+
+    private BasePickup NullPickup(PickupSO _pickupSO, Player _player)
     {
         return null;
     }
     private BasePickup SuperFlop(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new SuperFlop(_pickupSO, _player);
-        }
-        else
-        {
-            return new SuperFlop(_pickupSO);
-        }
+        BasePickup ret = new SuperFlop(_pickupSO, _player);
+        return ret;
     }
     private BasePickup SuperJump(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new SuperJump(_pickupSO, _player);
-        }
-        else
-        {
-            return new SuperJump(_pickupSO);
-        }
+        BasePickup ret = new SuperJump(_pickupSO, _player);
+        return ret;
     }
-
     private BasePickup JellyBomb(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new JellyBombItem(_pickupSO, _player);
-        }
-        else
-        {
-            return new JellyBombItem(_pickupSO);
-        }
+        BasePickup ret = new JellyBombItem(_pickupSO, _player);
+        return ret;
     }
     private BasePickup SuperSpeed(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new SuperSpeed(_pickupSO, _player);
-        }
-        else
-        {
-            return new SuperSpeed(_pickupSO);
-        }
+        BasePickup ret = new SuperSpeed(_pickupSO, _player);
+        return ret;
     }
     private BasePickup Invisibility(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new Invisibility(_pickupSO, _player);
-        }
-        else
-        {
-            return new Invisibility(_pickupSO);
-        }
+        BasePickup ret = new Invisibility(_pickupSO, _player);
+        return ret;
     }
     private BasePickup Teleport(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new TeleportItem(_pickupSO, _player);
-        }
-        else
-        {
-            return new TeleportItem(_pickupSO);
-        }
+        BasePickup ret = new TeleportItem(_pickupSO, _player);
+        return ret;
     }
     private BasePickup Morph(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new Morph(_pickupSO, _player);
-        }
-        else
-        {
-            return new Morph(_pickupSO);
-        }
+        BasePickup ret = new Morph(_pickupSO, _player);
+        return ret;
     }
-
     private BasePickup Iceball(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new IceballItem(_pickupSO, _player);
-        }
-        else
-        {
-            return new IceballItem(_pickupSO);
-        }
+        BasePickup ret = new IceballItem(_pickupSO, _player);
+        return ret;
     }
 }

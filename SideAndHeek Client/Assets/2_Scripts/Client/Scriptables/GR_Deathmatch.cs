@@ -11,7 +11,8 @@ public class GR_Deathmatch : GameRules
     public float gameLength = 180;
     [Range(0, 10)]
     public float playerLives = 0;
-    public bool continuousFlop = false;
+    [Range(0, 0.1f)]
+    public float shrinkSpeed = 0.005f;
 
     public override void UpdateUI(ref Dictionary<int, LocalGameRule> localGameRules)
     {
@@ -50,5 +51,17 @@ public class GR_Deathmatch : GameRules
         UIUtils.CreateUIForInt(     0, "Game Length", gameLength, 10, 360, uiPanel.OnFloatValueChanged, parent, "s");
         UIUtils.CreateUIForInt(     1, "Player Lives", playerLives, 1, 2, uiPanel.OnFloatValueChanged, parent);
         UIUtils.CreateUIForBool(    2, "Continuous Flop", continuousFlop, uiPanel.OnBoolValueChanged, parent);
+    }
+
+    public override Dictionary<string, object> GetListOfValues() //Used in GameManagerEditor
+    {
+        Dictionary<string, object> retList = new Dictionary<string, object>
+        {
+            { "Game Length", gameLength },
+            { "Player Lives", playerLives },
+            { "Continuous Flop", continuousFlop }
+        };
+
+        return retList;
     }
 }

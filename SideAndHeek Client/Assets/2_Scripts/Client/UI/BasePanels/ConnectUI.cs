@@ -10,6 +10,10 @@ public class ConnectUI : UIPanel
     [SerializeField] private GameObject connectTitlePanel;
     [SerializeField] private Button connectButton;
 
+    [SerializeField] private GameObject hostLoadingPanel;
+    [SerializeField] private GameObject hostTitlePanel;
+    [SerializeField] private Button hostButton;
+
     [SerializeField] private GameObject jtsLoadingPanel;
     [SerializeField] private GameObject jtsTitlePanel;
     [SerializeField] private Button joinTestServerButton;
@@ -27,11 +31,16 @@ public class ConnectUI : UIPanel
     {
         base.EnablePanel();
 
-        connectTitlePanel.SetActive(true);
-        connectLoadingPanel.SetActive(false);
         usernameField.interactable = true;
         ipField.interactable = true;
+
+        connectTitlePanel.SetActive(true);
+        connectLoadingPanel.SetActive(false);
         connectButton.interactable = true;
+
+        hostTitlePanel.SetActive(true);
+        hostLoadingPanel.SetActive(false);
+        hostButton.interactable = true;
 
         jtsTitlePanel.SetActive(true);
         jtsLoadingPanel.SetActive(false);
@@ -43,6 +52,7 @@ public class ConnectUI : UIPanel
         usernameField.interactable = false;
         ipField.interactable = false;
         connectButton.interactable = false;
+        hostButton.interactable = false;
         joinTestServerButton.interactable = false;
 
         PlayerPrefs.SetString("Username", usernameField.text);
@@ -56,11 +66,31 @@ public class ConnectUI : UIPanel
         NetworkManager.Instance.Connect(ipField.text);
     }
 
+    public void OnHostButtonPressed()
+    {
+        usernameField.interactable = false;
+        ipField.interactable = false;
+        connectButton.interactable = false;
+        hostButton.interactable = false;
+        joinTestServerButton.interactable = false;
+
+        PlayerPrefs.SetString("Username", usernameField.text);
+        PlayerPrefs.SetString("LastRoomCode", ipField.text);
+        PlayerPrefs.Save();
+
+        //start swirler
+        hostTitlePanel.SetActive(false);
+        hostLoadingPanel.SetActive(true);
+
+        NetworkManager.Instance.Host(ipField.text);
+    }
+
     public void OnJoinTestServerButtonPressed()
     {
         usernameField.interactable = false;
         ipField.interactable = false;
         connectButton.interactable = false;
+        hostButton.interactable = false;
         joinTestServerButton.interactable = false;
 
         PlayerPrefs.SetString("Username", usernameField.text);

@@ -17,7 +17,7 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
             GameManager.instance.GameRulesChanged(message.GetGameRules());
         } else
         {
-            ClientSend.GameRulesChanged(GameManager.instance.gameRules);
+            ClientSend.GameRulesChanged(GameManager.instance.gameMode.GetGameRules());
         }
 
         int _hiderColourCount = message.GetInt();
@@ -62,10 +62,15 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         Quaternion _rightLegRotation = message.GetQuaternion();
         Quaternion _leftLegRotation = message.GetQuaternion();
 
-        if (LobbyManager.players.ContainsKey(_id))
+        if (Player.list.ContainsKey(_id))
         {
-            LobbyManager.players[_id].SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
-            LobbyManager.players[_id].SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
+            Player player = Player.list[_id];
+            if (player.isBodyActive) 
+            {
+                player.playerMotor.SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
+                player.playerMotor.SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
+            }
+            
         } else
         {
             Debug.Log($"No player with id {_id}");
@@ -78,9 +83,13 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         ushort _id = message.GetUShort();
         Quaternion _rootRotation = message.GetQuaternion();
 
-        if (LobbyManager.players.ContainsKey(_id))
+        if (Player.list.ContainsKey(_id))
         {
-            LobbyManager.players[_id].SetRootRotation(_rootRotation);
+            Player player = Player.list[_id];
+            if (player.isBodyActive)
+            {
+                player.playerMotor.SetRootRotation(_rootRotation);
+            }
         }
         else
         {
@@ -103,9 +112,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         bool _isFlopping = message.GetBool();
         bool _isSneaking = message.GetBool();
 
-        if (LobbyManager.players.ContainsKey(_id))
+        if (Player.list.ContainsKey(_id))
         {
-            LobbyManager.players[_id].SetPlayerState(_isGrounded, _inputSpeed, _isJumping, _isFlopping, _isSneaking, _headCollided, _collisionVolume, _footCollided);
+            Player.list[_id].SetPlayerState(_isGrounded, _inputSpeed, _isJumping, _isFlopping, _isSneaking, _headCollided, _collisionVolume, _footCollided);
         }
         else
         {
@@ -156,9 +165,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
             }
             else
             {
-                if (LobbyManager.players.ContainsKey(_creatorId))
+                if (Player.list.ContainsKey(_creatorId))
                 {
-                    LobbyManager.players[_creatorId].PickupSpawned(_pickupId, _creatorId, _code, _position, _rotation);
+                    Player.list[_creatorId].PickupSpawned(_pickupId, _creatorId, _code, _position, _rotation);
                 }
                 else
                 {
@@ -180,9 +189,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
 
         if (!NetworkObjectsManager.networkObjects.ContainsKey(_itemId))
         {
-            if (LobbyManager.players.ContainsKey(_creatorId))
+            if (Player.list.ContainsKey(_creatorId))
             {
-                LobbyManager.players[_creatorId].ItemSpawned(_itemId, _creatorId, _code, _position, _rotation);
+                Player.list[_creatorId].ItemSpawned(_itemId, _creatorId, _code, _position, _rotation);
             }
             else
             {
@@ -217,7 +226,7 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
 
         if (NetworkObjectsManager.networkObjects.ContainsKey(_objectId))
         {
-            NetworkObjectsManager.instance.DestoryObject(NetworkObjectsManager.networkObjects[_objectId]);
+            NetworkObjectsManager.instance.DestroyObject(NetworkObjectsManager.networkObjects[_objectId]);
         }
         else
         {
@@ -230,10 +239,10 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
     {
         ushort _playerId = message.GetUShort();
 
-        if (LobbyManager.players.ContainsKey(_playerId))
+        if (Player.list.ContainsKey(_playerId))
         {
-            LobbyManager.players[_playerId].activePickup = null;
-            LobbyManager.players[_playerId].isActivePickupInProgress = false;
+            Player.list[_playerId].activePickup = null;
+            Player.list[_playerId].isActivePickupInProgress = false;
             UIManager.instance.gameplayPanel.ToggleItemDisplay(false, UIManager.instance.gameplayPanel.SetItemDetails);
         }
     }
@@ -254,9 +263,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
             }
         }
 
-        if (LobbyManager.players.ContainsKey(_byPlayer))
+        if (Player.list.ContainsKey(_byPlayer))
         {
-            LobbyManager.players[_byPlayer].PickupPickedUp(GameManager.instance.collection.GetPickupByCode((PickupType)_code).pickupSO);
+            Player.list[_byPlayer].PickupPickedUp(GameManager.instance.collection.GetPickupByCode((PickupType)_code).pickupSO);
         }
         else
         {
@@ -270,9 +279,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         ushort _playerId = message.GetUShort();
         bool _isReady = message.GetBool();
 
-        if (LobbyManager.players.ContainsKey(_playerId))
+        if (Player.list.ContainsKey(_playerId))
         {
-            LobbyManager.players[_playerId].SetPlayerReady(_isReady);
+            Player.list[_playerId].SetPlayerReady(_isReady);
         }
         else
         {
@@ -302,9 +311,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         ushort _playerId = message.GetUShort();
         PlayerType _playerType = (PlayerType)message.GetInt();
 
-        if (LobbyManager.players.ContainsKey(_playerId))
+        if (Player.list.ContainsKey(_playerId))
         {
-            LobbyManager.players[_playerId].SetPlayerType(_playerType);
+            Player.list[_playerId].SetPlayerType(_playerType);
         }
         else
         {
@@ -323,9 +332,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         int _countdownValue = message.GetInt();
         bool _isCountdownActive = message.GetBool();
         
-        if (_specialId == LobbyManager.localPlayer.Id)
+        if (_specialId == Player.LocalPlayer.Id)
         {
-            if (LobbyManager.players.ContainsKey(_specialId))
+            if (Player.list.ContainsKey(_specialId))
             {
                 UIManager.instance.SetCountdown(_countdownValue);
             }
@@ -338,11 +347,11 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         {
             if (_isCountdownActive)
             {
-                UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].Username} is the hunter... Hide!");
+                UIManager.instance.SetSpecialMessage($"{Player.list[_specialId].Username} is the hunter... Hide!");
             }
             else
             {
-                UIManager.instance.SetSpecialMessage($"{LobbyManager.players[_specialId].Username} has been released");
+                UIManager.instance.SetSpecialMessage($"{Player.list[_specialId].Username} has been released");
             }
 
             lastIsCountdownActive = _isCountdownActive;
@@ -357,9 +366,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         bool _isSeekerColour = message.GetBool();
         bool _isSpecialColour = message.GetBool();
 
-        if (LobbyManager.players.ContainsKey(_playerId))
+        if (Player.list.ContainsKey(_playerId))
         {
-            LobbyManager.players[_playerId].ChangeBodyColour(_colour, _isSeekerColour, _isSpecialColour);
+            Player.list[_playerId].ChangeBodyColour(_colour, _isSeekerColour, _isSpecialColour);
         }
         else
         {
@@ -373,9 +382,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         ushort _playerId = message.GetUShort();
         MaterialType _materialType = (MaterialType)message.GetInt();
 
-        if (LobbyManager.players.ContainsKey(_playerId))
+        if (Player.list.ContainsKey(_playerId))
         {
-            LobbyManager.players[_playerId].ChangeMaterialType(_materialType);
+            Player.list[_playerId].ChangeMaterialType(_materialType);
         }
     }
 
@@ -406,9 +415,9 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         ushort _playerId = message.GetUShort();
         Vector3 _teleportPosition = message.GetVector3();
 
-        if (LobbyManager.players.ContainsKey(_playerId))
+        if (Player.list.ContainsKey(_playerId))
         {
-            LobbyManager.players[_playerId].PlayerTeleported(_teleportPosition);
+            Player.list[_playerId].PlayerTeleported(_teleportPosition);
         }
         else
         {
@@ -438,10 +447,10 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
     {
         ushort _playerId = message.GetUShort();
 
-        if (LobbyManager.players.ContainsKey(_playerId))
+        if (Player.list.ContainsKey(_playerId))
         {
-            LobbyManager.players[_playerId].isHost = message.GetBool();
-            if (LobbyManager.players[_playerId].IsLocal)
+            Player.list[_playerId].isHost = message.GetBool();
+            if (Player.list[_playerId].IsLocal)
             {
                 UIManager.instance.gameRulesPanel.UpdatePanelHost();
             }

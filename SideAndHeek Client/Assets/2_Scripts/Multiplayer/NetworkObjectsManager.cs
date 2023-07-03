@@ -14,7 +14,6 @@ public enum NetworkedObjectType
 public class NetworkObjectsManager : MonoBehaviour
 {
     public static NetworkObjectsManager instance;
-
     private void Awake()
     {
         if (instance == null)
@@ -29,36 +28,62 @@ public class NetworkObjectsManager : MonoBehaviour
 
         DontDestroyOnLoad(this);
 
-        pickupHandler = new PickupHandler();//move to GameManager?
-        itemHandler = new ItemHandler();//move to GameManager?
+        pickupHandler = new PickupHandler(); //move to GameManager?
+        itemHandler = new ItemHandler();     //move to GameManager?
     }
 
     [Serializable]
     public struct ItemDetails
     {
-        public SpawnableObject itemPrefab;
+        public SpawnableObject prefab;
         public PickupType pickupType;
     }
 
     public static Dictionary<ushort, NetworkObject> networkObjects = new Dictionary<ushort, NetworkObject>();
+    private static ushort currentObjectId = 0;
 
     [SerializeField] private Pickup pickupPrefab;
-    [SerializeField] private List<ItemDetails> itemDetails;
+    [SerializeField] private List<ItemDetails> itemPrefabs;
 
     [HideInInspector] public PickupHandler pickupHandler;
     [HideInInspector] public ItemHandler itemHandler;
 
-    public NetworkObject SpawnObject(ushort objectId, NetworkedObjectType networkObjectType, Vector3 position, Quaternion rotation, PickupType pickupType = PickupType.NULL)
+    public NetworkObject SpawnObject(ushort _objectId, NetworkedObjectType networkObjectType, Vector3 position, Quaternion rotation, bool sendTransform, PickupType pickupType = PickupType.NULL)
     {
         NetworkObject prefab = GetPrefabForType(networkObjectType, pickupType);
         if (prefab == null) return null;
 
         NetworkObject newObject = Instantiate(prefab, position, rotation);
-        newObject.Init(objectId, networkObjectType);
+        newObject.Init(_objectId, sendTransform, networkObjectType);
 
         RegisterNetworkedObject(newObject);
 
         return newObject;
+    }
+    public NetworkObject SpawnObject(NetworkedObjectType networkObjectType, Vector3 position, Quaternion rotation, bool sendTransform, PickupType pickupType = PickupType.NULL)
+    {
+        NetworkObject prefab = GetPrefabForType(networkObjectType, pickupType);
+        if (prefab == null) return null;
+
+        NetworkObject newObject = Instantiate(prefab, position, rotation);
+        newObject.Init(currentObjectId, sendTransform, networkObjectType);
+
+        RegisterNetworkedObject(newObject);
+
+        currentObjectId++;
+
+        return newObject;
+    }
+
+    public void DestroyObject(NetworkObject networkObject)
+    {
+        if (networkObjects.ContainsKey(networkObject.objectId))
+        {
+            UnregisterNetworkedObject(networkObject);
+        }
+
+        ServerSend.NetworkObjectDestroyed(networkObject.objectId);
+        Destroy(networkObject.gameObject);
     }
 
     public void RegisterNetworkedObject(NetworkObject networkObject)
@@ -93,10 +118,11 @@ public class NetworkObjectsManager : MonoBehaviour
         {
             if (networkObject.Value.networkedObjectType != NetworkedObjectType.Static)
             {
-                DestoryObject(networkObject.Value);
+                DestroyObject(networkObject.Value);
             }
         }
     }
+
     public void ClearAllNetworkObjects()
     {
         ClearAllSpawnedNetworkObjects();
@@ -117,26 +143,34 @@ public class NetworkObjectsManager : MonoBehaviour
         return null;
     }
 
-    private SpawnableObject GetSpawnableObjectForPickupCode(PickupType _pickupCode)
+    private NetworkObject GetSpawnableObjectForPickupCode(PickupType _pickupCode)
     {
-        foreach (ItemDetails itemDetails in itemDetails)
+        foreach (ItemDetails itemDetails in itemPrefabs)
         {
             if (itemDetails.pickupType == _pickupCode)
             {
-                return itemDetails.itemPrefab;
+                return itemDetails.prefab;
             }
         }
 
-        throw new Exception($"ERROR: No spawnable Object with code {_pickupCode}");
+        throw new Exception($"No spawnable Object with code {_pickupCode}");
     }
 
-    public void DestoryObject(NetworkObject networkObject)
+    public void PerformSecondsCountdown(int duration, Action callback) //todo: move to static class?
     {
-        if (networkObjects.ContainsKey(networkObject.objectId))
+        StartCoroutine(PerformCountdown(duration, 1, callback));
+    }
+
+    IEnumerator PerformCountdown(float duration, float increment, Action callback) //todo: move to static class?
+    {
+        float countdownValue = 0;
+        while (countdownValue < duration)
         {
-            Destroy(networkObject.gameObject);
+            yield return new WaitForSeconds(increment);
+
+            countdownValue += increment;
         }
 
-        UnregisterNetworkedObject(networkObject);
+        callback?.Invoke();
     }
 }

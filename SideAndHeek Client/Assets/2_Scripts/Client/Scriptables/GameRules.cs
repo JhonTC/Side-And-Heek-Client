@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class GameRules : ScriptableObject
 {
     public ushort id;
     public GameType gameType;
     public string friendlyName;
+    public bool continuousFlop = false;
 
     public virtual void UpdateUI(ref Dictionary<int, LocalGameRule> localGameRules) {}
 
@@ -47,6 +49,11 @@ public class GameRules : ScriptableObject
     }
 
     public virtual void SetupUI(Transform parent, UIPanel uiPanel) {}
+
+    public virtual Dictionary<string, object> GetListOfValues() //Used in GameManagerEditor
+    {
+        return null;
+    }
 }
 
 public enum GameType

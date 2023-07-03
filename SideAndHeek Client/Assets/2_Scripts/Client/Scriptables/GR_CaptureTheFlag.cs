@@ -14,7 +14,6 @@ public class GR_CaptureTheFlag : GameRules
     public float maxScore = 5;
     public GameEndType gameEndType = GameEndType.Score;
     public CatchType catchType = CatchType.OnFlop;
-    public bool continuousFlop = false;
 
     public override void UpdateUI(ref Dictionary<int, LocalGameRule> localGameRules)
     {
@@ -68,5 +67,20 @@ public class GR_CaptureTheFlag : GameRules
         UIUtils.CreateUIForEnum<GameEndType>(3, "Game End Type", (int)catchType, uiPanel.OnEnumValueChanged, parent);
         UIUtils.CreateUIForEnum<CatchType>(4, "Catch Type", (int)catchType, uiPanel.OnEnumValueChanged, parent);
         UIUtils.CreateUIForBool(5, "Continuous Flop", continuousFlop, uiPanel.OnBoolValueChanged, parent);
+    }
+
+    public override Dictionary<string, object> GetListOfValues() //Used in GameManagerEditor
+    {
+        Dictionary<string, object> retList = new Dictionary<string, object>
+        {
+            { "Number Of Teams", numberOfTeams },
+            { "Game Length", gameLength },
+            { "Max Score", maxScore },
+            { "Game End Type", gameEndType },
+            { "Catch Type", catchType },
+            { "Continuous Flop", continuousFlop }
+        };
+
+        return retList;
     }
 }

@@ -2,195 +2,182 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Server
+[System.Serializable]
+public class BasePickup
 {
-    [System.Serializable]
-    public class BasePickup
+    public PickupSO pickupSO;
+
+    public BasePickup(PickupSO _pickupSO)
     {
-        public PickupSO pickupSO;
-
-        public BasePickup(PickupSO _pickupSO)
-        {
-            pickupSO = _pickupSO;
-        }
-
-        public virtual void PickupUsed() { }
+        pickupSO = _pickupSO;
     }
 
-    public class SuperFlop : BasePickup
+    public virtual void PickupUsed() { }
+}
+
+public class SuperFlop : BasePickup
+{
+    Player owner;
+
+    public SuperFlop(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
     {
-        Player owner;
-
-        public SuperFlop(PickupSO _pickupSO) : base(_pickupSO) {}
-        public SuperFlop(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
-        {
-            owner = _owner;
-        }
-
-        public override void PickupUsed()
-        {
-            //owner.movementController.flopForceMultiplier = pickupSO.power;
-            //owner.movementController.OnFlop();
-        }
+        owner = _owner;
     }
 
-    public class SuperJump : BasePickup
+    public override void PickupUsed()
     {
-        Player owner;
+        SimplePlayerController movementController = owner.playerMotor.GetMovementController();
+        movementController.flopForceMultiplier = pickupSO.power;
+        movementController.OnFlopKey(false);
 
-        public SuperJump(PickupSO _pickupSO) : base(_pickupSO) { }
-        public SuperJump(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
-        {
-            owner = _owner;
-        }
+        owner.ItemUseComplete();
+    }
+}
 
-        public override void PickupUsed()
-        {
-            //owner.movementController.jumpForceMultiplier = pickupSO.power;
-            //owner.movementController.OnJump();
-        }
+public class SuperJump : BasePickup
+{
+    Player owner;
+
+    public SuperJump(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
+    {
+        owner = _owner;
     }
 
-    public class JellyBombItem : BasePickup
+    public override void PickupUsed()
     {
-        Player owner;
-
-        public JellyBombItem(PickupSO _pickupSO) : base(_pickupSO) { }
-        public JellyBombItem(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
-        {
-            owner = _owner;
-        }
-
-        public override void PickupUsed()
-        {
-            //todo (only neeed for singleplayer mode)
-        }
+        SimplePlayerController movementController = owner.playerMotor.GetMovementController();
+        movementController.jumpForceMultiplier = pickupSO.power;
+        movementController.OnJump();
+        owner.ItemUseComplete();
     }
-    public class SuperSpeed : BasePickup
+}
+
+public class JellyBombItem : BasePickup
+{
+    Player owner;
+
+    public JellyBombItem(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
     {
-        Player owner;
-        float intialForwardForceMultipler;
-
-        public SuperSpeed(PickupSO _pickupSO) : base(_pickupSO) { }
-        public SuperSpeed(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
-        {
-            owner = _owner;
-        }
-
-        public override void PickupUsed()
-        {
-            //todo (only neeed for singleplayer mode)
-
-            //intialForwardForceMultipler = owner.movementController.forwardForceMultipler;
-            //owner.movementController.forwardForceMultipler = pickupSO.power;
-
-            //NetworkObjectsManager.instance.PerformSecondsCountdown((int)pickupSO.duration, OnComplete);
-        }
-
-        public void OnComplete()
-        {
-            //todo (only neeed for singleplayer mode)
-
-            //owner.movementController.forwardForceMultipler = intialForwardForceMultipler;
-        }
+        owner = _owner;
     }
 
-    public class Invisibility : BasePickup
+    public override void PickupUsed()
     {
-        Player owner;
+        NetworkObjectsManager.instance.itemHandler.SpawnItem(owner.Id, (int)pickupSO.pickupCode, owner.playerMotor.transform.position, owner.playerMotor.transform.rotation);
+        NetworkObjectsManager.instance.PerformSecondsCountdown((int)pickupSO.duration, OnComplete);
+    }
+    public void OnComplete()
+    {
+        owner.ItemUseComplete();
+    }
+}
 
-        public Invisibility(PickupSO _pickupSO) : base(_pickupSO) { }
-        public Invisibility(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
-        {
-            owner = _owner;
-        }
+public class SuperSpeed : BasePickup
+{
+    Player owner;
 
-        public override void PickupUsed()
-        {
-            //todo (only neeed for singleplayer mode)
-
-            //ServerSend.SetPlayerColour(owner.id, new Color(1, 1, 1, 0), false);
-
-            //NetworkObjectsManager.instance.PerformSecondsCountdown((int)pickupSO.duration, OnComplete);
-        }
-
-        public void OnComplete()
-        {
-            //todo (only neeed for singleplayer mode)
-
-            //ServerSend.SetPlayerColour(owner.id, owner.activeColour, false);
-        }
+    public SuperSpeed(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
+    {
+        owner = _owner;
     }
 
-    public class TeleportItem : BasePickup
+    public override void PickupUsed()
     {
-        Player owner;
+        SimplePlayerController movementController = owner.playerMotor.GetMovementController();
+        movementController.forwardForceMultipler = pickupSO.power;
 
-        public TeleportItem(PickupSO _pickupSO) : base(_pickupSO) { }
-        public TeleportItem(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
-        {
-            owner = _owner;
-        }
-
-        public override void PickupUsed()
-        {
-            //todo (only neeed for singleplayer mode)
-
-            //NetworkObjectsManager.instance.itemHandler.SpawnItem(owner.id, (int)pickupSO.pickupCode, owner.movementController.transform.position, owner.movementController.transform.rotation);
-        }
+        NetworkObjectsManager.instance.PerformSecondsCountdown((int)pickupSO.duration, OnComplete);
     }
 
-    public class Morph : BasePickup
+    public void OnComplete()
     {
-        Player owner;
+        SimplePlayerController movementController = owner.playerMotor.GetMovementController();
+        movementController.forwardForceMultipler = movementController.maxForwardForceMultipler;
+        owner.ItemUseComplete();
+    }
+}
 
-        public Morph(PickupSO _pickupSO) : base(_pickupSO) { }
-        public Morph(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
-        {
-            owner = _owner;
-        }
+public class Invisibility : BasePickup
+{
+    Player owner;
 
-        public override void PickupUsed()
-        {
-            //todo (only neeed for singleplayer mode)
-
-            //ServerSend.SetPlayerColour(owner.id, new Color(1, 1, 1, 0), false);
-
-            //NetworkObjectsManager.instance.PerformSecondsCountdown((int)pickupSO.duration, OnComplete);
-        }
-
-        public void OnComplete()
-        {
-            //todo (only neeed for singleplayer mode)
-
-            //ServerSend.SetPlayerColour(owner.id, owner.activeColour, false);
-        }
+    public Invisibility(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
+    {
+        owner = _owner;
     }
 
-    public class IceballItem : BasePickup
+    public override void PickupUsed()
     {
-        Player owner;
+        ServerSend.SetPlayerMaterialType(owner.Id, MaterialType.Invisible);
 
-        public IceballItem(PickupSO _pickupSO) : base(_pickupSO) { }
-        public IceballItem(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
-        {
-            owner = _owner;
-        }
+        NetworkObjectsManager.instance.PerformSecondsCountdown((int)pickupSO.duration, OnComplete);
+    }
 
-        public override void PickupUsed()
-        {
-            //todo (only neeed for singleplayer mode)
+    public void OnComplete()
+    {
+        ServerSend.SetPlayerMaterialType(owner.Id, MaterialType.Default);
+        owner.ItemUseComplete();
+    }
+}
 
-            //ServerSend.SetPlayerColour(owner.id, new Color(1, 1, 1, 0), false);
+public class TeleportItem : BasePickup
+{
+    Player owner;
 
-            //NetworkObjectsManager.instance.PerformSecondsCountdown((int)pickupSO.duration, OnComplete);
-        }
+    public TeleportItem(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
+    {
+        owner = _owner;
+    }
 
-        public void OnComplete()
-        {
-            //todo (only neeed for singleplayer mode)
+    public override void PickupUsed()
+    {
+        //NetworkObjectsManager.instance.itemHandler.SpawnItem(owner.id, (int)pickupSO.pickupCode, owner.movementController.transform.position, owner.movementController.transform.rotation);
+    }
+}
 
-            //ServerSend.SetPlayerColour(owner.id, owner.activeColour, false);
-        }
+public class Morph : BasePickup
+{
+    Player owner;
+    Color playerOGColour;
+
+    public Morph(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
+    {
+        owner = _owner;
+    }
+
+    public override void PickupUsed()
+    {
+        playerOGColour = owner.activeColour;
+
+        ServerSend.SetPlayerColour(owner.Id, GameManager.instance.hunterColour, false, true);
+
+        NetworkObjectsManager.instance.PerformSecondsCountdown((int)pickupSO.duration, OnComplete);
+    }
+
+    public void OnComplete()
+    {
+        ServerSend.SetPlayerColour(owner.Id, playerOGColour, false, true);
+        owner.ItemUseComplete();
+    }
+}
+
+public class IceballItem : BasePickup
+{
+    Player owner;
+
+    public IceballItem(PickupSO _pickupSO, Player _owner) : base(_pickupSO)
+    {
+        owner = _owner;
+    }
+
+    public override void PickupUsed()
+    {
+        NetworkObjectsManager.instance.itemHandler.SpawnItem(owner.Id, (int)pickupSO.pickupCode, owner.playerMotor.transform.position, owner.playerMotor.transform.rotation);
+        NetworkObjectsManager.instance.PerformSecondsCountdown((int)pickupSO.duration, OnComplete);
+    }
+
+    public void OnComplete()
+    {
+        owner.ItemUseComplete();
     }
 }

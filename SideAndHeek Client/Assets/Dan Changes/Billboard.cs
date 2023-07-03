@@ -8,9 +8,9 @@ public class Billboard : MonoBehaviour
 
     private void Start()
     {
-        target = LobbyManager.instance.billboardTarget;
+        target = GameManager.instance.billboardTarget;
     }
-
+    
     void Update()
     {
         transform.LookAt(target.position, Vector3.up);

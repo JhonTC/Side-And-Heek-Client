@@ -7,6 +7,8 @@ using Server;
 using System;
 using Riptide;
 using UnityEngine.InputSystem;
+using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
+using static UnityEditorInternal.ReorderableList;
 
 public enum CameraMode
 {
@@ -14,25 +16,177 @@ public enum CameraMode
     ThirdPerson
 }
 
+public enum PlayerType
+{
+    Default = 0,
+    Hunter,
+    Hider,
+    Spectator
+}
+
+public enum MaterialType
+{
+    Default = 0,
+    Invisible
+}
+
 public class Player : MonoBehaviour
 {
-    //public static Dictionary<ushort, Player> list = new Dictionary<ushort, Player>();
+    public static Dictionary<ushort, Player> list = new Dictionary<ushort, Player>();
+    public static Player LocalPlayer;
+    public ushort Id;// { get; private set; }
+    public bool IsLocal;// { get; private set; }
+    public string Username;// { get; private set; }
 
-    public ushort Id { get; private set; }
-    public bool IsLocal { get; private set; }
-    public string Username { get; private set; }
+    public bool isHost = false;
+    public bool isAuthority = false;
+    public bool isReady = false;
+
+    public PlayerType playerType = PlayerType.Default;
+    public PlayerType lastPlayerType = PlayerType.Default;
+
+    public PlayerMotor playerMotor;
+
+    public Camera thirdPersonCamera;
+    public Camera firstPersonCamera;
+    public Transform firstPersonCameraHolder;
+    public FollowPlayer followPlayerCamera;
+    public Transform shootDirectionUI;
+
+    public CameraMode cameraMode = CameraMode.ThirdPerson;
+    public float sensitivity = 1;
+    public Vector2 inputAim = Vector2.zero;
+
+    public Color hiderColour;
+    public Color seekerColour;
+
+    [HideInInspector] public Color activeColour;
+    [HideInInspector] public MaterialType materialType = MaterialType.Default;
+
+    [SerializeField] private Material defaultPlayerMaterial;
+    [SerializeField] private Material defaultEyeMaterial;
+    [SerializeField] private Material invisiblePlayerLocalMaterial;
+    [SerializeField] private Material invisiblePlayerClientMaterial;
+
+    [SerializeField] private float maxSoundDistance;
+
+    public AudioSource walkingAudioSource;
+    [SerializeField] private AudioClip[] walkingAudioClips;
+
+    public AudioSource collidingAudioSource;
+    [SerializeField] private AudioClip[] collidingAudioClips;
+    [Range(0, 0.5f)][SerializeField] private float collisionVolumeMultiplier;
+
+    public bool isBodyActive = false;
+
+    [HideInInspector] public bool footCollided = false;
+    [HideInInspector] public bool headCollided = false;
+
+    [SerializeField] private TextMeshProUGUI usernameText;
+
+    public Behaviour[] baseComponentsToDisable;
+
+    [SerializeField] private ParticleSystem walkingDustParticles;
+    private bool lastIsGrounded = false;
+
+    public ClientPlayerMotor clientPlayerMotorPrefab;
+    public ServerPlayerMotor serverPlayerMotorPrefab;
+    public ClientServerPlayerMotor clientServerPlayerMotorPrefab;
+
+    public bool isActivePickupInProgress = false; 
+    public BasePickup activePickup = null;
+
+    public Player activeSpectatingPlayer = null;
+
+    [HideInInspector]
+    public List<int> activePlayerCollisionIds = new List<int>();
+
+    [HideInInspector] public Vector3 shootDirection = Vector3.zero;
+    [HideInInspector] public float throwForce = 80;
+
+    public Transform feetMidpoint;
 
     private void OnDestroy()
     {
-        LobbyManager.players.Remove(Id);
+        list.Remove(Id);
+    }
+
+    public static void Spawn(ushort id, string username)
+    {
+        NetworkType networkType = NetworkManager.NetworkType;
+        Player player;
+        if (networkType == NetworkType.ServerOnly)
+        {
+            foreach (Player otherPlayer in list.Values)
+            {
+                otherPlayer.SendSpawned(id);
+            }
+
+            Transform spawnpoint = LevelManager.GetLevelManagerForScene(GameManager.instance.activeSceneName).GetNextSpawnpoint(list.Count <= 0);
+            player = Spawn(id, username, spawnpoint.position, NetworkManager.Instance.playerPrefab);
+
+            player.SendSpawned();
+        }
+        else if (networkType == NetworkType.ClientServer)
+        {
+            foreach (Player otherPlayer in list.Values)
+            {
+                otherPlayer.SendSpawned(id);
+            }
+
+            Transform spawnpoint = LevelManager.GetLevelManagerForScene(GameManager.instance.activeSceneName).GetNextSpawnpoint(list.Count <= 0);
+            player = Spawn(id, username, spawnpoint.position, NetworkManager.Instance.playerPrefab);
+
+            player.isAuthority = true;
+            player.SendSpawned();
+        }
+    }
+
+    public static Player Spawn(ushort id, string username, Vector3 position)
+    {
+        if (NetworkManager.NetworkType == NetworkType.ServerOnly)
+        {
+            Debug.LogError($"Function should not be called from server. Is used by client/p2p host");
+        }
+
+        Player player = Spawn(id, username, position, NetworkManager.Instance.playerPrefab);
+        //LobbyManager.instance.OnPlayerSpawned(player);
+
+        return player;
+    }
+
+    public static Player Spawn(ushort id, string username, Vector3 position, Player prefab)
+    {
+        Player player = Instantiate(prefab, position, Quaternion.identity);
+        player.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)}";
+        player.Id = id;
+        player.Username = string.IsNullOrEmpty(username) ? $"Guest {id}" : username;
+        player.isHost = list.Count <= 0;
+        player.IsLocal = NetworkManager.Instance.IsLocalPlayer(id);
+
+        player.Init();
+
+        list.Add(id, player);
+
+        if (player.IsLocal)
+        {
+            LocalPlayer = player;
+            Camera.main.gameObject.SetActive(false);
+        }
+
+        player.SpawnBody();
+
+        Debug.Log($"Player Spawned: {player.Username}.");
+
+        return player;
     }
 
     public static void Spawn(ushort id, string username, bool isHost, bool isReady, Vector3 position, Color colour)
     {
-        Player player = Instantiate(LobbyManager.instance.playerPrefab, position, Quaternion.identity);
+        Player player = Instantiate(NetworkManager.Instance.playerPrefab, position, Quaternion.identity);
         if (id == NetworkManager.Instance.Client.Id)
         {
-            LobbyManager.localPlayer = player;
+            LocalPlayer = player;
             player.IsLocal = true;
         }
         else
@@ -43,101 +197,49 @@ public class Player : MonoBehaviour
         player.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)}";
         player.Id = id;
         player.Username = username;
-
         if (player.IsLocal)
         {
             player.isHost = isHost;
         }
-
         player.isReady = isReady;
         player.Init();
 
-        LobbyManager.instance.OnPlayerSpawned(player);
+        list.Add(id, player);
 
+        GameManager.instance.OnPlayerSpawned(player);
+
+        player.SpawnBody();
         player.ChangeBodyColour(colour, player.playerType == PlayerType.Hunter);
     }
 
-    public bool isReady = false;
-    public bool isHost = false;
-    public PlayerType playerType = PlayerType.Default;
-    public PlayerType lastPlayerType = PlayerType.Default;
+    private void SendSpawned()
+    {
+        NetworkManager.Instance.Server.SendToAll(AddSpawnData(Message.Create(MessageSendMode.Reliable, ServerToClientId.playerSpawned)));
+    }
+    private void SendSpawned(ushort toClientId)
+    {
+        NetworkManager.Instance.Server.Send(AddSpawnData(Message.Create(MessageSendMode.Reliable, ServerToClientId.playerSpawned)), toClientId);
+    }
+    private Message AddSpawnData(Message message)
+    {
+        message.AddUShort(Id);
+        message.AddString(Username);
+        message.AddVector3(transform.position);
 
-    [SerializeField] private TextMeshProUGUI usernameText;
-
-    public PlayerMotor playerMotor;
-
-    public GameObject[] layersToChange;
-    public Behaviour[] baseComponentsToDisable;
-    public Behaviour[] extraComponentsToDisable;
-
-    public Camera thirdPersonCamera;
-    public Camera firstPersonCamera;
-    public Transform firstPersonCameraHolder;
-
-    public Transform shootDirectionUI;
-
-    public CameraMode cameraMode = CameraMode.ThirdPerson;
-    public float sensitivity = 1;
-
-    public Color hiderColour;
-    public Color seekerColour;
-
-    public BasePickup activePickup = null;
-
-    public Player activeSpectatingPlayer = null;
-
-    public float clickRange;
-
-    [SerializeField] private float maxSoundDistance;
-
-    [SerializeField] private AudioSource walkingAudioSource;
-    [SerializeField] private AudioClip[] walkingAudioClips;
-
-    [SerializeField] private AudioSource collidingAudioSource;
-    [SerializeField] private AudioClip[] collidingAudioClips;
-    [Range(0, 0.5f)][SerializeField] private float collisionVolumeMultiplier;
-
-    [SerializeField] private ParticleSystem walkingDustParticles;
-    private bool lastIsGrounded = false;
-
-    [SerializeField] private Material defaultPlayerMaterial;
-    [SerializeField] private Material defaultEyeMaterial;
-    [SerializeField] private Material invisiblePlayerLocalMaterial;
-    [SerializeField] private Material invisiblePlayerClientMaterial;
-
-    public MaterialType materialType = MaterialType.Default;
-
-    public bool isActivePickupInProgress = false;
-
-    public Vector2 inputAim = Vector2.zero;
+        return message;
+    }
 
     private void Awake()
     {
         DontDestroyOnLoad(this);
     }
 
-    protected virtual void Update()
-    {
-        if (IsLocal)
-        {
-            if (shootDirectionUI.gameObject.activeSelf) //todo: make controller friendly
-            {
-                Vector3 mousePosition = Mouse.current.position.ReadValue();
-                mousePosition.z = 0;
-
-                Vector3 playerPos = thirdPersonCamera.WorldToScreenPoint(playerMotor.root.position);
-                Vector3 direction = mousePosition - playerPos;
-                float angle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg;
-
-                shootDirectionUI.rotation = Quaternion.AngleAxis(angle, Vector3.up);
-            }
-        }
-    }
-
     protected virtual void FixedUpdate()
     {
-        playerMotor.head.position = Vector3.Lerp(playerMotor.head.position, playerMotor.root.position, 1f);
-        playerMotor.head.rotation = Quaternion.Lerp(playerMotor.head.rotation, playerMotor.root.rotation, 1f);
+        if (isBodyActive)
+        {
+            usernameText.transform.position = playerMotor.root.transform.position + Vector3.up * 1.5f;
+        }
     }
 
     public void OnAim(InputAction.CallbackContext value)
@@ -159,30 +261,6 @@ public class Player : MonoBehaviour
                 if (Physics.Raycast(ray, out hit))
                 {
                     Debug.DrawRay(ray.origin, ray.direction);
-
-                    if (hit.collider.tag == "GameStartObject")
-                    {
-                        if (!LobbyManager.instance.tryStartGameActive)
-                        {
-                            Debug.Log("Attempting Start Game: Sending message to server");
-
-                            LobbyManager.instance.tryStartGameActive = true;
-
-                            if (GameManager.instance.networkType == NetworkType.Multiplayer)
-                            {
-                                ClientSend.TryStartGame();
-                            }
-                            else if (GameManager.instance.networkType == NetworkType.Singleplayer)
-                            {
-                                LocalGameManager localGameManager = GameManager.instance as LocalGameManager;
-                                //localGameManager.TryStartGame(Id);
-                            }
-                        }
-                        else
-                        {
-                            Debug.Log("Failed Start Game: Already trying to start the game");
-                        }
-                    }
                 }
             }
         }
@@ -190,18 +268,24 @@ public class Player : MonoBehaviour
 
     public virtual void Init()
     {
-        if (usernameText)
+        if (NetworkManager.NetworkType == NetworkType.Client || NetworkManager.NetworkType == NetworkType.ClientServer)
         {
-            usernameText.text = Username;
-        }
+            if (usernameText)
+            {
+                usernameText.text = Username;
+            }
 
-        if (!IsLocal)
+            if (!IsLocal)
+            {
+                DisableBaseComponents();
+                thirdPersonCamera.gameObject.SetActive(false);
+            }
+        }
+        else
         {
             DisableBaseComponents();
             thirdPersonCamera.gameObject.SetActive(false);
         }
-
-        SetPlayerReady(isReady);
     }
 
     private void DisableBaseComponents()
@@ -213,55 +297,18 @@ public class Player : MonoBehaviour
         thirdPersonCamera.enabled = false;
     }
 
-    private void DisableExtraComponents()
-    {
-        foreach (Behaviour component in extraComponentsToDisable)
-        {
-            component.enabled = false;
-        }
-    }
-
-    private bool IsPickupInProgress()
-    {
-        if (activePickup != null)
-        {
-            if (activePickup.pickupSO != null)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void SetRootRotation(Quaternion _rootRotation)
-    {
-        playerMotor.root.rotation = _rootRotation;
-    }
-    public void SetPlayerPositions(Vector3 _headPos, Vector3 _rightFootPos, Vector3 _leftFootPos, Vector3 _rightLegPos, Vector3 _leftLegPos)
-    {
-        playerMotor.root.position = _headPos;
-        playerMotor.rightFoot.position = _rightFootPos;
-        playerMotor.leftFoot.position = _leftFootPos;
-        playerMotor.rightLeg.position = _rightLegPos;
-        playerMotor.leftLeg.position = _leftLegPos;
-    }
-    public void SetPlayerRotations(Quaternion _rightFootRot, Quaternion _leftFootRot, Quaternion _rightLegRot, Quaternion _leftLegRot)
-    {
-        playerMotor.rightFoot.rotation = _rightFootRot;
-        playerMotor.leftFoot.rotation = _leftFootRot;
-        playerMotor.rightLeg.rotation = _rightLegRot;
-        playerMotor.leftLeg.rotation = _leftLegRot;
-    }
     public void SetPlayerState(bool _isGrounded, float _inputSpeed, bool _isJumping, bool _isFlopping, bool _isSneaking, bool _headCollided, float _collisionVolume, bool _footCollided)
     {
+        headCollided = _headCollided;
+        footCollided = _footCollided;
+
         if (_isGrounded && (_inputSpeed != 0 || lastIsGrounded != _isGrounded) && !_isFlopping && !_isJumping && !_isSneaking)
         {
             if (!walkingDustParticles.isPlaying)
             {
                 walkingDustParticles.Play();
             }
-        } 
+        }
         else
         {
             if (walkingDustParticles.isPlaying)
@@ -272,7 +319,7 @@ public class Player : MonoBehaviour
 
         lastIsGrounded = _isGrounded;
 
-        if (_headCollided)
+        if (headCollided)
         {
             if (!collidingAudioSource.isPlaying)
             {
@@ -286,7 +333,7 @@ public class Player : MonoBehaviour
             }
         }
 
-        if (_footCollided)
+        if (footCollided)
         {
             if (!collidingAudioSource.isPlaying)
             {
@@ -297,15 +344,62 @@ public class Player : MonoBehaviour
         }
     }
 
+    public void SpawnBody()
+    {
+        if (!isBodyActive)
+        {
+            PlayerMotor motorPrefab = serverPlayerMotorPrefab;
+            switch (NetworkManager.NetworkType)
+            {
+                case NetworkType.Client:
+                    motorPrefab = clientPlayerMotorPrefab;
+                    break;
+                case NetworkType.ClientServer:
+                    if (IsLocal)
+                    {
+                        motorPrefab = clientServerPlayerMotorPrefab;
+                    }
+                    break;
+            }
+
+            playerMotor = Instantiate(motorPrefab, transform);
+            playerMotor.Init(this);
+            followPlayerCamera.ChangeTarget(playerMotor.root.transform);
+            isBodyActive = true;
+        }
+    }
+
+    public void DespawnPlayer()
+    {
+        if (isBodyActive)
+        {
+            isBodyActive = false;
+
+            Destroy(playerMotor.gameObject);
+        }
+    }
+
     public void SetPlayerReady() { SetPlayerReady(!isReady); }
-    public void SetPlayerReady(bool _isReady)
+    public void SetPlayerReady(bool _isReady, bool sendMessage = true)
     {
         isReady = _isReady;
-        if (usernameText)
+
+        if (NetworkManager.NetworkType != NetworkType.Client)
         {
-            usernameText.color = isReady ? LobbyManager.instance.readyColour : LobbyManager.instance.unreadyTextColour;
+            if (sendMessage)
+            {
+                ServerSend.PlayerReadyToggled(Id, isReady);
+            }
         }
-        UIManager.instance.UpdateLobbyPanel();
+
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly)
+        {
+            if (usernameText)
+            {
+                usernameText.color = isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyTextColour;
+            }
+            UIManager.instance.UpdateLobbyPanel();
+        }
     }
 
     public void ChangeBodyColour(Color colour, bool isSeekerColour, bool isSpecialColour = false)
@@ -323,7 +417,8 @@ public class Player : MonoBehaviour
             }
 
             ChangeBodyColour(isSeekerColour);
-        } else
+        }
+        else
         {
             ChangeBodyColour(colour);
         }
@@ -370,7 +465,8 @@ public class Player : MonoBehaviour
             if (IsLocal)
             {
                 newMaterial = invisiblePlayerLocalMaterial;
-            } else
+            }
+            else
             {
                 newMaterial = invisiblePlayerClientMaterial;
             }
@@ -384,7 +480,7 @@ public class Player : MonoBehaviour
         lastPlayerType = playerType;
         playerType = _playerType;
 
-        GameManager.instance.gameMode.OnPlayerTypeChanged(this);
+        //GameManager.instance.gameMode.OnPlayerTypeChanged(this);
 
         if (materialType == MaterialType.Default)
         {
@@ -405,7 +501,8 @@ public class Player : MonoBehaviour
                 default:
                     break;
             }
-        } else
+        }
+        else
         {
             ChangeMaterialType(MaterialType.Default);
         }
@@ -453,14 +550,17 @@ public class Player : MonoBehaviour
 
     public virtual void PickupPickedUp(PickupSO _pickupSO)
     {
-        activePickup = NetworkObjectsManager.instance.pickupHandler.HandlePickup(_pickupSO);
+        activePickup = NetworkObjectsManager.instance.pickupHandler.HandlePickup(_pickupSO, this);
 
-        if (IsLocal)
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly)
         {
-            UIManager.instance.gameplayPanel.SetItemDetails(_pickupSO);
-            if (activePickup.pickupSO.sendDirection)
+            if (IsLocal)
             {
-                shootDirectionUI.gameObject.SetActive(true);
+                UIManager.instance.gameplayPanel.SetItemDetails(_pickupSO);
+                if (activePickup.pickupSO.sendDirection)
+                {
+                    shootDirectionUI.gameObject.SetActive(true);
+                }
             }
         }
     }
@@ -501,27 +601,69 @@ public class Player : MonoBehaviour
         {
             UIManager.instance.ClosePanel(UIPanelType.Spectate, true);
             print($"Spectator camera reset to self");
-            thirdPersonCamera.GetComponent<FollowPlayer>().ChangeTarget(playerMotor.root);
+            //thirdPersonCamera.GetComponent<FollowPlayer>().ChangeTarget(playerMotor.root);
 
-        } 
+        }
         else
         {
             print($"Spectating player: {activeSpectatingPlayer}");
-            thirdPersonCamera.GetComponent<FollowPlayer>().ChangeTarget(activeSpectatingPlayer.playerMotor.root);
+            //thirdPersonCamera.GetComponent<FollowPlayer>().ChangeTarget(activeSpectatingPlayer.playerMotor.root);
         }
     }
-}
 
-public enum PlayerType
-{
-    Default = 0,
-    Hunter,
-    Hider,
-    Spectator
-}
+    #region ServerFunctions
+    public bool AttemptPickupItem()
+    {
+        if (activePickup != null)
+        {
+            if (activePickup.pickupSO != null)
+            {
+                return false;
+            }
+        }
 
-public enum MaterialType
-{
-    Default = 0,
-    Invisible
+        return true;
+    }
+
+    public void TeleportPlayer(Transform _spawnpoint)
+    {
+        DespawnPlayer();
+        transform.position = _spawnpoint.position;
+        ServerSend.PlayerTeleported(Id, _spawnpoint.position);
+        SpawnBody();
+    }
+
+    public void SetPlayerType(PlayerType type, bool isFirstHunter = false, bool sendMessage = true)
+    {
+        playerType = type;
+
+        GameManager.instance.gameMode.OnPlayerTypeSet(this, playerType, isFirstHunter);
+
+        activePickup = null;
+
+        if (sendMessage)
+        {
+            ServerSend.SetPlayerType(Id, playerType, true);
+        }
+    }
+
+    public void PickupUsed()
+    {
+        if (activePickup != null)
+        {
+            if (NetworkManager.NetworkType != NetworkType.Client) // can only be called from server owners
+            {
+                Debug.Log("Item Used");
+                activePickup.PickupUsed();
+            }
+        }
+    }
+
+    public void ItemUseComplete()
+    {
+        activePickup = null;
+        ServerSend.ItemUseComplete(Id);
+    }
+
+    #endregion
 }

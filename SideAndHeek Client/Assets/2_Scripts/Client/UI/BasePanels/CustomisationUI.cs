@@ -21,25 +21,15 @@ public class CustomisationUI : TabView
     {
         UIManager.instance.OnBackButtonPressed();
 
-        if (GameManager.instance.networkType == NetworkType.Multiplayer)
-        {
-            ClientSend.SetPlayerColour(colourItem.colour, false);
-        }
-        else
-        {
-            LobbyManager.localPlayer.ChangeBodyColour(colourItem.colour, false);
-        }
+        ClientSend.SetPlayerColour(colourItem.colour, false);
     }
 
     public void OnSeekerColourChangeButtonPressed(ColourItem colourItem)
     {
         UIManager.instance.OnBackButtonPressed();
 
-        LobbyManager.localPlayer.ChangeBodyColour(colourItem.colour, true);
+        Player.LocalPlayer.ChangeBodyColour(colourItem.colour, true);
 
-        if (GameManager.instance.networkType == NetworkType.Multiplayer)
-        {
-            ClientSend.SetPlayerColour(colourItem.colour, true);
-        }
+        ClientSend.SetPlayerColour(colourItem.colour, true);
     }
 }

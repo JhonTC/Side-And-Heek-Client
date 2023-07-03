@@ -1,14 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
     public PickupCollection collection;
-    public GameRules gameRules;
     public GameType gameType = GameType.HideAndSeek;
     public GameMode gameMode;
 
@@ -18,15 +19,29 @@ public class GameManager : MonoBehaviour
 
     protected int currentTime = 0;
 
-    public NetworkType networkType;
-
+    public string activeSceneName = "Lobby";
     public string lobbyScene;
 
     public GameObject gameStartCollider;
 
-    [HideInInspector] public Color[] hiderColours;
+    public Color[] hiderColours;
+    public Color hunterColour;
 
     private AudioSource music;
+
+    public bool tryStartGameActive = false;
+
+    public Color unreadyColour;
+    public Color unreadyTextColour;
+    public Color readyColour;
+
+    public GameObject sceneCamera;
+
+    public Transform billboardTarget;
+
+    public Dictionary<Color, bool> chosenDefaultColours = new Dictionary<Color, bool>();
+
+    [HideInInspector] public List<Player> lastMainHunterPlayers = new List<Player>(); //todo:Move somewhere?? - cant go to gamemode as it gets cleared when updated
 
     private void Awake()
     {
@@ -49,7 +64,26 @@ public class GameManager : MonoBehaviour
         FadeMusic(false);
 
         gameMode = GameMode.CreateGameModeFromType(gameType);
-        gameRules = GameRules.CreateGameRulesFromType(gameType); //todo: move inside gameMode
+        gameMode.SetGameRules(GameRules.CreateGameRulesFromType(gameType)); //todo: replace with default mode?
+
+        if (NetworkManager.NetworkType != NetworkType.Client)
+        {
+            foreach (Color colour in hiderColours)
+            {
+                chosenDefaultColours.Add(colour, false);
+            }
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (NetworkManager.NetworkType != NetworkType.Client)
+        {
+            if (gameStarted)
+            {
+                gameMode.FixedUpdate();
+            }
+        }
     }
 
     private void OnApplicationQuit()
@@ -83,16 +117,39 @@ public class GameManager : MonoBehaviour
     public void GameOver() //Todo:Make a roundManager separate to gameManager
     {
         gameStarted = false;
+        tryStartGameActive = false;
 
-        foreach (Player player in LobbyManager.players.Values)
+        foreach (Player player in Player.list.Values)
         {
-            player.OnGameOver();
+            if (NetworkManager.NetworkType != NetworkType.Client)
+            {
+                player.TeleportPlayer(LevelManager.GetLevelManagerForScene("Lobby").GetNextSpawnpoint(!gameStarted && player.isHost));
+                player.SetPlayerReady(false, false);
+                player.SetPlayerType(PlayerType.Default, false, false);
+            }
+
+            if (NetworkManager.NetworkType != NetworkType.ServerOnly)
+            {
+                player.OnGameOver();
+            }
         }
 
-        PickupSpawner.DestroyPickupSpawners();
-        NetworkObjectsManager.instance.ClearAllSpawnedNetworkObjects();
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly)
+        {
+            PickupSpawner.DestroyPickupSpawners();
+            NetworkObjectsManager.instance.ClearAllSpawnedNetworkObjects();
+        }
 
-        LobbyManager.instance.tryStartGameActive = false;
+        if (NetworkManager.NetworkType != NetworkType.Client)
+        {
+            gameMode.GameOver();
+            ServerSend.GameOver();
+
+            NetworkObjectsManager.instance.ClearAllSpawnedNetworkObjects();
+
+            SceneManager.UnloadSceneAsync(gameMode.sceneName);
+            ServerSend.UnloadScene(gameMode.sceneName);
+        }
 
         Debug.Log("Game Over!");
 
@@ -109,37 +166,57 @@ public class GameManager : MonoBehaviour
 
     protected virtual void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
     {
+        activeSceneName = _scene.name;
         SceneManager.SetActiveScene(_scene);
 
-        if (_scene.name != lobbyScene)
+        if (NetworkManager.NetworkType != NetworkType.Client)
         {
-            gameStarted = true;
-            gameStartCollider.SetActive(false);
-
-            foreach (Player player in LobbyManager.players.Values)
+            if (LevelManager.GetLevelManagerForScene(activeSceneName).levelType == LevelType.Map)
             {
-                player.OnGameStart();
+                gameStarted = true;
+                gameMode.GameStart();
             }
+        }
 
-            UIManager.instance.CloseHistoryPanels(); //move call to gamestart
-        } 
-        else
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly)
         {
-            gameStartCollider.SetActive(true);
+            if (_scene.name != lobbyScene)
+            {
+                gameStarted = true;
+                gameStartCollider.SetActive(false);
+
+                foreach (Player player in Player.list.Values)
+                {
+                    player.OnGameStart();
+                }
+
+                UIManager.instance.CloseHistoryPanels(); //move call to gamestart
+            }
+            else
+            {
+                gameStartCollider.SetActive(true);
+            }
         }
     }
 
     bool destoryItemSpawners;
     protected virtual void OnLevelFinishedUnloading(Scene _scene)
     {
-        if (SceneManager.GetActiveScene().name == lobbyScene)
+        activeSceneName = lobbyScene;
+
+        foreach (Player player in Player.list.Values)
+        {
+            player.activePickup = null;
+        }
+
+        if (NetworkManager.NetworkType != NetworkType.Client)
+        {
+            PickupHandler.ResetPickupLog();
+        }
+
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly)
         {
             gameStartCollider.SetActive(true);
-            foreach (Player player in LobbyManager.players.Values)
-            {
-                player.activePickup = null;
-            }
-
             UIManager.instance.gameplayPanel.SetItemDetails();
         }
     }
@@ -179,14 +256,22 @@ public class GameManager : MonoBehaviour
     public void GameTypeChanged(GameType _gameType)
     {
         gameType = _gameType;
-        UIManager.instance.gameRulesPanel.OnGameTypeChangedRemotely(false);
         gameMode = GameMode.CreateGameModeFromType(gameType);
+
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly)
+        {
+            UIManager.instance.gameRulesPanel.OnGameTypeChangedRemotely(false);
+        }
     }
 
     public void GameRulesChanged(GameRules _gameRules)
     {
-        gameRules = _gameRules;
-        UIManager.instance.gameRulesPanel.OnGameRulesUpdatedRemotely(gameRules);
+        gameMode.SetGameRules(_gameRules);
+
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly)
+        {
+            UIManager.instance.gameRulesPanel.OnGameRulesUpdatedRemotely(_gameRules);
+        }
     }
 
     public void FadeMusic(bool fadeOut)
@@ -227,12 +312,180 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-}
 
-public enum NetworkType
-{
-    Singleplayer,
-    Multiplayer
+    public void OnLocalPlayerDisconnection()
+    {
+        billboardTarget.SetParent(transform, false);
+
+        foreach (Player player in Player.list.Values)
+        {
+            UIManager.instance.RemovePlayerReady(player.Id);
+            Destroy(player.gameObject);
+        }
+        Player.list.Clear();
+
+        sceneCamera.SetActive(true);
+
+        if (gameStarted)
+        {
+            UnloadScene(SceneManager.GetActiveScene().name, true);
+        }
+        else
+        {
+            PickupSpawner.DestroyPickupSpawners();
+        }
+    }
+
+
+
+
+
+
+    public void TryStartGame(int _fromClient)
+    {
+        if (!tryStartGameActive)
+        {
+            if (AreAllPlayersReady())
+            {
+                gameMode.TryGameStartSuccess();
+
+                tryStartGameActive = true;
+
+                LevelManager.GetLevelManagerForScene(activeSceneName).LoadScene(gameMode.sceneName, LevelType.Map);
+                ServerSend.ChangeScene(gameMode.sceneName);
+            }
+            else
+            {
+                ServerSend.SendErrorResponse(ErrorResponseCode.NotAllPlayersReady);
+                tryStartGameActive = false;
+            }
+        }
+        else
+        {
+            ServerSend.SendErrorResponse(ErrorResponseCode.NotAllPlayersReady); //TODO:Change to different message(game already trying to start)
+            tryStartGameActive = false;
+        }
+    }
+
+    private bool AreAllPlayersReady()
+    {
+        foreach (Player player in Player.list.Values)
+        {
+            if (!player.isReady)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void CheckForGameOver()
+    {
+        if (gameMode.CheckForGameOver())
+        {
+            GameOver();
+        }
+    }
+
+    public bool ClaimHiderColour(Color previousColour, Color newColour)
+    {
+        if (chosenDefaultColours.ContainsKey(newColour))
+        {
+            if (!chosenDefaultColours[newColour])
+            {
+                if (chosenDefaultColours.ContainsKey(previousColour))
+                {
+                    if (chosenDefaultColours[previousColour])
+                    {
+                        chosenDefaultColours[previousColour] = false;
+                    }
+                }
+
+                return chosenDefaultColours[newColour] = true;
+            }
+        }
+
+        return false;
+    }
+
+    public void UnclaimHiderColour(Color colour)
+    {
+        if (chosenDefaultColours.ContainsKey(colour))
+        {
+            if (chosenDefaultColours[colour])
+            {
+                chosenDefaultColours[colour] = false;
+            }
+        }
+    }
+
+    public Color GetNextAvaliableColour()
+    {
+        foreach (Color colour in chosenDefaultColours.Keys)
+        {
+            if (!chosenDefaultColours[colour])
+            {
+                chosenDefaultColours[colour] = true;
+                return colour;
+            }
+        }
+
+        throw new System.Exception("ERROR: No colours are left to choose from");
+    }
+
+    public void OnPlayerLeft(ushort playerId)
+    {
+        bool isLeavingPlayerHost = Player.list[playerId].isHost;
+
+        if (gameStarted)
+        {
+            gameMode.OnPlayerLeft(Player.list[playerId]);
+        }
+
+        UnclaimHiderColour(Player.list[playerId].activeColour);
+
+        Player.list[playerId].DespawnPlayer();
+        Destroy(Player.list[playerId].gameObject);
+        Player.list.Remove(playerId);
+
+        CheckForGameOver();
+
+        if (Player.list.Count > 0)
+        {
+            if (isLeavingPlayerHost)
+            {
+                //Player.AppointNewHost(); //todo: needs managing depending on whether NetworkType is ClientServer or just Server...
+            }
+        }
+        else
+        {
+            //Application.Quit();
+            Debug.LogWarning("Last Player left, server should close");
+        }
+    }
+
+    public void OnPlayerSpawned(Player _player)
+    {
+        if (_player.IsLocal)
+        {
+            sceneCamera.SetActive(false);
+
+            if (_player.isHost)
+            {
+                if (NetworkManager.NetworkType == NetworkType.Client)
+                {
+                    ClientSend.GameRulesChanged(gameMode.GetGameRules());
+                }
+                else if (NetworkManager.NetworkType == NetworkType.ClientServer)
+                {
+                    GameRulesChanged(gameMode.GetGameRules()); //todo: We might be double setting this value is Network type is ClientServer
+                }
+            }
+
+            billboardTarget.SetParent(Camera.main.transform, false);
+        }
+    }
 }
 
 public enum FootstepType

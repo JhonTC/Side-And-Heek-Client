@@ -254,7 +254,7 @@ public class UIManager : MonoBehaviour
         {
             if (playerReadyGems.ContainsKey(i)) {
                 readyGemRenderers[i].enabled = true;
-                readyGemRenderers[i].material.SetColor("_EmissionColor", LobbyManager.players[playerReadyGems[i]].isReady ? LobbyManager.instance.readyColour : LobbyManager.instance.unreadyColour);
+                readyGemRenderers[i].material.SetColor("_EmissionColor", Player.list[playerReadyGems[i]].isReady ? GameManager.instance.readyColour : GameManager.instance.unreadyColour);
             } else
             {
                 readyGemRenderers[i].enabled = false;

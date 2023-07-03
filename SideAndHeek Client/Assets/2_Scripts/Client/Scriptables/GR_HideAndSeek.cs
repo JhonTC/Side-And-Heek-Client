@@ -22,8 +22,6 @@ public class GR_HideAndSeek : GameRules
     public HiderFallRespawnType fallRespawnType = HiderFallRespawnType.Hider;
     public FallRespawnLocation fallRespawnLocation = FallRespawnLocation.Centre;
 
-    public bool continuousFlop = false;
-
     public override void UpdateUI(ref Dictionary<int, LocalGameRule> localGameRules)
     {
         localGameRules[0].UpdateUI(gameLength);
@@ -91,5 +89,23 @@ public class GR_HideAndSeek : GameRules
         UIUtils.CreateUIForEnum<HiderFallRespawnType>(   6, "Fall Respawn Type", (int)fallRespawnType, uiPanel.OnEnumValueChanged, parent);
         UIUtils.CreateUIForEnum<FallRespawnLocation>(    7, "Fall Respawn Location", (int)fallRespawnLocation, uiPanel.OnEnumValueChanged, parent);
         UIUtils.CreateUIForBool(                         8, "Continuous Flop", continuousFlop, uiPanel.OnBoolValueChanged, parent);
+    }
+
+    public override Dictionary<string, object> GetListOfValues() //Used in GameManagerEditor
+    {
+        Dictionary<string, object> retList = new Dictionary<string, object>
+        {
+            { "Game Length", gameLength },
+            { "Number Of Hunters", numberOfHunters },
+            { "Catch Type", catchType },
+            { "Hiding Time", hidingTime },
+            { "Speed Boost Type", speedBoostType },
+            { "Speed Multiplier", speedMultiplier },
+            { "Fall Respawn Type", fallRespawnType },
+            { "Fall Respawn Location", fallRespawnLocation },
+            { "Continuous Flop", continuousFlop }
+        };
+
+        return retList;
     }
 }

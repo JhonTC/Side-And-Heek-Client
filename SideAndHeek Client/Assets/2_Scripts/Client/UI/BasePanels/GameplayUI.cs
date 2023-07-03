@@ -31,10 +31,10 @@ public class GameplayUI : UIPanel
 
         for (int i = 0; i < playerTypeViews.Length; i++)
         {
-            if (LobbyManager.players.Count > i)
+            if (Player.list.Count > i)
             {
                 playerTypeViews[i].gameObject.SetActive(true);
-                playerTypeViews[i].SetPlayerTypeViewColour(LobbyManager.players.ElementAt(i).Value.hiderColour);
+                playerTypeViews[i].SetPlayerTypeViewColour(Player.list.ElementAt(i).Value.hiderColour);
             }
             else
             {
@@ -47,11 +47,11 @@ public class GameplayUI : UIPanel
     {
         for (int i = 0; i < playerTypeViews.Length; i++)
         {
-            if (LobbyManager.players.Count > i)
+            if (Player.list.Count > i)
             {
                 playerTypeViews[i].gameObject.SetActive(true);
 
-                Player player = LobbyManager.players.ElementAt(i).Value;
+                Player player = Player.list.ElementAt(i).Value;
 
                 playerTypeViews[i].SetPlayerTypeViewColour((player.playerType == PlayerType.Hider || player.playerType == PlayerType.Default) ? player.hiderColour : player.seekerColour);
             }

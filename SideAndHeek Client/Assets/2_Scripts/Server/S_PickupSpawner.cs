@@ -60,7 +60,7 @@ namespace Server
         {
             hasPickup = false;
 
-            LobbyManager.players[_byPlayer].PickupPickedUp(activePickup.activeObjectDetails.pickupSO);
+            Player.list[_byPlayer].PickupPickedUp(activePickup.activeObjectDetails.pickupSO);
             activePickup = null;
 
             StartCoroutine(SpawnPickup());

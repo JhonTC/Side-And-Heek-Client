@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class LobbyManager : MonoBehaviour
+/*public class LobbyManager : MonoBehaviour
 {
     public static LobbyManager instance;
 
-    public static Dictionary<ushort, Player> players = new Dictionary<ushort, Player>();
-    public static Player localPlayer;
+    //public static Dictionary<ushort, Player> players = new Dictionary<ushort, Player>();
+    //public static Player localPlayer;
 
     public GameObject sceneCamera;
     public Player playerPrefab;
@@ -66,7 +66,7 @@ public class LobbyManager : MonoBehaviour
             //GameManager.instance.ResetLocalPlayerCamera(sceneCamera.transform.position, true);
             sceneCamera.SetActive(false);
 
-            if (_player.isHost && GameManager.instance.networkType == NetworkType.Multiplayer)
+            if (_player.isHost)
             {
                 ClientSend.GameRulesChanged(GameManager.instance.gameRules);
             }
@@ -76,4 +76,4 @@ public class LobbyManager : MonoBehaviour
 
         players.Add(_player.Id, _player);
     }
-}
+}*/

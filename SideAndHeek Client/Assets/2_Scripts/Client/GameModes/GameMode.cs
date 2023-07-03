@@ -7,6 +7,8 @@ using UnityEngine;
 public class GameMode
 {
     public string friendlyName;
+    public string sceneName;
+    protected GameRules gameRules;
 
     public virtual void Init()
     {
@@ -40,5 +42,79 @@ public class GameMode
         gameMode.Init();
 
         return gameMode;
+    }
+
+    public GameRules GetGameRules()
+    {
+        return gameRules;
+    }
+
+    public virtual void SetGameRules(GameRules gameRules)
+    {
+
+    }
+
+    public virtual void TryGameStartSuccess()
+    {
+
+    }
+
+    public virtual void GameStart()
+    {
+
+    }
+
+    public virtual void FixedUpdate()
+    {
+
+    }
+
+    public virtual void GameOver()
+    {
+
+    }
+
+    public virtual bool CheckForGameOver()
+    {
+        return false;
+    }
+
+    public virtual void AddGameStartMessageValues(ref Message message)
+    {
+
+    }
+    public virtual void AddGameOverMessageValues(ref Message message)
+    {
+
+    }
+
+    public virtual void OnPlayerCollision(Player player, Player other)
+    {
+
+    }
+
+    public virtual void OnPlayerTypeSet(Player player, PlayerType playerType, bool isFirstHunter)
+    {
+
+    }
+
+    public virtual void OnPlayerHitFallDetector(Player player)
+    {
+
+    }
+
+    public virtual void OnSceneLoaded()
+    {
+
+    }
+
+    public virtual void OnTeamScore(ushort teamId)
+    {
+
+    }
+
+    public virtual void OnPlayerLeft(Player player)
+    {
+
     }
 }

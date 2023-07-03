@@ -1,16 +1,16 @@
-﻿using Server;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemHandler //todo:check how much of this script is being used...
+public class ItemHandler
 {
+    public static Dictionary<ushort, SpawnableObject> items = new Dictionary<ushort, SpawnableObject>();
+
     public static Dictionary<PickupType, int> itemLog = new Dictionary<PickupType, int>();
 
     private delegate BasePickup ItemHandlerDelegate(PickupSO _pickupSO, Player _player);
 
     private static Dictionary<PickupType, ItemHandlerDelegate> itemHandlers;
+    //private static Dictionary<PickupCode, Type> itemHondlers;
 
     public ItemHandler()
     {
@@ -31,16 +31,33 @@ public class ItemHandler //todo:check how much of this script is being used...
             { PickupType.Invisibility, Invisibility },
             { PickupType.Teleport, Teleport },
             { PickupType.Morph, Morph },
-            { PickupType.Iceball, Iceball },
+            { PickupType.Iceball, Iceball }
         };
+
+        Debug.Log("Initialised packets.");
     }
 
-    public SpawnableObject SpawnItem(ushort itemId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
+    public SpawnableObject SpawnItem(ushort _itemId, ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
     {
-        SpawnableObject item = NetworkObjectsManager.instance.SpawnObject(itemId, NetworkedObjectType.Item, _position, _rotation, (PickupType)_code) as SpawnableObject;
+        SpawnableObject item = NetworkObjectsManager.instance.SpawnObject(_itemId, NetworkedObjectType.Item, _position, _rotation, true, (PickupType)_code) as SpawnableObject;
         if (item != null)
         {
             item.Init(_creatorId, _code);
+
+            ServerSend.ItemSpawned(item.objectId, item.creatorId, item.activeObjectDetails.pickupSO, _position, _rotation);
+        }
+
+        return item;
+    }
+
+    public SpawnableObject SpawnItem(ushort _creatorId, int _code, Vector3 _position, Quaternion _rotation, PickupSpawner _spawner = null)
+    {
+        SpawnableObject item = NetworkObjectsManager.instance.SpawnObject(NetworkedObjectType.Item, _position, _rotation, true, (PickupType)_code) as SpawnableObject;
+        if (item != null)
+        {
+            item.Init(_creatorId, _code);
+
+            ServerSend.ItemSpawned(item.objectId, item.creatorId, item.activeObjectDetails.pickupSO, _position, _rotation);
         }
 
         return item;
@@ -84,104 +101,54 @@ public class ItemHandler //todo:check how much of this script is being used...
         return true;
     }
 
-    public BasePickup HandleItem(PickupSO _pickupSO, Player _player)
+    public BasePickup HandlePickup(PickupSO _pickupSO, Player _player)
     {
         BasePickup ret = itemHandlers[_pickupSO.pickupCode](_pickupSO, _player);
         return ret;
     }
 
-    private BasePickup NullItem(PickupSO _pickupSO, Player _player)
+    private BasePickup NullItem(PickupSO _pickupSO, Player _player) //here down can be completely removed and added to the dictionary ^^
     {
         return null;
     }
     private BasePickup SuperFlop(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new SuperFlop(_pickupSO, _player);
-        }
-        else
-        {
-            return new SuperFlop(_pickupSO);
-        }
+        BasePickup ret = new SuperFlop(_pickupSO, _player);
+        return ret;
     }
     private BasePickup SuperJump(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new SuperJump(_pickupSO, _player);
-        }
-        else
-        {
-            return new SuperJump(_pickupSO);
-        }
+        BasePickup ret = new SuperJump(_pickupSO, _player);
+        return ret;
     }
-
     private BasePickup JellyBomb(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new JellyBombItem(_pickupSO, _player);
-        }
-        else
-        {
-            return new JellyBombItem(_pickupSO);
-        }
+        BasePickup ret = new JellyBombItem(_pickupSO, _player);
+        return ret;
     }
     private BasePickup SuperSpeed(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new SuperSpeed(_pickupSO, _player);
-        }
-        else
-        {
-            return new SuperSpeed(_pickupSO);
-        }
+        BasePickup ret = new SuperSpeed(_pickupSO, _player);
+        return ret;
     }
     private BasePickup Invisibility(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new Invisibility(_pickupSO, _player);
-        }
-        else
-        {
-            return new Invisibility(_pickupSO);
-        }
+        BasePickup ret = new Invisibility(_pickupSO, _player);
+        return ret;
     }
     private BasePickup Teleport(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new TeleportItem(_pickupSO, _player);
-        }
-        else
-        {
-            return new TeleportItem(_pickupSO);
-        }
+        BasePickup ret = new TeleportItem(_pickupSO, _player);
+        return ret;
     }
     private BasePickup Morph(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new Morph(_pickupSO, _player);
-        }
-        else
-        {
-            return new Morph(_pickupSO);
-        }
+        BasePickup ret = new Morph(_pickupSO, _player);
+        return ret;
     }
-
     private BasePickup Iceball(PickupSO _pickupSO, Player _player)
     {
-        if (_player)
-        {
-            return new IceballItem(_pickupSO, _player);
-        }
-        else
-        {
-            return new IceballItem(_pickupSO);
-        }
+        BasePickup ret = new IceballItem(_pickupSO, _player);
+        return ret;
     }
 }

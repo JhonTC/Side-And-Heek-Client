@@ -11,7 +11,7 @@ public class PauseUI : UIPanel
     {
         base.EnablePanel();
 
-        relaunchServerButton.gameObject.SetActive(LobbyManager.localPlayer.isHost);
+        relaunchServerButton.gameObject.SetActive(Player.LocalPlayer.isHost);
     }
 
     public void OnRelaunchServerButtonPressed()

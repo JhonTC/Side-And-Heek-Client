@@ -38,7 +38,7 @@ public enum ServerToClientId : ushort
 public enum ClientToServerId : ushort
 {
     name = 1,
-    playerMovement,
+    playerInput,
     playerReady,
     tryStartGame,
     setPlayerColour,
@@ -46,6 +46,14 @@ public enum ClientToServerId : ushort
     itemUsed,
     gameRulesChanged,
     command
+}
+
+
+public enum NetworkType
+{
+    Client,
+    ClientServer,
+    ServerOnly,
 }
 
 public class NetworkManager : MonoBehaviour
@@ -67,10 +75,23 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+
     public Riptide.Client Client { get; private set; }
+    public Riptide.Server Server { get; private set; }
 
     [SerializeField] private string ip;
     [SerializeField] private ushort port;
+    [SerializeField] private ushort maxClientCount;
+    public ushort localHostingClientId = ushort.MaxValue;
+
+
+    public Player playerPrefab;
+
+    public static NetworkType NetworkType;
+    public static bool IsServer => NetworkType == NetworkType.ClientServer || NetworkType == NetworkType.ServerOnly;
+
+    [SerializeField] private bool runAsServer = false; //for testing in editor
+
 
     private void Awake()
     {
@@ -81,26 +102,69 @@ public class NetworkManager : MonoBehaviour
     {
         RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.LogWarning, Debug.LogError, false);
         ErrorResponseHandler.InitialiseErrorResponseData();
+#if UNITY_SERVER
+        networkType = NetworkType.ServerOnly;
+        SetupServer();
+#else
+        if (runAsServer) //for testing in editor
+        {
+            SetupServer();
+            UIManager.instance.gameObject.SetActive(false);
+        }
+#endif
+    }
 
+    private void FixedUpdate()
+    {
+        if (NetworkType == NetworkType.Client)
+        {
+            Client?.Update();
+        } else
+        {
+            Server?.Update();
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (NetworkType == NetworkType.Client)
+        {
+            Client?.Disconnect();
+        }
+        else
+        {
+            Server?.Stop();
+        }
+    }
+
+    public bool IsLocalPlayer(ushort id)
+    {
+        if (NetworkType == NetworkType.Client)
+        {
+            return id == Client.Id;
+        }
+
+        if (NetworkType == NetworkType.ClientServer)
+        {
+            return id == localHostingClientId;
+        }
+
+        return false;
+    }
+
+    private void SetupClient()
+    {
         Client = new Riptide.Client();
         Client.Connected += DidConnect;
         Client.ConnectionFailed += FailedToConnect;
         Client.ClientDisconnected += PlayerLeft;
         Client.Disconnected += DidDisconnect;
     }
-
-    private void FixedUpdate()
-    {
-        Client.Update();
-    }
-
-    private void OnApplicationQuit()
-    {
-        Client.Disconnect();
-    }
-
     public void Connect(string _ip)
     {
+        NetworkType = NetworkType.Client;
+        SetupClient();
+
         if (_ip != "")
         {
             ip = _ip;
@@ -108,6 +172,32 @@ public class NetworkManager : MonoBehaviour
 
         Client.Connect($"{ip}:{port}");
     }
+
+    private void SetupServer()
+    {
+        Server = new Riptide.Server();
+        Server.Start(port, maxClientCount);
+        Server.ClientDisconnected += PlayerLeft;
+
+        if (NetworkType == NetworkType.ServerOnly)
+        {
+            Application.targetFrameRate = 60;
+        }
+    }
+    public void Host(string username = "")
+    {
+        NetworkType = NetworkType.ClientServer;
+        SetupServer();
+
+        Debug.Log($"Message from server: Welcome player({username}), you are the host!");
+
+        Player.Spawn(localHostingClientId, username);
+
+        UIManager.instance.CloseAllPanels();
+        InputHandler.instance.SwitchInput("PlayerControls");
+    }
+
+    #region ClientFunctions
 
     private void DidConnect(object sender, EventArgs e)
     {
@@ -123,8 +213,8 @@ public class NetworkManager : MonoBehaviour
 
     private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
-        Destroy(LobbyManager.players[e.Id].gameObject);
-        LobbyManager.players.Remove(e.Id);
+        Destroy(Player.list[e.Id].gameObject);
+        Player.list.Remove(e.Id);
 
         UIManager.instance.RemovePlayerReady(e.Id);
         UIManager.instance.customisationPanel.hiderColourSelector.UpdateAllButtons();
@@ -138,7 +228,7 @@ public class NetworkManager : MonoBehaviour
 
     public void OnDisconnection()
     {
-        LobbyManager.instance.OnLocalPlayerDisconnection();
+        GameManager.instance.OnLocalPlayerDisconnection();
         UIManager.instance.BackToMenu();
         GameManager.instance.FadeMusic(false);
         GameManager.instance.gameStarted = false;
@@ -147,5 +237,38 @@ public class NetworkManager : MonoBehaviour
 
         Debug.Log("Disconnected from server.");
     }
+    #endregion
+
+    #region ServerFunctions
+    private void PlayerLeft(object sender, ServerDisconnectedEventArgs e)
+    {
+        ushort clientId = e.Client.Id;
+
+        bool isLeavingPlayerHost = Player.list[clientId].isHost;
+
+        //Player.list[playerId].DespawnPlayer();
+        Destroy(Player.list[clientId].gameObject);
+        Player.list.Remove(clientId);
+
+        if (Player.list.Count > 0)
+        {
+            if (isLeavingPlayerHost)
+            {
+                //Player.AppointNewHost();
+            }
+        }
+        else
+        {
+            //Application.Quit(); //TODO work this out.. server timeout maybe? - Reminder to also add timeout in lobby!
+            Debug.LogWarning("Last Player left, server should close?");
+        }
+
+        if (NetworkType == NetworkType.ClientServer)
+        {
+            UIManager.instance.RemovePlayerReady(clientId);
+            UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
+        }
+    }
+    #endregion
 }
 

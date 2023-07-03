@@ -37,55 +37,64 @@ public class Pickup : SpawnableObject
         base.Init(_creatorId, _code);
 
         spawner = _spawner;
-        
-        //pickupTitle.text = activeObjectDetails.pickupSO.pickupName;
-        //pickupContent.text = activeObjectDetails.pickupSO.pickupContent;
-        //pickupOutline.color = activeObjectDetails.pickupSO.pickupLevel.color;
 
-        //uiPanel.gameObject.SetActive(true);
-
-        basePosition = transform.position;
-
-        Color pickupColour = defaultPickupColour;
-        if (activeObjectDetails.pickupSO.userType == PlayerType.Hunter)
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly)
         {
-            pickupColour = hunterPickupColour;
-        }
-        else if (activeObjectDetails.pickupSO.userType == PlayerType.Hider)
-        {
-            pickupColour = hiderPickupColour;
-        }
+            //pickupTitle.text = activeObjectDetails.pickupSO.pickupName;
+            //pickupContent.text = activeObjectDetails.pickupSO.pickupContent;
+            //pickupOutline.color = activeObjectDetails.pickupSO.pickupLevel.color;
 
-        pickupObj.GetComponent<MeshRenderer>().material.color = pickupColour;
+            //uiPanel.gameObject.SetActive(true);
+
+            basePosition = transform.position;
+
+            Color pickupColour = defaultPickupColour;
+            if (activeObjectDetails.pickupSO.userType == PlayerType.Hunter)
+            {
+                pickupColour = hunterPickupColour;
+            }
+            else if (activeObjectDetails.pickupSO.userType == PlayerType.Hider)
+            {
+                pickupColour = hiderPickupColour;
+            }
+
+            pickupObj.GetComponent<MeshRenderer>().material.color = pickupColour;
+        }
     }
 
     private void Start()
     {
-        camera = LobbyManager.localPlayer.thirdPersonCamera;
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly)
+        {
+            camera = Player.LocalPlayer.thirdPersonCamera;
 
-        pickupObj.GetComponent<MeshRenderer>().material.SetFloat("_Random", Random.Range(0f, 1000f));
+            pickupObj.GetComponent<MeshRenderer>().material.SetFloat("_Random", Random.Range(0f, 1000f));
+        }
     }
 
     private void Update()
     {
-        if (cursorHovering)
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly)
         {
-            //uiPanel.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            if (cursorHovering)
+            {
+                //uiPanel.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            }
+            else if (!cursorHovering)
+            {
+                //uiPanel.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+
+                //uiPanel.transform.position = basePosition + new Vector3(0f, 0.25f * Mathf.Sin(Time.time * bobSpeed), 0f);
+
+                pickupObj.transform.position = basePosition + new Vector3(0f, 0.25f * Mathf.Sin(Time.time * bobSpeed), 0f);
+            }
+
+            Vector3 cameraPos = camera.transform.position; //!!
+            cameraPos.x = uiPanel.transform.position.x;
+            uiPanel.transform.LookAt(cameraPos);
+
+            cursorHovering = false;
         }
-        else if (!cursorHovering)
-        {
-            //uiPanel.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-
-            //uiPanel.transform.position = basePosition + new Vector3(0f, 0.25f * Mathf.Sin(Time.time * bobSpeed), 0f);
-
-            pickupObj.transform.position = basePosition + new Vector3(0f, 0.25f * Mathf.Sin(Time.time * bobSpeed), 0f);
-        }
-
-        Vector3 cameraPos = camera.transform.position; //!!
-        cameraPos.x = uiPanel.transform.position.x;
-        uiPanel.transform.LookAt(cameraPos);
-
-        cursorHovering = false;
     }
 
     public void OnHover()
@@ -97,27 +106,51 @@ public class Pickup : SpawnableObject
     {
         if (interractable)
         {
-            if (GameManager.instance.networkType == NetworkType.Multiplayer)
-            {
-                ClientSend.PickupSelected(objectId);
-            }
-            else
-            {
-                //S_PickupSpawner pickup = this as S_PickupSpawner;
-                //pickup.PickupPickedUp(playerId);
-            }
+            ClientSend.PickupSelected(objectId);
 
             interractable = false;
         }
     }
 
-    public void PickupPickedUp()
+    public void PickupPickedUp(ushort _byPlayer = 0)
     {
+        if (NetworkManager.NetworkType != NetworkType.Client)
+        {
+            int code = 0;
+            PickupSO pickup = null;
+            if (activeObjectDetails != null)
+            {
+                pickup = activeObjectDetails.pickupSO;
+                code = (int)activeObjectDetails.pickupSO.pickupCode;
+            }
+
+            Player.list[_byPlayer].PickupPickedUp(pickup);
+            ServerSend.PickupPickedUp(objectId, _byPlayer, code);
+        }
+
         if (spawner != null)
         {
             spawner.PickupPickedUp();
         }
 
-        NetworkObjectsManager.instance.DestoryObject(this);
+        NetworkObjectsManager.instance.DestroyObject(this);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (NetworkManager.NetworkType == NetworkType.Client) return;
+
+        if (activeObjectDetails != null && other.CompareTag("BodyCollider"))
+        {
+            Player _player = other.GetComponentInParent<Player>();
+
+            if (_player.playerType == activeObjectDetails.pickupSO.userType || activeObjectDetails.pickupSO.userType == PlayerType.Default || _player.playerType == PlayerType.Default)
+            {
+                if (_player.AttemptPickupItem())
+                {
+                    PickupPickedUp(_player.Id);
+                }
+            }
+        }
     }
 }

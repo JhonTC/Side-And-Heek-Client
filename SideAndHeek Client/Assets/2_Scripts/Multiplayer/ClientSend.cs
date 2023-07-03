@@ -23,9 +23,9 @@ public class ClientSend : MonoBehaviour
         NetworkManager.Instance.Client.Send(message);
     }*/
 
-    public static void SetInputs(float inputSpeed, bool[] _otherInputs, Quaternion _rotation)
+    public static void PlayerInput(float inputSpeed, bool[] _otherInputs, Quaternion _rotation)
     {
-        Message message = Message.Create(MessageSendMode.Unreliable, ClientToServerId.playerMovement);
+        Message message = Message.Create(MessageSendMode.Unreliable, ClientToServerId.playerInput);
         message.AddFloat(inputSpeed);
         message.AddBools(_otherInputs, false);
         message.AddQuaternion(_rotation);
