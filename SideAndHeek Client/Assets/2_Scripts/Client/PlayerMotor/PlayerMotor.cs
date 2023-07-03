@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerMotor : MonoBehaviour //make abstract?
 {
-    public Rigidbody root;
+    public Transform root;
     public Transform head;
     public Transform leftLeg;
     public Transform rightLeg;

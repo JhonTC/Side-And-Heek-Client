@@ -208,6 +208,7 @@ public class NetworkManager : MonoBehaviour
 
     private void FailedToConnect(object sender, EventArgs e)
     {
+        print(e.ToString());
         UIManager.instance.BackToMenu();
     }
 

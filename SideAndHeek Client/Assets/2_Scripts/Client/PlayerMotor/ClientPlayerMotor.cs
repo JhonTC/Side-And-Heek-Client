@@ -19,11 +19,11 @@ public class ClientPlayerMotor : PlayerMotor
 
     public void MovePlayer() //for clientside prediction
     {
-        root.AddForce(inputSpeed * root.transform.forward * moveSpeed);
+        //root.AddForce(inputSpeed * root.transform.forward * moveSpeed);
     }
     public void RotatePlayer() //for clientside prediction
     {
-        root.rotation = Quaternion.Lerp(root.rotation, rotation, owner.sensitivity);
+        //root.rotation = Quaternion.Lerp(root.rotation, rotation, owner.sensitivity);
     }
 
     public override void OnMove(InputAction.CallbackContext value)
@@ -37,6 +37,14 @@ public class ClientPlayerMotor : PlayerMotor
         if (isJumping != jump)
         {
             isJumping = jump;
+        }
+    }
+    public override void OnFlop(InputAction.CallbackContext value)
+    {
+        bool flop = value.ReadValueAsButton();
+        if (isFlopping != flop)
+        {
+            isFlopping = flop;
         }
     }
 
@@ -111,7 +119,7 @@ public class ClientPlayerMotor : PlayerMotor
         //}
 
         //clientside prediection
-        MovePlayer();
-        RotatePlayer();
+        //MovePlayer();
+        //RotatePlayer();
     }
 }

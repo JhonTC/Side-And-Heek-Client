@@ -20,27 +20,19 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
             ClientSend.GameRulesChanged(GameManager.instance.gameMode.GetGameRules());
         }
 
-        int _hiderColourCount = message.GetInt();
-        Color[] _hiderColours = new Color[_hiderColourCount];
-        for (int i = 0; i < _hiderColours.Length; i++)
-        {
-            _hiderColours[i] = message.GetColour();
-        }
-
         Debug.Log($"Message from server: {_msg}");
 
-        GameManager.instance.hiderColours = _hiderColours;
         GameManager.instance.FadeMusic(true);
 
         UIManager.instance.CloseAllPanels();
         UIManager.instance.DisplayPanel(UIPanelType.Gameplay);
-        UIManager.instance.customisationPanel.Init(_hiderColours);
     }
 
     [MessageHandler((ushort)ServerToClientId.playerSpawned)]
-    private static void SpawnPlayer(Message message)
+    public static void SpawnPlayer(Message message)
     {
         ushort _id = message.GetUShort();
+
 
         Player.Spawn(_id, message.GetString(), message.GetBool(), message.GetBool(), message.GetVector3(), message.GetColour());
         UIManager.instance.AddPlayerReady(_id);

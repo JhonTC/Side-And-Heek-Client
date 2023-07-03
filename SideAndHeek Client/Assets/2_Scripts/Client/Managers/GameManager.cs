@@ -57,7 +57,7 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(this);
     }
 
-    protected virtual void Start()
+    private void Start()
     {
         music = GetComponent<AudioSource>();
         FadeMusic(false);
@@ -65,13 +65,7 @@ public class GameManager : MonoBehaviour
         gameMode = GameMode.CreateGameModeFromType(gameType);
         gameMode.SetGameRules(GameRules.CreateGameRulesFromType(gameType)); //todo: replace with default mode?
 
-        if (NetworkManager.NetworkType != NetworkType.Client)
-        {
-            foreach (Color colour in hiderColours)
-            {
-                chosenDefaultColours.Add(colour, false);
-            }
-        }
+        OnNetworkTypeSetup();
     }
 
     private void FixedUpdate()
@@ -103,6 +97,25 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnLevelFinishedLoading;
         SceneManager.sceneUnloaded -= OnLevelFinishedUnloading;
+    }
+
+    public void OnNetworkTypeSetup()
+    {
+        //todo: these functions cant be called before NetworkType is setup - equally calling these multiple times will cause duplicates to be made...
+        //something else to have self managed by a COLOUR MANAGER
+
+        //if (NetworkManager.NetworkType != NetworkType.Client)
+        //{
+        foreach (Color colour in hiderColours)
+        {
+            chosenDefaultColours.Add(colour, false);
+        }
+        //}
+
+        //if (NetworkManager.NetworkType != NetworkType.ServerOnly) 
+        //{
+        UIManager.instance.customisationPanel.Init(hiderColours);
+        //}
     }
 
     public void GameStart(int gameDuration) //Todo:Make a roundManager separate to gameManager.....||.....should not receive a duration, gamemode should handle incoming messgae
@@ -384,6 +397,32 @@ public class GameManager : MonoBehaviour
         if (gameMode.CheckForGameOver())
         {
             GameOver();
+        }
+    }
+
+    public void AttemptColourChange(ushort playerId, Color newColour, bool isSeekerColour) //todo: put in its own colour manager
+    {
+        bool isColourChangeAllowed = true;
+        if (!gameStarted && !isSeekerColour)
+        {
+            Color previousColour = Player.list[playerId].activeColour;
+            isColourChangeAllowed = ClaimHiderColour(previousColour, newColour);
+        }
+
+        if (isColourChangeAllowed)
+        {
+            Player.list[playerId].activeColour = newColour;
+
+            if (NetworkManager.NetworkType == NetworkType.ClientServer)
+            {
+                Player.list[playerId].ChangeBodyColour(newColour, isSeekerColour);
+            }
+
+            ServerSend.SetPlayerColour(playerId, newColour, isSeekerColour);
+        }
+        else
+        {
+            //todo: send error response - colour already chosen
         }
     }
 

@@ -84,9 +84,9 @@ public class InputHandler : MonoBehaviour
 
     public void OnUse(InputAction.CallbackContext value)
     {
-        if (localPlayer != null)
+        if (value.phase == InputActionPhase.Started)
         {
-            localPlayer.playerMotor.OnUse(value);
+            localPlayer.UsePickup();
         }
     }
 
@@ -94,34 +94,41 @@ public class InputHandler : MonoBehaviour
     {
         if (localPlayer != null)
         {
-            if (value.phase == InputActionPhase.Started)
+            if (!GameManager.instance.gameStarted)
             {
-                localPlayer.playerMotor.OnReady(value);
+                localPlayer.SetPlayerReady(!localPlayer.isReady);
+                ClientSend.PlayerReady(localPlayer.isReady);
             }
         }
     }
 
     public void ToggleCustomisation(InputAction.CallbackContext value)
     {
-        if (localPlayer != null)
+        if (!GameManager.instance.gameStarted)
         {
-            localPlayer.playerMotor.ToggleCustomisation(value);
+            if (value.phase == InputActionPhase.Started)
+            {
+                UIManager.instance.TogglePanel(UIPanelType.Customisation);
+            }
         }
     }
 
     public void ToggleGameRules(InputAction.CallbackContext value)
     {
-        if (localPlayer != null)
+        if (!GameManager.instance.gameStarted)
         {
-            localPlayer.playerMotor.ToggleGameRules(value);
+            if (value.phase == InputActionPhase.Started)
+            {
+                UIManager.instance.TogglePanel(UIPanelType.Game_Rules);
+            }
         }
     }
 
     public void TogglePause(InputAction.CallbackContext value)
     {
-        if (localPlayer != null)
+        if (value.phase == InputActionPhase.Started)
         {
-            localPlayer.playerMotor.TogglePause(value);
+            UIManager.instance.TogglePanel(UIPanelType.Pause);
         }
     }
 }

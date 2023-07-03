@@ -15,11 +15,6 @@ public class ServerSend
         {
             message.AddGameRules(_gameRules);
         }
-        message.AddInt(_hiderColours.Length);
-        for (int i = 0; i < _hiderColours.Length; i++)
-        {
-            message.AddColour(_hiderColours[i]);
-        }
 
         NetworkManager.Instance.Server.Send(message, _toClient);
     }

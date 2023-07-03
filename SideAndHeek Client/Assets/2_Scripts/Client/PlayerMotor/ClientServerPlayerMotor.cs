@@ -41,6 +41,15 @@ public class ClientServerPlayerMotor : PlayerMotor
         }
     }
 
+    public override void OnFlop(InputAction.CallbackContext value)
+    {
+        bool flop = value.ReadValueAsButton();
+        if (isFlopping != flop)
+        {
+            isFlopping = flop;
+        }
+    }
+
     private void SetupCameraMode()
     {
         switch (cameraMode)

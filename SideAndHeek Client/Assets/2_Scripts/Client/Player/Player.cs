@@ -129,14 +129,14 @@ public class Player : MonoBehaviour
         {
             foreach (Player otherPlayer in list.Values)
             {
-                otherPlayer.SendSpawned(id);
+                otherPlayer.SendSpawned(id); //send to new player the other spawned players
             }
 
             Transform spawnpoint = LevelManager.GetLevelManagerForScene(GameManager.instance.activeSceneName).GetNextSpawnpoint(list.Count <= 0);
             player = Spawn(id, username, spawnpoint.position, NetworkManager.Instance.playerPrefab);
-
             player.isAuthority = true;
-            player.SendSpawned();
+
+            player.SendSpawned(); //send to all players the new player
         }
     }
 
@@ -156,7 +156,7 @@ public class Player : MonoBehaviour
     public static Player Spawn(ushort id, string username, Vector3 position, Player prefab)
     {
         Player player = Instantiate(prefab, position, Quaternion.identity);
-        player.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)}";
+        player.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)})";
         player.Id = id;
         player.Username = string.IsNullOrEmpty(username) ? $"Guest {id}" : username;
         player.isHost = list.Count <= 0;
@@ -192,7 +192,7 @@ public class Player : MonoBehaviour
             player.IsLocal = false;
         }
 
-        player.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)}";
+        player.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)})";
         player.Id = id;
         player.Username = username;
         if (player.IsLocal)
@@ -222,7 +222,10 @@ public class Player : MonoBehaviour
     {
         message.AddUShort(Id);
         message.AddString(Username);
+        message.AddBool(isHost);
+        message.AddBool(isReady);
         message.AddVector3(transform.position);
+        message.AddColour(activeColour);
 
         return message;
     }
@@ -423,11 +426,11 @@ public class Player : MonoBehaviour
 
         UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
-    public void ChangeBodyColour(bool isSeekerColour = false, Material newMaterial = null)
+    private void ChangeBodyColour(bool isSeekerColour = false, Material newMaterial = null)
     {
         ChangeBodyColour(isSeekerColour ? seekerColour : hiderColour, newMaterial);
     }
-    public void ChangeBodyColour(Color colour, Material newMaterial = null)
+    private void ChangeBodyColour(Color colour, Material newMaterial = null)
     {
         if (materialType == MaterialType.Default)
         {

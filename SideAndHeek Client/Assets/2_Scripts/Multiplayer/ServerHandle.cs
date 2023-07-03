@@ -39,21 +39,7 @@ public class ServerHandle
         Color _newColour = message.GetColour(); 
         bool _isSeekerColour = message.GetBool();
 
-        bool isColourChangeAllowed = true;
-        if (!GameManager.instance.gameStarted && !_isSeekerColour)
-        {
-            Color previousColour = Player.list[fromClientId].activeColour;
-            isColourChangeAllowed = GameManager.instance.ClaimHiderColour(previousColour, _newColour);
-        }
-
-        if (isColourChangeAllowed)
-        {
-            Player.list[fromClientId].activeColour = _newColour;
-            ServerSend.SetPlayerColour(fromClientId, _newColour, _isSeekerColour);
-        } else
-        {
-            //todo: send error response - colour already chosen
-        }
+        GameManager.instance.AttemptColourChange(fromClientId, _newColour, _isSeekerColour);
     }
 
     [MessageHandler((ushort)ClientToServerId.tryStartGame)]

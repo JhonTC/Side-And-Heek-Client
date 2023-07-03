@@ -6854,7 +6854,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ip: 127.0.0.1
   port: 42069
-  maxClientCount: 0
+  maxClientCount: 10
   localHostingClientId: 65535
   playerPrefab: {fileID: 8556910733049348378, guid: c7779e054bfa1f94ebe7f3472ad0f6ef,
     type: 3}

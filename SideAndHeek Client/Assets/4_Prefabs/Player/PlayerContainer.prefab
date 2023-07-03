@@ -5907,7 +5907,7 @@ MonoBehaviour:
   baseComponentsToDisable:
   - {fileID: 7428995947962638005}
   walkingDustParticles: {fileID: 6190768455835472773}
-  clientPlayerMotorPrefab: {fileID: 6491841402725510224, guid: 1d54d70a3d66d7c4194ddbe3c5658390,
+  clientPlayerMotorPrefab: {fileID: 2398521584046891239, guid: 1d54d70a3d66d7c4194ddbe3c5658390,
     type: 3}
   serverPlayerMotorPrefab: {fileID: 4008269180459198827, guid: b6d96cdaa6eda864282cc8426b34c82f,
     type: 3}

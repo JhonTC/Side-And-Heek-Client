@@ -49,7 +49,7 @@ public class SimplePlayerController
     public void Init(PlayerMotor motor)
     {
         owner = motor.owner;
-        root = motor.GetComponent<Rigidbody>();
+        root = motor.root.GetComponent<Rigidbody>();
 
         activeWalkingFoot = rightFootCollider;
         otherWalkingFoot = leftFootCollider;
