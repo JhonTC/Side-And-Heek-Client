@@ -7,8 +7,6 @@ using Server;
 using System;
 using Riptide;
 using UnityEngine.InputSystem;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
-using static UnityEditorInternal.ReorderableList;
 
 public enum CameraMode
 {
