@@ -8,6 +8,7 @@ public class GameMode
 {
     public string friendlyName;
     public string sceneName;
+    [SerializeField]
     protected GameRules gameRules;
 
     public virtual void Init()

@@ -420,8 +420,6 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
     [MessageHandler((ushort)ServerToClientId.gameRulesChanged)]
     public static void GameRulesChanged(Message message)
     {
-        ushort _playerId = message.GetUShort();
-
         GameType gameType = (GameType)message.GetInt();
         if (GameManager.instance.gameType != gameType)
         {
@@ -431,7 +429,6 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         GameRules _gameRules = message.GetGameRules();
 
         GameManager.instance.GameRulesChanged(_gameRules);
-        Debug.Log($"Game Rules Changed by player with id {_playerId}");
     }
 
     [MessageHandler((ushort)ServerToClientId.setPlayerHost)]

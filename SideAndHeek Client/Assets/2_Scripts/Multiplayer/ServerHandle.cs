@@ -93,7 +93,7 @@ public class ServerHandle
         GameRules gameRules = message.GetGameRules();
 
         GameManager.instance.GameRulesChanged(gameRules);
-        ServerSend.GameRulesChanged(fromClientId, gameRules);
+        ServerSend.GameRulesChanged(gameRules);
 
         Debug.Log($"Game Rules Changed by player with id {fromClientId}");
     }

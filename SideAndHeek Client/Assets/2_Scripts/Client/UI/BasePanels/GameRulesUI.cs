@@ -109,7 +109,16 @@ public class GameRulesUI : TabView
     public void OnSaveButtonPressed()
     {
         ActiveGameRules.UpdateValues(localGameRules);
-        ClientSend.GameRulesChanged(ActiveGameRules);
+
+        if (NetworkManager.NetworkType == NetworkType.Client)
+        {
+            ClientSend.GameRulesChanged(ActiveGameRules);
+        }
+        else if(NetworkManager.NetworkType == NetworkType.ClientServer)
+        {
+            ServerSend.GameRulesChanged(ActiveGameRules);
+        }
+
         UIManager.instance.OnBackButtonPressed();
     }
 

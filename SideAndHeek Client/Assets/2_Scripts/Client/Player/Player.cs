@@ -135,6 +135,9 @@ public class Player : MonoBehaviour
             Transform spawnpoint = LevelManager.GetLevelManagerForScene(GameManager.instance.activeSceneName).GetNextSpawnpoint(list.Count <= 0);
             player = Spawn(id, username, spawnpoint.position, NetworkManager.Instance.playerPrefab);
             player.isAuthority = true;
+            player.IsLocal = true;
+
+            GameManager.instance.OnPlayerSpawned(player);
 
             player.SendSpawned(); //send to all players the new player
         }

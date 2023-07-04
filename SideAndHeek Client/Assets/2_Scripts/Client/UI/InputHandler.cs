@@ -97,7 +97,15 @@ public class InputHandler : MonoBehaviour
             if (!GameManager.instance.gameStarted)
             {
                 localPlayer.SetPlayerReady(!localPlayer.isReady);
-                ClientSend.PlayerReady(localPlayer.isReady);
+
+                if (NetworkManager.NetworkType == NetworkType.Client)
+                {
+                    ClientSend.PlayerReady(localPlayer.isReady);
+                }
+                else if (NetworkManager.NetworkType == NetworkType.ClientServer)
+                {
+                    ServerSend.PlayerReadyToggled(localPlayer.Id, localPlayer.isReady);
+                }
             }
         }
     }

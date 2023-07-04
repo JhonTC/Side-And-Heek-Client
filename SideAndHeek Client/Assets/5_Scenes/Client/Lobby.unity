@@ -1456,6 +1456,7 @@ MonoBehaviour:
   gameMode:
     friendlyName: 
     sceneName: 
+    gameRules: {fileID: 0}
   pickupSpawnerPrefab: {fileID: 5150086428917620104, guid: 24286b2e16a5ab04fbc22c09499dffe8,
     type: 3}
   gameStarted: 0
@@ -1478,8 +1479,8 @@ MonoBehaviour:
   hunterColour: {r: 0.94509804, g: 0.32723713, b: 0.27502355, a: 1}
   tryStartGameActive: 0
   unreadyColour: {r: 0.9150943, g: 0.9150943, b: 0.9150943, a: 1}
-  unreadyTextColour: {r: 0.21698111, g: 0.21698111, b: 0.21698111, a: 1}
-  readyColour: {r: 0.7322872, g: 0.98039216, b: 0.33725494, a: 1}
+  unreadyTextColour: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 1}
+  readyColour: {r: 0.48718405, g: 0.8679245, b: 0.52525806, a: 1}
   sceneCamera: {fileID: 968377456}
   billboardTarget: {fileID: 1659196485}
   lastMainHunterPlayers: []
@@ -6856,7 +6857,7 @@ MonoBehaviour:
   port: 42069
   maxClientCount: 10
   localHostingClientId: 65535
-  playerPrefab: {fileID: 8556910733049348378, guid: c7779e054bfa1f94ebe7f3472ad0f6ef,
+  playerPrefab: {fileID: 7257716925249853058, guid: c7779e054bfa1f94ebe7f3472ad0f6ef,
     type: 3}
   runAsServer: 0
 --- !u!1 &341333534

@@ -505,24 +505,19 @@ public class GameManager : MonoBehaviour
 
     public void OnPlayerSpawned(Player _player)
     {
-        if (_player.IsLocal)
-        {
-            sceneCamera.SetActive(false);
+        if (!_player.IsLocal) return;
 
+        sceneCamera.SetActive(false);
+
+        if (NetworkManager.NetworkType == NetworkType.Client)
+        {
             if (_player.isHost)
             {
-                if (NetworkManager.NetworkType == NetworkType.Client)
-                {
-                    ClientSend.GameRulesChanged(gameMode.GetGameRules());
-                }
-                else if (NetworkManager.NetworkType == NetworkType.ClientServer)
-                {
-                    GameRulesChanged(gameMode.GetGameRules()); //todo: We might be double setting this value is Network type is ClientServer
-                }
+                ClientSend.GameRulesChanged(gameMode.GetGameRules());
             }
-
-            billboardTarget.SetParent(Camera.main.transform, false);
         }
+
+        billboardTarget.SetParent(Camera.main.transform, false);
     }
 }
 

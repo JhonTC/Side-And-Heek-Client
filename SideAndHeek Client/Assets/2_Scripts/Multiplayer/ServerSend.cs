@@ -290,10 +290,9 @@ public class ServerSend
         NetworkManager.Instance.Server.Send(message, _playerId);
     }
 
-    public static void GameRulesChanged(ushort _playerId, GameRules _gameRules)
+    public static void GameRulesChanged(GameRules _gameRules)
     {
         Message message = Message.Create(MessageSendMode.Reliable, ServerToClientId.gameRulesChanged);
-        message.AddUShort(_playerId);
         message.AddGameRules(_gameRules);
 
         NetworkManager.Instance.Server.SendToAll(message);
