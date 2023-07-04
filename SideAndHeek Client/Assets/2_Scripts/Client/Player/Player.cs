@@ -580,12 +580,28 @@ public class Player : MonoBehaviour
                     isActivePickupInProgress = true;
                     if (activePickup.pickupSO.sendDirection)
                     {
-                        ClientSend.ItemUsed(activePickup.pickupSO.sendDirection, shootDirectionUI.forward);
+                        if (NetworkManager.NetworkType == NetworkType.Client)
+                        {
+                            ClientSend.ItemUsed(activePickup.pickupSO.sendDirection, shootDirectionUI.forward);
+                        }
+                        else if (NetworkManager.NetworkType == NetworkType.ClientServer)
+                        {
+                            shootDirection = shootDirectionUI.forward;
+                            PickupUsed();
+                        }
+
                         shootDirectionUI.gameObject.SetActive(false);
                     }
                     else
                     {
-                        ClientSend.ItemUsed();
+                        if (NetworkManager.NetworkType == NetworkType.Client)
+                        {
+                            ClientSend.ItemUsed();
+                        }
+                        else if (NetworkManager.NetworkType == NetworkType.ClientServer)
+                        {
+                            PickupUsed();
+                        }
                     }
 
                     if (activePickup.pickupSO.duration > 0)

@@ -509,14 +509,6 @@ public class GameManager : MonoBehaviour
 
         sceneCamera.SetActive(false);
 
-        if (NetworkManager.NetworkType == NetworkType.Client)
-        {
-            if (_player.isHost)
-            {
-                ClientSend.GameRulesChanged(gameMode.GetGameRules());
-            }
-        }
-
         billboardTarget.SetParent(Camera.main.transform, false);
     }
 }

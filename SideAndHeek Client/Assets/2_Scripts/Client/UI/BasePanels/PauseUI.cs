@@ -16,6 +16,13 @@ public class PauseUI : UIPanel
 
     public void OnRelaunchServerButtonPressed()
     {
-        ClientSend.Command("relaunch_server");
+        if (NetworkManager.NetworkType == NetworkType.Client) //todo: this allows clients can restart a ClientServer!
+        {
+            ClientSend.Command("relaunch_server");
+        }
+        else if (NetworkManager.NetworkType == NetworkType.ClientServer)
+        {
+            Debug.LogError($"Cannot restart when host is ClientServer");
+        }
     }
 }
