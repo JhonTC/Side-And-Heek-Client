@@ -2,20 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Server
+public class FallDetector : MonoBehaviour
 {
-    public class FallDetector : MonoBehaviour
+    private void OnTriggerEnter(Collider other)
     {
-        /*private void OnTriggerEnter(Collider other)
+        if (other.tag == "BodyCollider") //todo:being called multiple times... needs a 1 second cooldown or something
         {
-            if (other.tag == "BodyCollider")
-            {
-                Player player = other.GetComponent<BodyCollisionDetection>().player;
-                LocalGameManager localGameManager = GameManager.instance as LocalGameManager;
-                player.TeleportPlayer(LevelManager.GetLevelManagerForScene(localGameManager.activeSceneName).GetNextSpawnpoint(true));
+            Player player = other.GetComponent<BodyCollisionDetection>().player;
 
-                Debug.Log(player.name + " fell out of the map.");
-            }
-        }*/
+            GameManager.instance.gameMode.OnPlayerHitFallDetector(player);
+
+            Debug.Log(player.Username + " fell out of the map.");
+        }
     }
 }
