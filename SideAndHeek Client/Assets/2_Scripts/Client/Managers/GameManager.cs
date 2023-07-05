@@ -426,6 +426,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public bool IsColourAvaliable(Color newColour) //todo: put in its own colour manager
+    {
+        if (chosenDefaultColours.ContainsKey(newColour))
+        {
+            return !chosenDefaultColours[newColour];
+        }
+
+        return false;
+    }
+
     public bool ClaimHiderColour(Color previousColour, Color newColour)
     {
         if (chosenDefaultColours.ContainsKey(newColour))

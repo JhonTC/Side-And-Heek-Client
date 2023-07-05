@@ -101,7 +101,7 @@ public class GameMode
 
     public virtual void OnPlayerHitFallDetector(Player player)
     {
-
+        player.TeleportPlayer(LevelManager.GetLevelManagerForScene("Lobby").GetNextSpawnpoint(true));
     }
 
     public virtual void OnSceneLoaded()

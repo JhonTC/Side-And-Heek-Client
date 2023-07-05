@@ -304,7 +304,15 @@ public class UIManager : MonoBehaviour
 
     public void OnDisconnectButtonPressed()
     {
-        NetworkManager.Instance.Client.Disconnect();
+        if (NetworkManager.NetworkType == NetworkType.Client)
+        {
+            NetworkManager.Instance.Client.Disconnect();
+        }
+        else if (NetworkManager.NetworkType == NetworkType.ClientServer)
+        {
+            NetworkManager.Instance.Server?.Stop();
+            NetworkManager.Instance.OnDisconnection();
+        }
     }
 
     public void OnBackButtonPressed()

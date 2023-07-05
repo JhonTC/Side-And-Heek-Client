@@ -111,6 +111,8 @@ public class Player : MonoBehaviour
 
     public static void Spawn(ushort id, string username)
     {
+        if (NetworkManager.NetworkType == NetworkType.Client) return;
+
         NetworkType networkType = NetworkManager.NetworkType;
         Player player;
         if (networkType == NetworkType.ServerOnly)
@@ -121,7 +123,7 @@ public class Player : MonoBehaviour
             }
 
             Transform spawnpoint = LevelManager.GetLevelManagerForScene(GameManager.instance.activeSceneName).GetNextSpawnpoint(list.Count <= 0);
-            player = Spawn(id, username, spawnpoint.position, NetworkManager.Instance.playerPrefab);
+            player = Spawn(id, username, spawnpoint.position);
 
             player.SendSpawned();
         }
@@ -133,7 +135,7 @@ public class Player : MonoBehaviour
             }
 
             Transform spawnpoint = LevelManager.GetLevelManagerForScene(GameManager.instance.activeSceneName).GetNextSpawnpoint(list.Count <= 0);
-            player = Spawn(id, username, spawnpoint.position, NetworkManager.Instance.playerPrefab);
+            player = Spawn(id, username, spawnpoint.position);
             player.isAuthority = true;
             player.IsLocal = true;
 
@@ -143,27 +145,15 @@ public class Player : MonoBehaviour
         }
     }
 
-    public static Player Spawn(ushort id, string username, Vector3 position)
+    private static Player Spawn(ushort id, string username, Vector3 position)
     {
-        if (NetworkManager.NetworkType == NetworkType.ServerOnly)
-        {
-            Debug.LogError($"Function should not be called from server. Is used by client/p2p host");
-        }
-
-        Player player = Spawn(id, username, position, NetworkManager.Instance.playerPrefab);
-        //LobbyManager.instance.OnPlayerSpawned(player);
-
-        return player;
-    }
-
-    public static Player Spawn(ushort id, string username, Vector3 position, Player prefab)
-    {
-        Player player = Instantiate(prefab, position, Quaternion.identity);
+        Player player = Instantiate(NetworkManager.Instance.playerPrefab, position, Quaternion.identity);
         player.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)})";
         player.Id = id;
         player.Username = string.IsNullOrEmpty(username) ? $"Guest {id}" : username;
         player.isHost = list.Count <= 0;
         player.IsLocal = NetworkManager.Instance.IsLocalPlayer(id);
+        player.activeColour = GameManager.instance.GetNextAvaliableColour();
 
         player.Init();
 
@@ -194,15 +184,13 @@ public class Player : MonoBehaviour
         {
             player.IsLocal = false;
         }
-
         player.name = $"Player {id} ({(string.IsNullOrEmpty(username) ? "Guest" : username)})";
         player.Id = id;
         player.Username = username;
-        if (player.IsLocal)
-        {
-            player.isHost = isHost;
-        }
+        player.isHost = isHost;
         player.isReady = isReady;
+        player.activeColour = GameManager.instance.GetNextAvaliableColour();
+
         player.Init();
 
         list.Add(id, player);
@@ -210,7 +198,6 @@ public class Player : MonoBehaviour
         GameManager.instance.OnPlayerSpawned(player);
 
         player.SpawnBody();
-        player.ChangeBodyColour(colour, player.playerType == PlayerType.Hunter);
     }
 
     private void SendSpawned()
@@ -369,6 +356,9 @@ public class Player : MonoBehaviour
             playerMotor = Instantiate(motorPrefab, transform);
             playerMotor.Init(this);
             followPlayerCamera.ChangeTarget(playerMotor.root.transform);
+
+            ChangeBodyColour(activeColour, playerType == PlayerType.Hunter);
+
             isBodyActive = true;
         }
     }
