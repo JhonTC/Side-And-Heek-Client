@@ -33,8 +33,6 @@ public class WindVolume : MonoBehaviour
     [SerializeField]
     private NetworkPhysicsBody[] networkPhysicsBodies;
 
-    private string windReceiverTag = "WeatherReceiver";
-
     private ushort currentRecieverId = 0;
 
     public void Init()

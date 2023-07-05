@@ -33,20 +33,18 @@ public class NetworkPhysicsBody : MonoBehaviour
 
     public void DisablePhysics()
     {
-        for (int i = 0; i < bones.Length; i++)
+        if (root != null)
         {
-            ConfigurableJoint joint = GetComponent<ConfigurableJoint>();
-            if (joint != null)
-            {
-                Destroy(joint);
-            }
-
-            Rigidbody rigidbody = GetComponent<Rigidbody>();
+            root.isKinematic = true;
+        }
+        /*for (int i = 0; i < bones.Length; i++)
+        {
+            Rigidbody rigidbody = bones[i].GetComponent<Rigidbody>();
             if (rigidbody != null)
             {
                 rigidbody.isKinematic = true;
             }
-        }
+        }*/
     }
 
     public void AddMessageValues(ref Message message)
