@@ -320,4 +320,13 @@ public class ServerSend
 
         NetworkManager.Instance.Server.SendToAll(message);
     }
+
+    public static void WeatherObjectTransform(ushort _id, NetworkPhysicsBody networkPhysicsBody)
+    {
+        Message message = Message.Create(MessageSendMode.Unreliable, ServerToClientId.weatherObjectTransform);
+        message.AddUShort(_id);
+        networkPhysicsBody.AddMessageValues(ref message);
+
+        NetworkManager.Instance.Server.SendToAll(message);
+    }
 }

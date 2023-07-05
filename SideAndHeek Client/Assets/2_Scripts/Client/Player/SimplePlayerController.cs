@@ -231,6 +231,10 @@ public class SimplePlayerController
             root.AddForce(velocity * 0.125f);
             //standingHeight = 1.63f;
         }
+
+        Vector3 footNewPos = otherWalkingFoot.transform.position;
+        footNewPos += root.transform.right * activeFootDisplacement.x;
+        feetMidpoint.position = footNewPos;
     }
 
     private void AnimateCharacter(float inputSpeed)

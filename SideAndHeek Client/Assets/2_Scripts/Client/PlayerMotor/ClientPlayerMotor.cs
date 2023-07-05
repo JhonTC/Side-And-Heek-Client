@@ -71,10 +71,10 @@ public class ClientPlayerMotor : PlayerMotor
         }
     }
 
-    private void FixedUpdate()
+    protected override void FixedUpdate()
     {
-        //if (owner.IsLocal)
-        //{
+        base.FixedUpdate();
+
         if (cameraMode != owner.cameraMode)
         {
             cameraMode = owner.cameraMode;

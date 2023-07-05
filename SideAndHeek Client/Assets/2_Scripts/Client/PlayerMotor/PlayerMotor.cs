@@ -33,17 +33,22 @@ public class PlayerMotor : MonoBehaviour //make abstract?
 
     [SerializeField][Range(0, 1)] float predictionDampner = 1;
 
+    private Transform walkingEffect;
+
     public virtual void Init(Player owner)
     {
         this.owner = owner;
         owner.walkingAudioSource = walkingSource;
         owner.collidingAudioSource = collisionSource;
+        walkingEffect = owner.walkingDustParticles.transform;
         predictionDampner = owner.IsLocal ? predictionDampner : 1;
     }
 
-    private void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
+        Vector3 direction = rightFoot.position - leftFoot.position;
 
+        walkingEffect.position = leftFoot.position + (direction * 0.5f); //move down
     }
 
     public virtual void OnMove(InputAction.CallbackContext value)

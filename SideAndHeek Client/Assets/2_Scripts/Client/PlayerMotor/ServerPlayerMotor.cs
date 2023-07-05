@@ -20,7 +20,7 @@ public class ServerPlayerMotor : PlayerMotor
         movementController.SetupBodyCollisionHandlers(owner);
     }
 
-    private void FixedUpdate()
+    protected override void FixedUpdate()
     {
         if (isAcceptingInput)
         {

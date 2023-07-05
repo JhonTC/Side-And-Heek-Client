@@ -42,6 +42,9 @@ public class GameManager : MonoBehaviour
 
     [HideInInspector] public List<Player> lastMainHunterPlayers = new List<Player>(); //todo:Move somewhere?? - cant go to gamemode as it gets cleared when updated
 
+    [SerializeField]
+    private Behaviour[] serverComponentsToDisable;
+
     private void Awake()
     {
         if (instance == null)
@@ -64,8 +67,6 @@ public class GameManager : MonoBehaviour
 
         gameMode = GameMode.CreateGameModeFromType(gameType);
         gameMode.SetGameRules(GameRules.CreateGameRulesFromType(gameType)); //todo: replace with default mode?
-
-        OnNetworkTypeSetup();
     }
 
     private void FixedUpdate()
@@ -104,18 +105,27 @@ public class GameManager : MonoBehaviour
         //todo: these functions cant be called before NetworkType is setup - equally calling these multiple times will cause duplicates to be made...
         //something else to have self managed by a COLOUR MANAGER
 
-        //if (NetworkManager.NetworkType != NetworkType.Client)
-        //{
-        foreach (Color colour in hiderColours)
+        if (NetworkManager.NetworkType != NetworkType.Client)
         {
-            chosenDefaultColours.Add(colour, false);
+            chosenDefaultColours.Clear();
+            foreach (Color colour in hiderColours)
+            {
+                chosenDefaultColours.Add(colour, false);
+            }
+        } else
+        {
+            foreach (Behaviour behaviour in serverComponentsToDisable)
+            {
+                behaviour.enabled = false;
+            }
         }
-        //}
 
-        //if (NetworkManager.NetworkType != NetworkType.ServerOnly) 
-        //{
-        UIManager.instance.customisationPanel.Init(hiderColours);
-        //}
+        if (NetworkManager.NetworkType != NetworkType.ServerOnly) 
+        {
+            UIManager.instance.customisationPanel.Init(hiderColours);
+        }
+
+        WindVolume.Instance.Init();
     }
 
     public void GameStart(int gameDuration) //Todo:Make a roundManager separate to gameManager.....||.....should not receive a duration, gamemode should handle incoming messgae

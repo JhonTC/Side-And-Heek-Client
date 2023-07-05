@@ -65,8 +65,10 @@ public class ClientServerPlayerMotor : PlayerMotor
         }
     }
 
-    private void FixedUpdate()
+    protected override void FixedUpdate()
     {
+        base.FixedUpdate();
+
         if (cameraMode != owner.cameraMode)
         {
             cameraMode = owner.cameraMode;
@@ -113,6 +115,8 @@ public class ClientServerPlayerMotor : PlayerMotor
             movementController.CustomFixedUpdate(inputSpeed);
             movementController.SetRotation(rotation);
         }
+
+        owner.HandlePlayerState(inputSpeed, movementController);
 
         //these messages are being sent to all, except the P2P client as it isnt registered as an actual client
         ServerSend.PlayerPositions(owner, movementController);

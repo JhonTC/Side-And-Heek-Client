@@ -84,7 +84,7 @@ public class Player : MonoBehaviour
 
     public Behaviour[] baseComponentsToDisable;
 
-    [SerializeField] private ParticleSystem walkingDustParticles;
+    public ParticleSystem walkingDustParticles;
     private bool lastIsGrounded = false;
 
     public ClientPlayerMotor clientPlayerMotorPrefab;
@@ -189,7 +189,7 @@ public class Player : MonoBehaviour
         player.Username = username;
         player.isHost = isHost;
         player.isReady = isReady;
-        player.activeColour = GameManager.instance.GetNextAvaliableColour();
+        player.activeColour = colour;
 
         player.Init();
 
@@ -292,7 +292,23 @@ public class Player : MonoBehaviour
     {
         headCollided = _headCollided;
         footCollided = _footCollided;
+        
+        HandlePlayerState(_isGrounded, _inputSpeed, _isJumping, _isFlopping, _isSneaking, _collisionVolume);
+    }
 
+    public void HandlePlayerState(float inputSpeed, SimplePlayerController movementController)
+    {
+        HandlePlayerState(
+            movementController.largeGroundCollider.isGrounded,
+            inputSpeed,
+            movementController.isJumping,
+            movementController.isFlopping,
+            movementController.isSneaking,
+            movementController.root.velocity.magnitude);
+    }
+
+    public void HandlePlayerState(bool _isGrounded, float _inputSpeed, bool _isJumping, bool _isFlopping, bool _isSneaking, float _collisionVolume)
+    {
         if (_isGrounded && (_inputSpeed != 0 || lastIsGrounded != _isGrounded) && !_isFlopping && !_isJumping && !_isSneaking)
         {
             if (!walkingDustParticles.isPlaying)

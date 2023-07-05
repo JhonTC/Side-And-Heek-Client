@@ -470,4 +470,15 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
             VisualEffects.RemoveEffect(effectId);
         }
     }
+
+    [MessageHandler((ushort)ServerToClientId.weatherObjectTransform)]
+    public static void WeatherObjectTransform(Message message)
+    {
+        ushort _objectId = message.GetUShort();
+
+        if (WindVolume.WindRecievers.ContainsKey(_objectId))
+        {
+            WindVolume.WindRecievers[_objectId].networkPhysicsBody.ReadMessageValues(message);
+        }
+    }
 }

@@ -6,7 +6,7 @@ public class FootCollisionHandler : MonoBehaviour
 {
     public Rigidbody foot;
     public bool isGrounded { get { return activeCollisionCount > 0; } }
-    public bool IsGrounded;
+    public bool IsGrounded => isGrounded;
 
     public int activeCollisionCount = 0;
 
@@ -18,24 +18,13 @@ public class FootCollisionHandler : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        IsGrounded = isGrounded;
-    }
-
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Ground"))
-        {
-            activeCollisionCount++;
-        }
+        activeCollisionCount++;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Ground"))
-        {
-            activeCollisionCount--;
-        }
+        activeCollisionCount--;
     }
 }

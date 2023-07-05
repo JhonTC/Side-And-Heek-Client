@@ -14,6 +14,8 @@ TagManager:
   - LobbySpawnpoints
   - Pickup
   - LocalFallDetector
+  - WeatherReceiver
+  - Root
   layers:
   - Default
   - TransparentFX

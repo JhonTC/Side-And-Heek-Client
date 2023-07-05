@@ -18,6 +18,11 @@ public class ColourSelectorUI : MonoBehaviour
 
     public void Init(Color[] colours)
     {
+        if (colourItems.Count > 0)
+        {
+            ClearAll();
+        }
+
         for (int i = 0; i < colours.Length; i++)
         {
             ColourItem newItem = Instantiate(colourItemPrefab, transform);

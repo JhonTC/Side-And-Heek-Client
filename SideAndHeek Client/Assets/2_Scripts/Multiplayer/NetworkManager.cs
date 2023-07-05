@@ -32,7 +32,8 @@ public enum ServerToClientId : ushort
     playerTeleported,
     gameRulesChanged,
     setPlayerHost,
-    setVisualEffect
+    setVisualEffect,
+    weatherObjectTransform //Todo: really should be part of networkObjectTransform... Its a big ol' job
 }
 
 public enum ClientToServerId : ushort
@@ -92,7 +93,6 @@ public class NetworkManager : MonoBehaviour
 
     [SerializeField] private bool runAsServer = false; //for testing in editor
 
-
     private void Awake()
     {
         Instance = this;
@@ -104,6 +104,7 @@ public class NetworkManager : MonoBehaviour
         ErrorResponseHandler.InitialiseErrorResponseData();
 #if UNITY_SERVER
         networkType = NetworkType.ServerOnly;
+        GameManager.instance.OnNetworkTypeSetup();
         SetupServer();
 #else
         if (runAsServer) //for testing in editor
@@ -163,6 +164,7 @@ public class NetworkManager : MonoBehaviour
     public void Connect(string _ip)
     {
         NetworkType = NetworkType.Client;
+        GameManager.instance.OnNetworkTypeSetup();
         SetupClient();
 
         if (_ip != "")
@@ -187,6 +189,7 @@ public class NetworkManager : MonoBehaviour
     public void Host(string username = "")
     {
         NetworkType = NetworkType.ClientServer;
+        GameManager.instance.OnNetworkTypeSetup();
         SetupServer();
 
         Debug.Log($"Message from server: Welcome player({username}), you are the host!");
