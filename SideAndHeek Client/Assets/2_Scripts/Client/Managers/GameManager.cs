@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Numerics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -38,7 +37,20 @@ public class GameManager : MonoBehaviour
 
     public Transform billboardTarget;
 
-    public Dictionary<Color, bool> chosenDefaultColours = new Dictionary<Color, bool>();
+    [System.Serializable]
+    public class SelectableColour
+    {
+        public Color colour;
+        public bool isTaken;
+
+        public SelectableColour(Color colour, bool isTaken)
+        {
+            this.colour = colour;
+            this.isTaken = isTaken;
+        }
+    }
+
+    public SelectableColour[] chosenColours;
 
     [HideInInspector] public List<Player> lastMainHunterPlayers = new List<Player>(); //todo:Move somewhere?? - cant go to gamemode as it gets cleared when updated
 
@@ -68,6 +80,8 @@ public class GameManager : MonoBehaviour
         gameMode = GameMode.CreateGameModeFromType(gameType);
         gameMode.SetGameRules(GameRules.CreateGameRulesFromType(gameType)); //todo: replace with default mode?
     }
+
+    
 
     private void FixedUpdate()
     {
@@ -107,10 +121,10 @@ public class GameManager : MonoBehaviour
 
         if (NetworkManager.NetworkType != NetworkType.Client)
         {
-            chosenDefaultColours.Clear();
-            foreach (Color colour in hiderColours)
+            chosenColours = new SelectableColour[hiderColours.Length]; 
+            for (int i = 0; i < hiderColours.Length; i++)
             {
-                chosenDefaultColours.Add(colour, false);
+                chosenColours[i] = new SelectableColour(hiderColours[i], false);
             }
         } else
         {
@@ -436,11 +450,26 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public bool DoesChosenColoursContainColour(Color colour, out int index)
+    {
+        for (int i = 0; i < chosenColours.Length; i++)
+        {
+            if (ColourCompare(chosenColours[i].colour, colour))
+            {
+                index = i;
+                return true;
+            }
+        }
+
+        index = -1;
+        return false;
+    }
+
     public bool IsColourAvaliable(Color newColour) //todo: put in its own colour manager
     {
-        if (chosenDefaultColours.ContainsKey(newColour))
+        if (DoesChosenColoursContainColour(newColour, out int index))
         {
-            return !chosenDefaultColours[newColour];
+            return !chosenColours[index].isTaken;
         }
 
         return false;
@@ -448,79 +477,49 @@ public class GameManager : MonoBehaviour
 
     public bool ClaimHiderColour(Color previousColour, Color newColour)
     {
-        if (chosenDefaultColours.ContainsKey(newColour))
+        if (DoesChosenColoursContainColour(newColour, out int newIndex))
         {
-            if (!chosenDefaultColours[newColour])
+            if (!chosenColours[newIndex].isTaken)
             {
-                if (chosenDefaultColours.ContainsKey(previousColour))
+                if (DoesChosenColoursContainColour(previousColour, out int previousIndex))
                 {
-                    if (chosenDefaultColours[previousColour])
+                    if (chosenColours[previousIndex].isTaken)
                     {
-                        chosenDefaultColours[previousColour] = false;
+                        chosenColours[previousIndex].isTaken = false;
                     }
                 }
 
-                return chosenDefaultColours[newColour] = true;
+                return chosenColours[newIndex].isTaken = true;
             }
         }
 
+        Debug.Log("Colour does not exist");
         return false;
     }
 
     public void UnclaimHiderColour(Color colour)
     {
-        if (chosenDefaultColours.ContainsKey(colour))
+        if (DoesChosenColoursContainColour(colour, out int index))
         {
-            if (chosenDefaultColours[colour])
+            if (chosenColours[index].isTaken)
             {
-                chosenDefaultColours[colour] = false;
+                chosenColours[index].isTaken = false;
             }
         }
     }
 
     public Color GetNextAvaliableColour()
     {
-        foreach (Color colour in chosenDefaultColours.Keys)
+        for (int i = 0; i < chosenColours.Length; i++)
         {
-            if (!chosenDefaultColours[colour])
+            if (!chosenColours[i].isTaken)
             {
-                chosenDefaultColours[colour] = true;
-                return colour;
+                chosenColours[i].isTaken = true;
+                return chosenColours[i].colour;
             }
         }
 
         throw new System.Exception("ERROR: No colours are left to choose from");
-    }
-
-    public void OnPlayerLeft(ushort playerId)
-    {
-        bool isLeavingPlayerHost = Player.list[playerId].isHost;
-
-        if (gameStarted)
-        {
-            gameMode.OnPlayerLeft(Player.list[playerId]);
-        }
-
-        UnclaimHiderColour(Player.list[playerId].activeColour);
-
-        Player.list[playerId].DespawnPlayer();
-        Destroy(Player.list[playerId].gameObject);
-        Player.list.Remove(playerId);
-
-        CheckForGameOver();
-
-        if (Player.list.Count > 0)
-        {
-            if (isLeavingPlayerHost)
-            {
-                //Player.AppointNewHost(); //todo: needs managing depending on whether NetworkType is ClientServer or just Server...
-            }
-        }
-        else
-        {
-            //Application.Quit();
-            Debug.LogWarning("Last Player left, server should close");
-        }
     }
 
     public void OnPlayerSpawned(Player _player)
@@ -530,6 +529,14 @@ public class GameManager : MonoBehaviour
         sceneCamera.SetActive(false);
 
         billboardTarget.SetParent(Camera.main.transform, false);
+    }
+
+    public bool ColourCompare(Color col1, Color col2)
+    {
+        string col1Str = ColorUtility.ToHtmlStringRGBA(col1);
+        string col2Str = ColorUtility.ToHtmlStringRGBA(col2);
+
+        return col1Str == col2Str;
     }
 }
 

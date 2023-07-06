@@ -250,27 +250,36 @@ public class NetworkManager : MonoBehaviour
 
         bool isLeavingPlayerHost = Player.list[clientId].isHost;
 
-        //Player.list[playerId].DespawnPlayer();
+        if (GameManager.instance.gameStarted)
+        {
+            GameManager.instance.gameMode.OnPlayerLeft(Player.list[clientId]);
+        }
+
+        GameManager.instance.UnclaimHiderColour(Player.list[clientId].activeColour);
+
+        Player.list[clientId].DespawnPlayer();
         Destroy(Player.list[clientId].gameObject);
         Player.list.Remove(clientId);
-
-        if (Player.list.Count > 0)
-        {
-            if (isLeavingPlayerHost)
-            {
-                //Player.AppointNewHost();
-            }
-        }
-        else
-        {
-            //Application.Quit(); //TODO work this out.. server timeout maybe? - Reminder to also add timeout in lobby!
-            Debug.LogWarning("Last Player left, server should close?");
-        }
 
         if (NetworkType == NetworkType.ClientServer)
         {
             UIManager.instance.RemovePlayerReady(clientId);
             UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
+        }
+
+        GameManager.instance.CheckForGameOver();
+
+        if (Player.list.Count > 0)
+        {
+            if (isLeavingPlayerHost)
+            {
+                //Player.AppointNewHost(); //todo: needs managing depending on whether NetworkType is ClientServer or just Server...
+            }
+        }
+        else
+        {
+            //Application.Quit();
+            Debug.LogWarning("Last Player left, server should close");
         }
     }
     #endregion

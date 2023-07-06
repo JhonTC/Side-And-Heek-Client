@@ -165,6 +165,15 @@ public class Player : MonoBehaviour
             Camera.main.gameObject.SetActive(false);
         }
 
+        if (NetworkManager.NetworkType == NetworkType.ClientServer)
+        {
+            string colourHexStr = $"#{PlayerPrefs.GetString("DefaultColour")}";
+            if (ColorUtility.TryParseHtmlString(colourHexStr, out Color savedColour))
+            {
+                GameManager.instance.AttemptColourChange(id, savedColour, false);
+            }
+        }
+
         player.SpawnBody();
 
         Debug.Log($"Player Spawned: {player.Username}.");
@@ -198,6 +207,12 @@ public class Player : MonoBehaviour
         GameManager.instance.OnPlayerSpawned(player);
 
         player.SpawnBody();
+
+        string colourHexStr = PlayerPrefs.GetString("DefaultColour");
+        if (ColorUtility.TryParseHtmlString(colourHexStr, out Color savedColour))
+        {
+            ClientSend.SetPlayerColour(savedColour, true);
+        }
     }
 
     private void SendSpawned()
@@ -462,6 +477,9 @@ public class Player : MonoBehaviour
                     }
                 }
             }
+
+            string colourString = ColorUtility.ToHtmlStringRGBA(colour);
+            PlayerPrefs.SetString("DefaultColour", colourString); //todo: Make playerPrefs manager/use a colour manager
         }
     }
 
