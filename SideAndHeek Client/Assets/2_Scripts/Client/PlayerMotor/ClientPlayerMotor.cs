@@ -9,6 +9,12 @@ public class ClientPlayerMotor : PlayerMotor
 
     private Vector2 inputMovement = Vector2.zero;
 
+    [SerializeField] private Interpolator rootInterpolator;
+    [SerializeField] private Interpolator leftLegInterpolator;
+    [SerializeField] private Interpolator rightLegInterpolator;
+    [SerializeField] private Interpolator leftFootInterpolator;
+    [SerializeField] private Interpolator rightFootInterpolator;
+
     public override void Init(Player owner)
     {
         base.Init(owner);
@@ -121,5 +127,14 @@ public class ClientPlayerMotor : PlayerMotor
         //clientside prediection
         //MovePlayer();
         //RotatePlayer();
+    }
+
+    public override void SetPlayerPositions(ushort tick, Vector3 headPos, Vector3 rightFootPos, Vector3 leftFootPos, Vector3 rightLegPos, Vector3 leftLegPos)
+    {
+        rootInterpolator.NewUpdate(tick, false, headPos);
+        leftLegInterpolator.NewUpdate(tick, false, leftLegPos);
+        rightLegInterpolator.NewUpdate(tick, false, rightLegPos);
+        leftFootInterpolator.NewUpdate(tick, false, leftFootPos);
+        rightFootInterpolator.NewUpdate(tick, false, rightFootPos);
     }
 }

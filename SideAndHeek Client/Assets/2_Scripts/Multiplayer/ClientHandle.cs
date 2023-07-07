@@ -43,6 +43,7 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
     public static void PlayerPositions(Message message)
     {
         ushort _id = message.GetUShort();
+        ushort _tick = message.GetUShort();
         Vector3 _headPosition = message.GetVector3();
         Vector3 _rightFootPosition = message.GetVector3();
         Vector3 _leftFootPosition = message.GetVector3();
@@ -59,7 +60,7 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
             Player player = Player.list[_id];
             if (player.isBodyActive) 
             {
-                player.playerMotor.SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
+                player.playerMotor.SetPlayerPositions(_tick, _headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
                 player.playerMotor.SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
             }
             

@@ -39,8 +39,11 @@ public class ServerSend
     {
         if (_player.isBodyActive)
         {
+            if (NetworkManager.Instance.ServerTick % 2 != 0) return;
+
             Message message = Message.Create(MessageSendMode.Unreliable, ServerToClientId.playerPosition);
             message.AddUShort(_player.Id);
+            message.AddUShort(NetworkManager.Instance.ServerTick);
             message.AddVector3(_movementController.root.position);
             message.AddVector3(_movementController.rightFootCollider.foot.position);
             message.AddVector3(_movementController.leftFootCollider.foot.position);

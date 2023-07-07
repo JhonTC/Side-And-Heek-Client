@@ -89,7 +89,7 @@ public class PlayerMotor : MonoBehaviour //make abstract?
         rotation = _rotation;
         otherInputs = _otherInputs;
     }
-    public void SetPlayerPositions(Vector3 _headPos, Vector3 _rightFootPos, Vector3 _leftFootPos, Vector3 _rightLegPos, Vector3 _leftLegPos)
+    public virtual void SetPlayerPositions(ushort _tick, Vector3 _headPos, Vector3 _rightFootPos, Vector3 _leftFootPos, Vector3 _rightLegPos, Vector3 _leftLegPos)
     {
         root.position = _headPos;
         rightFoot.position = _rightFootPos;

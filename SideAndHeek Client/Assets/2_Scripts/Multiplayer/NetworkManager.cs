@@ -7,7 +7,8 @@ using Riptide.Utils;
 
 public enum ServerToClientId : ushort
 {
-    welcome = 1,
+    sync = 1,
+    welcome,
     playerSpawned,
     playerPosition,
     playerRotation,
@@ -76,16 +77,40 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-
     public Riptide.Client Client { get; private set; }
     public Riptide.Server Server { get; private set; }
+
+    public ushort ServerTick { get; private set; } = 0;
+
+    private ushort _clientTick;
+    public ushort ClientTick {
+        get => _clientTick;
+        private set
+        {
+            _clientTick = value;
+            ClientInterpolationTick = (ushort)(value - TicksBetweenPositionUpdates);
+        }
+    }
+
+    public ushort ClientInterpolationTick { get; private set; }
+
+    private ushort _ticksBetweenPositionUpdates;
+    public ushort TicksBetweenPositionUpdates
+    {
+        get => _ticksBetweenPositionUpdates;
+        private set
+        {
+            _ticksBetweenPositionUpdates = value;
+            ClientInterpolationTick = (ushort)(ClientTick - value);
+        }
+    }
 
     [SerializeField] private string ip;
     [SerializeField] private ushort port;
     [SerializeField] private ushort maxClientCount;
+    [SerializeField] private ushort tickDivergenceTolerance;
+
     public ushort localHostingClientId = ushort.MaxValue;
-
-
     public Player playerPrefab;
 
     public static NetworkType NetworkType;
@@ -102,6 +127,7 @@ public class NetworkManager : MonoBehaviour
     {
         RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.LogWarning, Debug.LogError, false);
         ErrorResponseHandler.InitialiseErrorResponseData();
+
 #if UNITY_SERVER
         networkType = NetworkType.ServerOnly;
         GameManager.instance.OnNetworkTypeSetup();
@@ -120,9 +146,18 @@ public class NetworkManager : MonoBehaviour
         if (NetworkType == NetworkType.Client)
         {
             Client?.Update();
+
+            ClientTick++;
         } else
         {
             Server?.Update();
+
+            if (ServerTick % 250 == 0)
+            {
+                SendSync();
+            }
+
+            ServerTick++;
         }
     }
 
@@ -160,6 +195,8 @@ public class NetworkManager : MonoBehaviour
         Client.ConnectionFailed += FailedToConnect;
         Client.ClientDisconnected += PlayerLeft;
         Client.Disconnected += DidDisconnect;
+
+        ClientTick = 2;
     }
     public void Connect(string _ip)
     {
@@ -241,6 +278,21 @@ public class NetworkManager : MonoBehaviour
 
         Debug.Log("Disconnected from server.");
     }
+
+    private void SetTick(ushort serverTick) //can cause jittering, maybe speed up/slowdown client tickrate until the ticks match
+    {
+        if (Mathf.Abs(ClientTick - serverTick) > tickDivergenceTolerance)
+        {
+            Debug.Log($"Client tick: {ClientTick} -> {serverTick}");
+            ClientTick = serverTick;
+        }
+    }
+
+    [MessageHandler((ushort)ServerToClientId.sync)]
+    public static void Sync(Message message)
+    {
+        Instance.SetTick(message.GetUShort());
+    }
     #endregion
 
     #region ServerFunctions
@@ -281,6 +333,14 @@ public class NetworkManager : MonoBehaviour
             //Application.Quit();
             Debug.LogWarning("Last Player left, server should close");
         }
+    }
+
+    private void SendSync()
+    {
+        Message message = Message.Create(MessageSendMode.Unreliable, ServerToClientId.sync);
+        message.Add(ServerTick);
+
+        Server.SendToAll(message);
     }
     #endregion
 }
