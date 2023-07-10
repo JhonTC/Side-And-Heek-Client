@@ -32,12 +32,12 @@ public abstract class UtpPeer
     /// <summary>The socket to use for sending and receiving.</summary>
     private Socket socket;
     /// <summary>Whether or not the transport is running.</summary>
-    private bool isRunning;
+    public bool isRunning;
     /// <summary>A reusable endpoint.</summary>
     private EndPoint remoteEndPoint;
 
-    public RelayNetworkClient Client { get; private set; }
-    public RelayNetworkHost Server { get; private set; }
+    public RelayNetworkClient Client { get; set; }
+    public RelayNetworkHost Server { get; set; }
 
     public string hostLatestMessageReceived;
     public bool isRelayConnected = false;

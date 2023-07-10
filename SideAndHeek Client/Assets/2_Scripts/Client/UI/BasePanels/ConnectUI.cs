@@ -18,13 +18,21 @@ public class ConnectUI : UIPanel
     [SerializeField] private GameObject jtsTitlePanel;
     [SerializeField] private Button joinTestServerButton;
 
+    [SerializeField] private Image useIPIconImage;
+    [SerializeField] private Sprite activeIcon;
+    [SerializeField] private Sprite inactiveIcon;
+    private bool useIP = false;
+
     public TMP_InputField ipField;
+    public TMP_Text ipFieldPlaceholderText;
     public TMP_InputField usernameField;
 
     private void Start()
     {
         usernameField.text = PlayerPrefs.GetString("Username", string.Empty);
-        ipField.text = PlayerPrefs.GetString("LastRoomCode", string.Empty);
+        //ipField.text = PlayerPrefs.GetString("LastRoomCode", string.Empty);
+
+        ToggleUseIP();
     }
 
     public override void EnablePanel()
@@ -107,5 +115,18 @@ public class ConnectUI : UIPanel
     public string GetName()
     {
         return usernameField.text;
+    }
+
+    public bool GetUseIP()
+    {
+        return useIP;
+    }
+
+    public void ToggleUseIP()
+    {
+        useIP = !useIP;
+
+        useIPIconImage.sprite = useIP ? activeIcon : inactiveIcon;
+        ipFieldPlaceholderText.text = useIP ? "IP Address..." : "Room Code...";
     }
 }

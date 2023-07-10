@@ -1,15 +1,15 @@
 using Riptide;
+using Riptide.Transports;
 using Riptide.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using Unity.Networking.Transport;
-using UnityEngine;
 
 public class UtpConnection : Connection, IEquatable<UtpConnection>
 {
-    public readonly NetworkConnection networkConnection;
+    public NetworkConnection networkConnection { get; private set; }
 
     /// <summary>The local peer this connection is associated with.</summary>
     private readonly UtpPeer peer;
@@ -20,6 +20,11 @@ public class UtpConnection : Connection, IEquatable<UtpConnection>
     {
         this.networkConnection = networkConnection;
         this.peer = peer;
+    }
+
+    public void SetNetworkConnection(NetworkConnection networkConnection)
+    {
+        this.networkConnection = networkConnection;
     }
 
     protected override void Send(byte[] dataBuffer, int amount)

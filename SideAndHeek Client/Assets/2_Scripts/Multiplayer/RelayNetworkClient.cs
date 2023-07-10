@@ -43,9 +43,10 @@ public class RelayNetworkClient
             {
                 // Handle Relay events.
                 case NetworkEvent.Type.Data:
-                    NativeArray<byte> bytes = new NativeArray<byte>();
+                    NativeArray<byte> bytes = new NativeArray<byte>(stream.ReadInt(), Allocator.Persistent);
                     stream.ReadBytes(bytes);
                     DataReceived?.Invoke(bytes.ToArray(), bytes.Length, clientConnection);
+                    bytes.Dispose();
                     break;
 
                 // Handle Connect events.
@@ -126,6 +127,7 @@ public class RelayNetworkClient
         // This sends a disconnect event to the Host client,
         // letting them know they're disconnecting.
         clientDriver.Disconnect(clientConnection);
+        clientDriver.Dispose();
 
         // We remove the reference to the current connection by overriding it.
         clientConnection = default(NetworkConnection);
@@ -133,10 +135,11 @@ public class RelayNetworkClient
 
     public void Send(NativeArray<byte> bytes, NetworkConnection connection)
     {
-        if (!clientConnection.IsCreated)
+        if (clientConnection.IsCreated)
         {
             if (clientDriver.BeginSend(connection, out var writer) == 0)
             {
+                writer.WriteInt(bytes.Length);
                 writer.WriteBytes(bytes);
                 clientDriver.EndSend(writer);
             }

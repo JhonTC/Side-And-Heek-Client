@@ -26,7 +26,10 @@ public class UtpClient : UtpPeer, IClient
     private UtpConnection utpConnection;
 
     /// <inheritdoc/>
-    public UtpClient(int socketBufferSize = DefaultSocketBufferSize) : base(socketBufferSize) { }
+    public UtpClient(int socketBufferSize = DefaultSocketBufferSize) : base(socketBufferSize) 
+    {
+        Client = new RelayNetworkClient();
+    }
 
     /// <inheritdoc/>
     /// <remarks>Expects the host address to consist of an IP and port, separated by a colon. For example: <c>127.0.0.1:7777</c>.</remarks>
@@ -52,6 +55,7 @@ public class UtpClient : UtpPeer, IClient
 
         OpenSocket();*/
 
+        isRunning = true;
         Client.OnJoin(joinCode);
 
         connection = utpConnection = new UtpConnection(Client.clientConnection, this);
@@ -92,11 +96,13 @@ public class UtpClient : UtpPeer, IClient
 
         Client.Connected -= OnConnected;
         Client.DataReceived -= OnDataReceived;
+        Client.Disconnected -= OnDisconnected;
     }
 
     /// <summary>Invokes the <see cref="Connected"/> event.</summary>
     protected virtual void OnConnected()
     {
+        utpConnection.SetNetworkConnection(Client.clientConnection);
         Connected?.Invoke(this, EventArgs.Empty);
     }
 
@@ -109,6 +115,10 @@ public class UtpClient : UtpPeer, IClient
     /// <inheritdoc/>
     protected override void OnDataReceived(byte[] dataBuffer, int amount, NetworkConnection networkConnection)
     {
+        Debug.Log($"Recieve MessageHeader: {(MessageHeader)dataBuffer[0]}");
+
+        Debug.Log($"Do connections match: {utpConnection.networkConnection.Equals(networkConnection)}");
+        Debug.Log(utpConnection.networkConnection.InternalId); Debug.Log(networkConnection.InternalId);
         if (utpConnection.networkConnection.Equals(networkConnection))
             DataReceived?.Invoke(this, new DataReceivedEventArgs(dataBuffer, amount, utpConnection));
     }

@@ -28,7 +28,10 @@ public class UtpServer : UtpPeer, IServer
     private readonly IPAddress listenAddress;
 
     /// <inheritdoc/>
-    public UtpServer(int socketBufferSize = DefaultSocketBufferSize) : base(socketBufferSize) { }
+    public UtpServer(int socketBufferSize = DefaultSocketBufferSize) : base(socketBufferSize)
+    {
+        Server = new RelayNetworkHost();
+    }
 
     /// <summary>Initializes the transport, binding the socket to a specific IP address.</summary>
     /// <param name="listenAddress">The IP address to bind the socket to.</param>
@@ -36,6 +39,7 @@ public class UtpServer : UtpPeer, IServer
     public UtpServer(IPAddress listenAddress, int socketBufferSize = DefaultSocketBufferSize) : base(socketBufferSize)
     {
         this.listenAddress = listenAddress;
+        Server = new RelayNetworkHost();
     }
 
     /// <inheritdoc/>
@@ -46,6 +50,7 @@ public class UtpServer : UtpPeer, IServer
         Port = port;
         connections = new Dictionary<NetworkConnection, Connection>();
 
+        isRunning = true;
         Server?.OnAllocate();
     }
 
@@ -75,7 +80,7 @@ public class UtpServer : UtpPeer, IServer
         Server?.Stop();
         connections.Clear();
 
-        Client.DataReceived -= OnDataReceived;
+        Server.DataReceived -= OnDataReceived;
     }
 
     /// <summary>Invokes the <see cref="Connected"/> event.</summary>

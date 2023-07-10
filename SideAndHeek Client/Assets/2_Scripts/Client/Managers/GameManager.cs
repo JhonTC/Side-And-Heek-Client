@@ -526,6 +526,9 @@ public class GameManager : MonoBehaviour
     {
         if (!_player.IsLocal) return;
 
+        UIManager.instance.CloseAllPanels();
+        UIManager.instance.DisplayPanel(UIPanelType.Gameplay);
+
         sceneCamera.SetActive(false);
 
         billboardTarget.SetParent(Camera.main.transform, false);

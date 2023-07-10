@@ -71,9 +71,10 @@ public class RelayNetworkHost
                 {
                     // Handle Relay events.
                     case NetworkEvent.Type.Data:
-                        NativeArray<byte> bytes = new NativeArray<byte>();
+                        NativeArray<byte> bytes = new NativeArray<byte>(stream.ReadInt(), Allocator.Persistent);
                         stream.ReadBytes(bytes);
                         DataReceived?.Invoke(bytes.ToArray(), bytes.Length, serverConnections[i]);
+                        bytes.Dispose();
                         break;
 
                     // Handle Disconnect events.
@@ -122,6 +123,8 @@ public class RelayNetworkHost
         {
             string joinCode = await Relay.Instance.GetJoinCodeAsync(hostAllocation.AllocationId);
             Debug.Log($"Recieved Join Code: {joinCode}");
+
+            UIManager.instance.gameplayPanel.roomCodeText.text = joinCode;
         }
         catch (RelayServiceException ex)
         {
@@ -174,14 +177,18 @@ public class RelayNetworkHost
             // It will be recognized in the Host's Update loop as a stale connection, and be removed.
             serverConnections[i] = default(NetworkConnection);
         }
+
+        serverConnections.Dispose();
+        hostDriver.Dispose();
     }
 
     public void Send(NativeArray<byte> bytes, NetworkConnection connection)
     {
-        if (serverConnections.Length == 0)
+        if (serverConnections.Length != 0)
         {
             if (hostDriver.BeginSend(connection, out var writer) == 0)
             {
+                writer.WriteInt(bytes.Length);
                 writer.WriteBytes(bytes);
                 hostDriver.EndSend(writer);
             }

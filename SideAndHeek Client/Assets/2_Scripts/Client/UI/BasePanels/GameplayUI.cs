@@ -17,6 +17,8 @@ public class GameplayUI : UIPanel
     [SerializeField] private TMP_Text itemContent;
     [SerializeField] private Image itemOutline;
 
+    public TMP_Text roomCodeText;
+
     [HideInInspector] public List<GameplayMouseDetector> mouseDetectors = new List<GameplayMouseDetector>();
 
     public bool isActive = false;

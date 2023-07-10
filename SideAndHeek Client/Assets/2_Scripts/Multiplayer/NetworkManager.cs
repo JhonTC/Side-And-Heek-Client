@@ -4,8 +4,11 @@ using UnityEngine;
 using System;
 using Riptide;
 using Riptide.Utils;
+using Riptide.Transports.Udp;
+using Riptide.Transports;
 using Unity.Services.Core;
 using Unity.Services.Authentication;
+using System.Net;
 
 public enum ServerToClientId : ushort
 {
@@ -78,6 +81,7 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+
     public Riptide.Client Client { get; private set; }
     public Riptide.Server Server { get; private set; }
 
@@ -85,6 +89,7 @@ public class NetworkManager : MonoBehaviour
     [SerializeField] private ushort port;
     [SerializeField] private ushort maxClientCount;
     public ushort localHostingClientId = ushort.MaxValue;
+
 
     public Player playerPrefab;
 
@@ -128,25 +133,25 @@ public class NetworkManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (NetworkManager.NetworkType == NetworkType.ClientServer)
-        {
-            Server?.Update();
-        }
-        else if (NetworkManager.NetworkType == NetworkType.Client)
+        if (NetworkType == NetworkType.Client)
         {
             Client?.Update();
+        }
+        else
+        {
+            Server?.Update();
         }
     }
 
     private void OnApplicationQuit()
     {
-        if (NetworkType == NetworkType.ClientServer)
-        {
-            Server?.Stop();
-        }
-        else if (NetworkType == NetworkType.Client)
+        if (NetworkType == NetworkType.Client)
         {
             Client?.Disconnect();
+        }
+        else
+        {
+            Server?.Stop();
         }
     }
 
@@ -165,65 +170,109 @@ public class NetworkManager : MonoBehaviour
         return false;
     }
 
-    public void Connect(string _ip)
+    private void SetupClient()
+    {
+        SetupClient(new UdpClient());
+    }
+    private void SetupClient(IClient transport)
+    {
+        Client = new Riptide.Client(transport);
+        Client.Connected += DidConnect;
+        Client.ConnectionFailed += FailedToConnect;
+        Client.ClientDisconnected += PlayerLeft;
+        Client.Disconnected += DidDisconnect;
+    }
+    public void Connect(string joinValue)
     {
         NetworkType = NetworkType.Client;
         GameManager.instance.OnNetworkTypeSetup();
-        
-        if (_ip != "")
-        {
-            ip = _ip;
-        }
 
-        Client.Connect(_ip);
+        if (UIManager.instance.connectPanel.GetUseIP())
+        {
+            if (joinValue != "")
+            {
+                ip = joinValue;
+            }
+
+            SetupClient();
+            Client.Connect($"{ip}:{port}");
+        }
+        else
+        {
+            SetupClient(new UtpClient());
+            Client.Connect(joinValue);
+        }
     }
 
     private void SetupServer()
     {
-        Server.Start();
+        SetupServer(new UdpServer());
+    }
+    private void SetupServer(IServer transport)
+    {
+        Server = new Riptide.Server(transport);
+        Server.Start(port, maxClientCount);
+        Server.ClientDisconnected += PlayerLeft;
 
         if (NetworkType == NetworkType.ServerOnly)
         {
             Application.targetFrameRate = 60;
+            UIManager.instance.CloseAllPanels();
         }
     }
+
     public void Host(string username = "")
     {
         NetworkType = NetworkType.ClientServer;
         GameManager.instance.OnNetworkTypeSetup();
-        SetupServer();
+
+        if (UIManager.instance.connectPanel.GetUseIP())
+        {
+            SetupServer();
+        }
+        else
+        {
+            SetupServer(new UtpServer());
+        }
 
         Debug.Log($"Message from server: Welcome player({username}), you are the host!");
 
         Player.Spawn(localHostingClientId, username);
 
-        UIManager.instance.CloseAllPanels();
         InputHandler.instance.SwitchInput("PlayerControls");
     }
 
     #region ClientFunctions
 
-    public void DidConnect()
+    private void DidConnect(object sender, EventArgs e)
     {
-
+        Message message = Message.Create(MessageSendMode.Reliable, ClientToServerId.name); //todo: move to clientSend
+        message.AddString(UIManager.instance.connectPanel.GetName());
+        Client.Send(message);
     }
 
-    public void FailedToConnect()
+    private void FailedToConnect(object sender, EventArgs e)
     {
+        print(e.ToString());
         UIManager.instance.BackToMenu();
     }
 
-    public void ClientPlayerLeft(ushort playerId)
+    private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
-        Destroy(Player.list[playerId].gameObject);
-        Player.list.Remove(playerId);
+        Destroy(Player.list[e.Id].gameObject);
+        Player.list.Remove(e.Id);
 
-        UIManager.instance.RemovePlayerReady(playerId);
+        UIManager.instance.RemovePlayerReady(e.Id);
         UIManager.instance.customisationPanel.hiderColourSelector.UpdateAllButtons();
         UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
 
-    public void DidDisconnect()
+    public void DidDisconnect(object sender, EventArgs e)
+    {
+        OnDisconnection();
+    }
+
+    public void OnDisconnection()
     {
         GameManager.instance.OnLocalPlayerDisconnection();
         UIManager.instance.BackToMenu();
@@ -237,25 +286,26 @@ public class NetworkManager : MonoBehaviour
     #endregion
 
     #region ServerFunctions
-    public void ServerPlayerLeft(ushort playerId)
+    private void PlayerLeft(object sender, ServerDisconnectedEventArgs e)
     {
-        Player leavingPlayer = Player.list[playerId];
-        bool isLeavingPlayerHost = leavingPlayer.isHost;
+        ushort clientId = e.Client.Id;
+
+        bool isLeavingPlayerHost = Player.list[clientId].isHost;
 
         if (GameManager.instance.gameStarted)
         {
-            GameManager.instance.gameMode.OnPlayerLeft(leavingPlayer);
+            GameManager.instance.gameMode.OnPlayerLeft(Player.list[clientId]);
         }
 
-        GameManager.instance.UnclaimHiderColour(leavingPlayer.activeColour);
+        GameManager.instance.UnclaimHiderColour(Player.list[clientId].activeColour);
 
-        leavingPlayer.DespawnPlayer();
-        Destroy(leavingPlayer.gameObject);
-        Player.list.Remove(playerId);
+        Player.list[clientId].DespawnPlayer();
+        Destroy(Player.list[clientId].gameObject);
+        Player.list.Remove(clientId);
 
         if (NetworkType == NetworkType.ClientServer)
         {
-            UIManager.instance.RemovePlayerReady(playerId);
+            UIManager.instance.RemovePlayerReady(clientId);
             UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
         }
 

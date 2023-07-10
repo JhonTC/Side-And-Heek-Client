@@ -23,9 +23,6 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
         Debug.Log($"Message from server: {_msg}");
 
         GameManager.instance.FadeMusic(true);
-
-        UIManager.instance.CloseAllPanels();
-        UIManager.instance.DisplayPanel(UIPanelType.Gameplay);
     }
 
     [MessageHandler((ushort)ServerToClientId.playerSpawned)]
