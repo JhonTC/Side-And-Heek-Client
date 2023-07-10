@@ -1,3 +1,5 @@
+using Riptide;
+using Riptide.Transports;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,11 +15,13 @@ using UnityEngine;
 
 public class RelayNetworkClient
 {
-    public ushort Id;
+    public event Action<byte[], int, NetworkConnection> DataReceived;
+    public event Action Connected;
+    public event Action<NetworkConnection, DisconnectReason> Disconnected;
+
     public NetworkDriver clientDriver;
     private JoinAllocation clientAllocation;
-    private NetworkConnection clientConnection;
-    private string playerLatestMessageReceived;
+    public NetworkConnection clientConnection;
 
     public void Update()
     {
@@ -39,20 +43,22 @@ public class RelayNetworkClient
             {
                 // Handle Relay events.
                 case NetworkEvent.Type.Data:
-                    FixedString32Bytes msg = stream.ReadFixedString32();
-                    Debug.Log($"Player received msg: {msg}");
-                    playerLatestMessageReceived = msg.ToString();
+                    NativeArray<byte> bytes = new NativeArray<byte>();
+                    stream.ReadBytes(bytes);
+                    DataReceived?.Invoke(bytes.ToArray(), bytes.Length, clientConnection);
                     break;
 
                 // Handle Connect events.
                 case NetworkEvent.Type.Connect:
                     Debug.Log("Player connected to the Host");
+                    Connected?.Invoke();
                     break;
 
                 // Handle Disconnect events.
                 case NetworkEvent.Type.Disconnect:
                     Debug.Log("Player got disconnected from the Host");
                     clientConnection = default(NetworkConnection);
+                    Disconnected?.Invoke(clientConnection, DisconnectReason.Kicked);
                     break;
             }
         }
@@ -123,5 +129,17 @@ public class RelayNetworkClient
 
         // We remove the reference to the current connection by overriding it.
         clientConnection = default(NetworkConnection);
+    }
+
+    public void Send(NativeArray<byte> bytes, NetworkConnection connection)
+    {
+        if (!clientConnection.IsCreated)
+        {
+            if (clientDriver.BeginSend(connection, out var writer) == 0)
+            {
+                writer.WriteBytes(bytes);
+                clientDriver.EndSend(writer);
+            }
+        }
     }
 }

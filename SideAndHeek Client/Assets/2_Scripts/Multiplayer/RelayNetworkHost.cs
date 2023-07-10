@@ -1,3 +1,5 @@
+using Riptide.Transports;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,13 +15,11 @@ using UnityEngine.Assertions;
 
 public class RelayNetworkHost
 {
+    public event Action<byte[], int, NetworkConnection> DataReceived;
+
     public NetworkDriver hostDriver;
     private Allocation hostAllocation;
-    //public NetworkDriver m_ClientDriver;
     private NativeList<NetworkConnection> serverConnections;
-    private string hostLatestMessageReceived;
-    //private NativeArray<NetworkConnection> m_clientToServerConnection;
-    private bool isRelayConnected = false;
 
     public void Update()
     {
@@ -53,6 +53,9 @@ public class RelayNetworkHost
             // as a means of acknowledging acceptance.
             Debug.Log("Accepted an incoming connection.");
             serverConnections.Add(incomingConnection);
+
+            byte[] simulatedByteArray = new byte[1] { (byte)MessageHeader.Connect };
+            DataReceived?.Invoke(simulatedByteArray, simulatedByteArray.Length, incomingConnection);
         }
 
         // Process events from all connections.
@@ -68,9 +71,9 @@ public class RelayNetworkHost
                 {
                     // Handle Relay events.
                     case NetworkEvent.Type.Data:
-                        FixedString32Bytes msg = stream.ReadFixedString32();
-                        Debug.Log($"Server received msg: {msg}");
-                        hostLatestMessageReceived = msg.ToString();
+                        NativeArray<byte> bytes = new NativeArray<byte>();
+                        stream.ReadBytes(bytes);
+                        DataReceived?.Invoke(bytes.ToArray(), bytes.Length, serverConnections[i]);
                         break;
 
                     // Handle Disconnect events.
@@ -170,6 +173,18 @@ public class RelayNetworkHost
             // Here, we set the destination client's NetworkConnection to the default value.
             // It will be recognized in the Host's Update loop as a stale connection, and be removed.
             serverConnections[i] = default(NetworkConnection);
+        }
+    }
+
+    public void Send(NativeArray<byte> bytes, NetworkConnection connection)
+    {
+        if (serverConnections.Length == 0)
+        {
+            if (hostDriver.BeginSend(connection, out var writer) == 0)
+            {
+                writer.WriteBytes(bytes);
+                hostDriver.EndSend(writer);
+            }
         }
     }
 }

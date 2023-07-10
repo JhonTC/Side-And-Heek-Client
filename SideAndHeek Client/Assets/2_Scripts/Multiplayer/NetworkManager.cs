@@ -86,8 +86,6 @@ public class NetworkManager : MonoBehaviour
     [SerializeField] private ushort maxClientCount;
     public ushort localHostingClientId = ushort.MaxValue;
 
-    private INetworkTransport transport;
-
     public Player playerPrefab;
 
     public static NetworkType NetworkType;
@@ -130,19 +128,33 @@ public class NetworkManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        transport.Update();
+        if (NetworkManager.NetworkType == NetworkType.ClientServer)
+        {
+            Server?.Update();
+        }
+        else if (NetworkManager.NetworkType == NetworkType.Client)
+        {
+            Client?.Update();
+        }
     }
 
     private void OnApplicationQuit()
     {
-        transport.OnApplicationQuit();
+        if (NetworkType == NetworkType.ClientServer)
+        {
+            Server?.Stop();
+        }
+        else if (NetworkType == NetworkType.Client)
+        {
+            Client?.Disconnect();
+        }
     }
 
     public bool IsLocalPlayer(ushort id)
     {
         if (NetworkType == NetworkType.Client)
         {
-            transport.IsLocalPlayer(id);
+            return id == Client.Id;
         }
 
         if (NetworkType == NetworkType.ClientServer)
@@ -163,12 +175,12 @@ public class NetworkManager : MonoBehaviour
             ip = _ip;
         }
 
-        transport.ConnectClient(_ip);
+        Client.Connect(_ip);
     }
 
     private void SetupServer()
     {
-        transport.StartServer();
+        Server.Start();
 
         if (NetworkType == NetworkType.ServerOnly)
         {
