@@ -1,69 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using System;
-using Riptide;
-using Riptide.Utils;
-using Unity.Services.Core;
 using Unity.Services.Authentication;
+using Unity.Services.Core;
+using UnityEngine;
 
-public enum ServerToClientId : ushort
+public class RelayNetworkManager : MonoBehaviour
 {
-    welcome = 1,
-    playerSpawned,
-    playerPosition,
-    playerRotation,
-    playerState,
-    createItemSpawner,
-    pickupSpawned,
-    pickupPickedUp,
-    itemSpawned,
-    networkObjectTransform,
-    itemUseComplete,
-    networkObjectDestroyed,
-    playerReadyToggled,
-    changeScene,
-    unloadScene,
-    setPlayerType,
-    setSpecialCountdown,
-    setPlayerColour,
-    setPlayerMaterialType,
-    sendErrorResponseCode,
-    gameStart,
-    gameOver,
-    playerTeleported,
-    gameRulesChanged,
-    setPlayerHost,
-    setVisualEffect,
-    weatherObjectTransform //Todo: really should be part of networkObjectTransform... Its a big ol' job
-}
+    public static RelayNetworkManager _instance;
 
-public enum ClientToServerId : ushort
-{
-    name = 1,
-    playerInput,
-    playerReady,
-    tryStartGame,
-    setPlayerColour,
-    pickupSelected,
-    itemUsed,
-    gameRulesChanged,
-    command
-}
-
-
-public enum NetworkType
-{
-    Client,
-    ClientServer,
-    ServerOnly,
-}
-
-public class NetworkManager : MonoBehaviour
-{
-    public static NetworkManager _instance;
-
-    public static NetworkManager Instance
+    public static RelayNetworkManager Instance
     {
         get => _instance;
         private set
@@ -72,21 +18,19 @@ public class NetworkManager : MonoBehaviour
                 _instance = value;
             else if (_instance != value)
             {
-                Debug.Log($"{nameof(NetworkManager)} instance already exists, destroying duplicate");
+                Debug.Log($"{nameof(RelayNetworkManager)} instance already exists, destroying duplicate");
                 Destroy(value);
             }
         }
     }
 
-    public Riptide.Client Client { get; private set; }
-    public Riptide.Server Server { get; private set; }
+    public RelayNetworkClient Client { get; private set; }
+    public RelayNetworkHost Server { get; private set; }
 
     [SerializeField] private string ip;
     [SerializeField] private ushort port;
     [SerializeField] private ushort maxClientCount;
     public ushort localHostingClientId = ushort.MaxValue;
-
-    private INetworkTransport transport;
 
     public Player playerPrefab;
 
@@ -102,7 +46,6 @@ public class NetworkManager : MonoBehaviour
 
     private async void Start()
     {
-        RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.LogWarning, Debug.LogError, false);
         ErrorResponseHandler.InitialiseErrorResponseData();
 #if UNITY_SERVER
         networkType = NetworkType.ServerOnly;
@@ -130,19 +73,33 @@ public class NetworkManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        transport.Update();
+        if (NetworkType == NetworkType.Client)
+        {
+            Client?.Update();
+        }
+        else
+        {
+            Server?.Update();
+        }
     }
 
     private void OnApplicationQuit()
     {
-        transport.OnApplicationQuit();
+        if (NetworkType == NetworkType.Client)
+        {
+            Client?.Disconnect();
+        }
+        else
+        {
+            Server?.Stop();
+        }
     }
 
     public bool IsLocalPlayer(ushort id)
     {
         if (NetworkType == NetworkType.Client)
         {
-            transport.IsLocalPlayer(id);
+            return id == Client.Id;
         }
 
         if (NetworkType == NetworkType.ClientServer)
@@ -153,22 +110,33 @@ public class NetworkManager : MonoBehaviour
         return false;
     }
 
+    private void SetupClient()
+    {
+        Client = new Riptide.Client();
+        Client.Connected += DidConnect;
+        Client.ConnectionFailed += FailedToConnect;
+        Client.ClientDisconnected += PlayerLeft;
+        Client.Disconnected += DidDisconnect;
+    }
     public void Connect(string _ip)
     {
         NetworkType = NetworkType.Client;
         GameManager.instance.OnNetworkTypeSetup();
-        
+        SetupClient();
+
         if (_ip != "")
         {
             ip = _ip;
         }
 
-        transport.ConnectClient(_ip);
+        Client.Connect($"{ip}:{port}");
     }
 
     private void SetupServer()
     {
-        transport.StartServer();
+        Server = new Riptide.Server();
+        Server.Start(port, maxClientCount);
+        Server.ClientDisconnected += PlayerLeft;
 
         if (NetworkType == NetworkType.ServerOnly)
         {
@@ -191,27 +159,35 @@ public class NetworkManager : MonoBehaviour
 
     #region ClientFunctions
 
-    public void DidConnect()
+    private void DidConnect(object sender, EventArgs e)
     {
-
+        Message message = Message.Create(MessageSendMode.Reliable, ClientToServerId.name); //todo: move to clientSend
+        message.AddString(UIManager.instance.connectPanel.GetName());
+        Client.Send(message);
     }
 
-    public void FailedToConnect()
+    private void FailedToConnect(object sender, EventArgs e)
     {
+        print(e.ToString());
         UIManager.instance.BackToMenu();
     }
 
-    public void ClientPlayerLeft(ushort playerId)
+    private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
     {
-        Destroy(Player.list[playerId].gameObject);
-        Player.list.Remove(playerId);
+        Destroy(Player.list[e.Id].gameObject);
+        Player.list.Remove(e.Id);
 
-        UIManager.instance.RemovePlayerReady(playerId);
+        UIManager.instance.RemovePlayerReady(e.Id);
         UIManager.instance.customisationPanel.hiderColourSelector.UpdateAllButtons();
         UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
     }
 
-    public void DidDisconnect()
+    public void DidDisconnect(object sender, EventArgs e)
+    {
+        OnDisconnection();
+    }
+
+    public void OnDisconnection()
     {
         GameManager.instance.OnLocalPlayerDisconnection();
         UIManager.instance.BackToMenu();
@@ -225,25 +201,26 @@ public class NetworkManager : MonoBehaviour
     #endregion
 
     #region ServerFunctions
-    public void ServerPlayerLeft(ushort playerId)
+    private void PlayerLeft(object sender, ServerDisconnectedEventArgs e)
     {
-        Player leavingPlayer = Player.list[playerId];
-        bool isLeavingPlayerHost = leavingPlayer.isHost;
+        ushort clientId = e.Client.Id;
+
+        bool isLeavingPlayerHost = Player.list[clientId].isHost;
 
         if (GameManager.instance.gameStarted)
         {
-            GameManager.instance.gameMode.OnPlayerLeft(leavingPlayer);
+            GameManager.instance.gameMode.OnPlayerLeft(Player.list[clientId]);
         }
 
-        GameManager.instance.UnclaimHiderColour(leavingPlayer.activeColour);
+        GameManager.instance.UnclaimHiderColour(Player.list[clientId].activeColour);
 
-        leavingPlayer.DespawnPlayer();
-        Destroy(leavingPlayer.gameObject);
-        Player.list.Remove(playerId);
+        Player.list[clientId].DespawnPlayer();
+        Destroy(Player.list[clientId].gameObject);
+        Player.list.Remove(clientId);
 
         if (NetworkType == NetworkType.ClientServer)
         {
-            UIManager.instance.RemovePlayerReady(playerId);
+            UIManager.instance.RemovePlayerReady(clientId);
             UIManager.instance.gameplayPanel.UpdatePlayerTypeViews();
         }
 
@@ -264,4 +241,3 @@ public class NetworkManager : MonoBehaviour
     }
     #endregion
 }
-
