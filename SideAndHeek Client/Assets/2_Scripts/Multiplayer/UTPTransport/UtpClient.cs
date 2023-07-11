@@ -1,16 +1,9 @@
 using Riptide;
 using Riptide.Transports;
-using Riptide.Transports.Udp;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
-using Unity.Collections;
 using Unity.Networking.Transport;
-using Unity.Networking.Transport.Relay;
-using Unity.Services.Relay;
 using UnityEngine;
 
 public class UtpClient : UtpPeer, IClient
@@ -26,18 +19,26 @@ public class UtpClient : UtpPeer, IClient
     private UtpConnection utpConnection;
 
     /// <inheritdoc/>
-    public UtpClient(int socketBufferSize = DefaultSocketBufferSize) : base(socketBufferSize) 
+    public UtpClient() : base()
     {
-        Client = new RelayNetworkClient();
+        RelayNetwork = new RelayNetworkClient();
     }
 
     /// <inheritdoc/>
     /// <remarks>Expects the host address to consist of an IP and port, separated by a colon. For example: <c>127.0.0.1:7777</c>.</remarks>
     public bool Connect(string joinCode, out Connection connection, out string connectError)
     {
-        Client.Connected += OnConnected;
-        Client.DataReceived += OnDataReceived;
-        Client.Disconnected += OnDisconnected;
+        RelayNetworkClient client = RelayNetwork as RelayNetworkClient;
+        if (client == null)
+        {
+            connectError = "RelayNetwork not of type RelayNetworkClient";
+            connection = null;
+            return false;
+        }
+
+        client.Connected += OnConnected;
+        client.DataReceived += OnDataReceived;
+        client.Disconnected += OnDisconnected;
 
         connectError = $"Invalid Join Code: '{joinCode}'!";
 
@@ -56,9 +57,9 @@ public class UtpClient : UtpPeer, IClient
         OpenSocket();*/
 
         isRunning = true;
-        Client.OnJoin(joinCode);
+        client.OnJoin(joinCode);
 
-        connection = utpConnection = new UtpConnection(Client.clientConnection, this);
+        connection = utpConnection = new UtpConnection(client.clientConnection, this);
         return true;
     }
 
@@ -92,17 +93,25 @@ public class UtpClient : UtpPeer, IClient
     /// <inheritdoc/>
     public void Disconnect()
     {
-        Client.Disconnect();
+        RelayNetwork?.End();
 
-        Client.Connected -= OnConnected;
-        Client.DataReceived -= OnDataReceived;
-        Client.Disconnected -= OnDisconnected;
+        RelayNetworkClient client = RelayNetwork as RelayNetworkClient;
+        if (client != null)
+        {
+            client.Connected -= OnConnected;
+            client.DataReceived -= OnDataReceived;
+            client.Disconnected -= OnDisconnected;
+        }
     }
 
     /// <summary>Invokes the <see cref="Connected"/> event.</summary>
     protected virtual void OnConnected()
     {
-        utpConnection.SetNetworkConnection(Client.clientConnection);
+        RelayNetworkClient client = RelayNetwork as RelayNetworkClient;
+        if (client != null)
+        {
+            utpConnection.SetNetworkConnection(client.clientConnection);
+        }
         Connected?.Invoke(this, EventArgs.Empty);
     }
 

@@ -13,7 +13,7 @@ using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
 
-public class RelayNetworkClient
+public class RelayNetworkClient : IRelayNetwork
 {
     public event Action<byte[], int, NetworkConnection> DataReceived;
     public event Action Connected;
@@ -122,7 +122,7 @@ public class RelayNetworkClient
         clientConnection = clientDriver.Connect();
     }
 
-    public void Disconnect()
+    public void End()
     {
         // This sends a disconnect event to the Host client,
         // letting them know they're disconnecting.

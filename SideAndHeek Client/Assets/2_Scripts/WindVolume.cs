@@ -51,6 +51,8 @@ public class WindVolume : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!NetworkManager.IsConnected) return;
+
         if (NetworkManager.NetworkType != NetworkType.Client)
         {
             foreach (var windRecieverDict in WindRecievers)

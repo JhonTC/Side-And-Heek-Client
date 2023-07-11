@@ -1,16 +1,10 @@
 using Riptide;
 using Riptide.Transports;
-using Riptide.Transports.Udp;
+using Riptide.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Sockets;
-using Unity.Collections;
 using Unity.Networking.Transport;
-using Unity.Networking.Transport.Relay;
-using Unity.Services.Relay;
-using UnityEngine;
 
 public class UtpServer : UtpPeer, IServer
 {
@@ -24,34 +18,30 @@ public class UtpServer : UtpPeer, IServer
 
     /// <summary>The currently open connections, accessible by their endpoints.</summary>
     private Dictionary<NetworkConnection, Connection> connections;
-    /// <summary>The IP address to bind the socket to, if any.</summary>
-    private readonly IPAddress listenAddress;
 
     /// <inheritdoc/>
-    public UtpServer(int socketBufferSize = DefaultSocketBufferSize) : base(socketBufferSize)
+    public UtpServer() : base()
     {
-        Server = new RelayNetworkHost();
-    }
-
-    /// <summary>Initializes the transport, binding the socket to a specific IP address.</summary>
-    /// <param name="listenAddress">The IP address to bind the socket to.</param>
-    /// <param name="socketBufferSize">How big the socket's send and receive buffers should be.</param>
-    public UtpServer(IPAddress listenAddress, int socketBufferSize = DefaultSocketBufferSize) : base(socketBufferSize)
-    {
-        this.listenAddress = listenAddress;
-        Server = new RelayNetworkHost();
+        RelayNetwork = new RelayNetworkHost();
     }
 
     /// <inheritdoc/>
     public void Start(ushort port)
     {
-        Server.DataReceived += OnDataReceived;
+        RelayNetworkHost server = RelayNetwork as RelayNetworkHost;
+        if (server == null)
+        {
+            RiptideLogger.Log(Riptide.Utils.LogType.Error, "RelayNetwork not of type RelayNetworkHost");
+            return;
+        }
+
+        server.DataReceived += OnDataReceived;
 
         Port = port;
         connections = new Dictionary<NetworkConnection, Connection>();
 
         isRunning = true;
-        Server?.OnAllocate();
+        server?.OnAllocate();
     }
 
     /// <summary>Decides what to do with a connection attempt.</summary>
@@ -77,10 +67,14 @@ public class UtpServer : UtpPeer, IServer
     /// <inheritdoc/>
     public void Shutdown()
     {
-        Server?.Stop();
+        RelayNetwork?.End();
         connections.Clear();
 
-        Server.DataReceived -= OnDataReceived;
+        RelayNetworkHost server = RelayNetwork as RelayNetworkHost;
+        if (server != null)
+        {
+            server.DataReceived -= OnDataReceived;
+        }
     }
 
     /// <summary>Invokes the <see cref="Connected"/> event.</summary>

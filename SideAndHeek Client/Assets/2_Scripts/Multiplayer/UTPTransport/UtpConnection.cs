@@ -1,10 +1,6 @@
 using Riptide;
-using Riptide.Transports;
-using Riptide.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Net;
 using Unity.Networking.Transport;
 
 public class UtpConnection : Connection, IEquatable<UtpConnection>

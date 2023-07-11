@@ -13,7 +13,7 @@ using Unity.Services.Relay.Models;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class RelayNetworkHost
+public class RelayNetworkHost : IRelayNetwork
 {
     public event Action<byte[], int, NetworkConnection> DataReceived;
 
@@ -164,7 +164,7 @@ public class RelayNetworkHost
         }
     }
 
-    public void Stop()
+    public void End()
     {
         // Simply disconnect all connected clients.
         for (int i = 0; i < serverConnections.Length; i++)

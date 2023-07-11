@@ -304,13 +304,10 @@ public class UIManager : MonoBehaviour
 
     public void OnDisconnectButtonPressed()
     {
-        if (NetworkManager.NetworkType == NetworkType.Client)
+        NetworkManager.Instance.EndActiveConnection(false);
+        
+        if (NetworkManager.NetworkType == NetworkType.ClientServer)
         {
-            NetworkManager.Instance.Client.Disconnect();
-        }
-        else if (NetworkManager.NetworkType == NetworkType.ClientServer)
-        {
-            NetworkManager.Instance.Server?.Stop();
             NetworkManager.Instance.OnDisconnection();
         }
     }

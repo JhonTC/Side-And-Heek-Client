@@ -94,7 +94,7 @@ public class InputHandler : MonoBehaviour
     {
         if (localPlayer != null)
         {
-            if (!GameManager.instance.gameStarted)
+            if (!GameManager.instance.gameStarted && NetworkManager.IsConnected)
             {
                 localPlayer.SetPlayerReady(!localPlayer.isReady);
 
@@ -112,7 +112,7 @@ public class InputHandler : MonoBehaviour
 
     public void ToggleCustomisation(InputAction.CallbackContext value)
     {
-        if (!GameManager.instance.gameStarted)
+        if (!GameManager.instance.gameStarted && NetworkManager.IsConnected)
         {
             if (value.phase == InputActionPhase.Started)
             {
@@ -123,7 +123,7 @@ public class InputHandler : MonoBehaviour
 
     public void ToggleGameRules(InputAction.CallbackContext value)
     {
-        if (!GameManager.instance.gameStarted)
+        if (!GameManager.instance.gameStarted && NetworkManager.IsConnected)
         {
             if (value.phase == InputActionPhase.Started)
             {
@@ -134,9 +134,12 @@ public class InputHandler : MonoBehaviour
 
     public void TogglePause(InputAction.CallbackContext value)
     {
-        if (value.phase == InputActionPhase.Started)
+        if (NetworkManager.IsConnected)
         {
-            UIManager.instance.TogglePanel(UIPanelType.Pause);
+            if (value.phase == InputActionPhase.Started)
+            {
+                UIManager.instance.TogglePanel(UIPanelType.Pause);
+            }
         }
     }
 }

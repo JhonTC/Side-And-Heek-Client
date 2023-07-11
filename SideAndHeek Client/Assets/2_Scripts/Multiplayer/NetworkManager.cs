@@ -90,11 +90,11 @@ public class NetworkManager : MonoBehaviour
     [SerializeField] private ushort maxClientCount;
     public ushort localHostingClientId = ushort.MaxValue;
 
-
     public Player playerPrefab;
 
     public static NetworkType NetworkType;
     public static bool IsServer => NetworkType == NetworkType.ClientServer || NetworkType == NetworkType.ServerOnly;
+    public static bool IsConnected => (Instance.Client != null && Instance.Client.IsConnected) || (Instance.Server != null && Instance.Server.IsRunning); 
 
     [SerializeField] private bool runAsServer = false; //for testing in editor
 
@@ -145,6 +145,11 @@ public class NetworkManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
+        EndActiveConnection(false);
+    }
+
+    public void EndActiveConnection(bool unsubscribe = true)
+    {
         if (NetworkType == NetworkType.Client)
         {
             Client?.Disconnect();
@@ -152,6 +157,32 @@ public class NetworkManager : MonoBehaviour
         else
         {
             Server?.Stop();
+        }
+
+        if (unsubscribe)
+            UnsubscribeFromConnectionEvents();
+    }
+
+    public void UnsubscribeFromConnectionEvents()
+    {
+        if (NetworkType == NetworkType.Client)
+        {
+            if (Client != null)
+            {
+                Client.Connected -= DidConnect;
+                Client.ConnectionFailed -= FailedToConnect;
+                Client.ClientDisconnected -= PlayerLeft;
+                Client.Disconnected -= DidDisconnect;
+                Client = null;
+            }
+        }
+        else
+        {
+            if (Server != null)
+            {
+                Server.ClientDisconnected -= PlayerLeft;
+                Server = null;
+            }
         }
     }
 
@@ -274,6 +305,8 @@ public class NetworkManager : MonoBehaviour
 
     public void OnDisconnection()
     {
+        UnsubscribeFromConnectionEvents();
+
         GameManager.instance.OnLocalPlayerDisconnection();
         UIManager.instance.BackToMenu();
         GameManager.instance.FadeMusic(false);
