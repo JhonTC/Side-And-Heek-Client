@@ -1,25 +1,12 @@
 using System;
-using System.Net;
-using System.Net.Sockets;
 using Riptide;
-using Riptide.Transports;
-using Riptide.Transports.Udp;
-using UnityEngine;
-using UnityEngine.Assertions;
 using Unity.Collections;
 using Unity.Networking.Transport;
-using Unity.Services.Relay.Models;
-using System.IO;
 
 public abstract class UtpPeer
 {
-    /// <inheritdoc cref="IPeer.Disconnected"/>
     public event EventHandler<Riptide.Transports.DisconnectedEventArgs> Disconnected;
 
-    /// <summary>The default size used for the socket's send and receive buffers.</summary>
-    protected const int DefaultSocketBufferSize = 1024 * 1024; // 1MB
-    /// <summary>The minimum size that may be used for the socket's send and receive buffers.</summary>
-    private const int MinSocketBufferSize = 256 * 1024; // 256KB
     public bool isRunning;
 
     public IRelayNetwork RelayNetwork { get; set; }

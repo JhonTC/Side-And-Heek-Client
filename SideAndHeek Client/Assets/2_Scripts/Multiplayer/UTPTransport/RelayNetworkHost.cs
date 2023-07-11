@@ -1,13 +1,8 @@
 using Riptide.Transports;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using Unity.Networking.Transport.Relay;
-using Unity.Services.Authentication;
-using Unity.Services.Core;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
@@ -90,10 +85,6 @@ public class RelayNetworkHost : IRelayNetwork
     public async void OnAllocate()
     {
         Debug.Log("Host - Creating an allocation. Upon success, I have 10 seconds to BIND to the Relay server that I've allocated.");
-
-        // Determine region to use (user-selected or auto-select/QoS)
-        //string region = GetRegionOrQosDefault();
-        //Debug.Log($"The chosen region is: {region ?? autoSelectRegionName}");
 
         // Set max connections. Can be up to 100, but note the more players connected, the higher the bandwidth/latency impact.
         int maxConnections = 9;

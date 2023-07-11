@@ -7,11 +7,8 @@ public class UtpConnection : Connection, IEquatable<UtpConnection>
 {
     public NetworkConnection networkConnection { get; private set; }
 
-    /// <summary>The local peer this connection is associated with.</summary>
     private readonly UtpPeer peer;
 
-    /// <summary>Initializes the connection.</summary>
-    /// <param name="peer">The local peer this connection is associated with.</param>
     internal UtpConnection(NetworkConnection networkConnection, UtpPeer peer)
     {
         this.networkConnection = networkConnection;
@@ -28,9 +25,7 @@ public class UtpConnection : Connection, IEquatable<UtpConnection>
         peer.Send(dataBuffer, amount, this);
     }
 
-    /// <inheritdoc/>
     public override bool Equals(object obj) => Equals(obj as UtpConnection);
-    /// <inheritdoc/>
     public bool Equals(UtpConnection other)
     {
         if (other is null)
@@ -42,15 +37,14 @@ public class UtpConnection : Connection, IEquatable<UtpConnection>
         return networkConnection.Equals(other.networkConnection);
     }
 
-    /// <inheritdoc/>
     public override int GetHashCode()
     {
         return -288961498 + EqualityComparer<NetworkConnection>.Default.GetHashCode(networkConnection);
     }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CS1591
     public static bool operator ==(UtpConnection left, UtpConnection right)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning restore CS1591
     {
         if (left is null)
         {
@@ -64,7 +58,7 @@ public class UtpConnection : Connection, IEquatable<UtpConnection>
         return left.Equals(right);
     }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CS1591
     public static bool operator !=(UtpConnection left, UtpConnection right) => !(left == right);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning restore CS1591
 }

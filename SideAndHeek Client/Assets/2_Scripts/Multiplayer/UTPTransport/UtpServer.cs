@@ -3,29 +3,22 @@ using Riptide.Transports;
 using Riptide.Utils;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using Unity.Networking.Transport;
 
 public class UtpServer : UtpPeer, IServer
 {
-    /// <inheritdoc/>
     public event EventHandler<ConnectedEventArgs> Connected;
-    /// <inheritdoc/>
     public event EventHandler<DataReceivedEventArgs> DataReceived;
 
-    /// <inheritdoc/>
     public ushort Port { get; private set; }
 
-    /// <summary>The currently open connections, accessible by their endpoints.</summary>
     private Dictionary<NetworkConnection, Connection> connections;
 
-    /// <inheritdoc/>
     public UtpServer() : base()
     {
         RelayNetwork = new RelayNetworkHost();
     }
 
-    /// <inheritdoc/>
     public void Start(ushort port)
     {
         RelayNetworkHost server = RelayNetwork as RelayNetworkHost;
@@ -44,9 +37,6 @@ public class UtpServer : UtpPeer, IServer
         server?.OnAllocate();
     }
 
-    /// <summary>Decides what to do with a connection attempt.</summary>
-    /// <param name="fromEndPoint">The endpoint the connection attempt is coming from.</param>
-    /// <returns>Whether or not the connection attempt was from a new connection.</returns>
     private bool HandleConnectionAttempt(UtpConnection connection)
     {
         if (connections.ContainsKey(connection.networkConnection))
@@ -57,14 +47,12 @@ public class UtpServer : UtpPeer, IServer
         return true;
     }
 
-    /// <inheritdoc/>
     public void Close(Connection connection)
     {
         if (connection is UtpConnection udpConnection)
             connections.Remove(udpConnection.networkConnection);
     }
 
-    /// <inheritdoc/>
     public void Shutdown()
     {
         RelayNetwork?.End();
@@ -77,14 +65,11 @@ public class UtpServer : UtpPeer, IServer
         }
     }
 
-    /// <summary>Invokes the <see cref="Connected"/> event.</summary>
-    /// <param name="connection">The successfully established connection.</param>
     protected virtual void OnConnected(Connection connection)
     {
         Connected?.Invoke(this, new ConnectedEventArgs(connection));
     }
 
-    /// <inheritdoc/>
     protected override void OnDataReceived(byte[] dataBuffer, int amount, NetworkConnection networkConnection)
     {
         if ((MessageHeader)dataBuffer[0] == MessageHeader.Connect && !HandleConnectionAttempt(new UtpConnection(networkConnection, this)))
