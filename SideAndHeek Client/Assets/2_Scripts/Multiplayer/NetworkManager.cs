@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System;
 using Riptide;
@@ -8,7 +6,8 @@ using Riptide.Transports.Udp;
 using Riptide.Transports;
 using Unity.Services.Core;
 using Unity.Services.Authentication;
-using System.Net;
+using Riptide.Transports.UnityTransport;
+using System.Threading.Tasks;
 
 public enum ServerToClientId : ushort
 {
@@ -114,7 +113,7 @@ public class NetworkManager : MonoBehaviour
 #else
         if (runAsServer) //for testing in editor
         {
-            SetupServer();
+            StartServer();
             UIManager.instance.gameObject.SetActive(false);
         }
 
@@ -213,7 +212,7 @@ public class NetworkManager : MonoBehaviour
         Client.ClientDisconnected += PlayerLeft;
         Client.Disconnected += DidDisconnect;
     }
-    public void Connect(string joinValue)
+    public async void Connect(string joinValue)
     {
         NetworkType = NetworkType.Client;
         GameManager.instance.OnNetworkTypeSetup();
@@ -230,16 +229,18 @@ public class NetworkManager : MonoBehaviour
         }
         else
         {
-            SetupClient(new UtpClient());
+            UtpClient client = new UtpClient();
+            await client.PrepareConnect(joinValue);
+            SetupClient(client);
             Client.Connect(joinValue);
         }
     }
 
-    private void SetupServer()
+    private void StartServer()
     {
-        SetupServer(new UdpServer());
+        StartServer(new UdpServer());
     }
-    private void SetupServer(IServer transport)
+    private void StartServer(IServer transport)
     {
         Server = new Riptide.Server(transport);
         Server.Start(port, maxClientCount);
@@ -252,18 +253,20 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-    public void Host(string username = "")
+    public async void Host(string username = "")
     {
         NetworkType = NetworkType.ClientServer;
         GameManager.instance.OnNetworkTypeSetup();
 
         if (UIManager.instance.connectPanel.GetUseIP())
         {
-            SetupServer();
+            StartServer();
         }
         else
         {
-            SetupServer(new UtpServer());
+            UtpServer server = new UtpServer();
+            await server.PrepareStart(maxClientCount);
+            StartServer(server);
         }
 
         Debug.Log($"Message from server: Welcome player({username}), you are the host!");

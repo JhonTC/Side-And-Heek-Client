@@ -1,81 +1,195 @@
-using Riptide;
-using Riptide.Transports;
-using Riptide.Utils;
 using System;
-using System.Collections.Generic;
+using UnityEngine;
 using Unity.Networking.Transport;
+using System.Collections.Generic;
+using Unity.Services.Relay.Models;
+using Unity.Services.Core;
+using Unity.Services.Authentication;
+using System.Threading.Tasks;
+using Unity.Services.Relay;
+using Unity.Networking.Transport.Relay;
+using UnityEngine.Assertions;
+using Riptide.Transports.UnityTransport;
 
-public class UtpServer : UtpPeer, IServer
+namespace Riptide.Transports.UnityTransport
 {
-    public event EventHandler<ConnectedEventArgs> Connected;
-    public event EventHandler<DataReceivedEventArgs> DataReceived;
-
-    public ushort Port { get; private set; }
-
-    private Dictionary<NetworkConnection, Connection> connections;
-
-    public UtpServer() : base()
+    internal class UtpServer : UtpPeer, IServer
     {
-        RelayNetwork = new RelayNetworkHost();
-    }
+        public event EventHandler<ConnectedEventArgs> Connected;
+        public event EventHandler<DisconnectedEventArgs> Disconnected;
 
-    public void Start(ushort port)
-    {
-        RelayNetworkHost server = RelayNetwork as RelayNetworkHost;
-        if (server == null)
+        public ushort Port { get; private set; }
+
+        private NetworkDriver hostDriver;
+        private Dictionary<int, UtpConnection> serverConnections;
+        private Allocation hostAllocation;
+        public string JoinCode;
+
+        public void Start(ushort port)
         {
-            RiptideLogger.Log(Riptide.Utils.LogType.Error, "RelayNetwork not of type RelayNetworkHost");
-            return;
+            var relayServerData = new RelayServerData(hostAllocation, "udp");
+
+            var settings = new NetworkSettings();
+            settings.WithRelayParameters(ref relayServerData);
+
+            hostDriver = NetworkDriver.Create(settings);
+
+            if (hostDriver.Bind(NetworkEndPoint.AnyIpv4) != 0)
+            {
+                Debug.LogError("Host client failed to bind");
+            }
+            else
+            {
+                if (hostDriver.Listen() != 0)
+                {
+                    Debug.LogError("Host client failed to listen");
+                }
+                else
+                {
+                    Debug.Log("Host client bound to Relay server");
+                }
+            }
         }
 
-        server.DataReceived += OnDataReceived;
-
-        Port = port;
-        connections = new Dictionary<NetworkConnection, Connection>();
-
-        isRunning = true;
-        server?.OnAllocate();
-    }
-
-    private bool HandleConnectionAttempt(UtpConnection connection)
-    {
-        if (connections.ContainsKey(connection.networkConnection))
-            return false;
-
-        connections.Add(connection.networkConnection, connection);
-        OnConnected(connection);
-        return true;
-    }
-
-    public void Close(Connection connection)
-    {
-        if (connection is UtpConnection udpConnection)
-            connections.Remove(udpConnection.networkConnection);
-    }
-
-    public void Shutdown()
-    {
-        RelayNetwork?.End();
-        connections.Clear();
-
-        RelayNetworkHost server = RelayNetwork as RelayNetworkHost;
-        if (server != null)
+        public async Task PrepareStart(int maxPlayers)
         {
-            server.DataReceived -= OnDataReceived;
+            await OnAllocate(maxPlayers);
+
+            await OnJoinCode();
         }
-    }
 
-    protected virtual void OnConnected(Connection connection)
-    {
-        Connected?.Invoke(this, new ConnectedEventArgs(connection));
-    }
+        private async Task OnAllocate(int maxPlayers)
+        {
+            hostAllocation = await RelayService.Instance.CreateAllocationAsync(maxPlayers);
 
-    protected override void OnDataReceived(byte[] dataBuffer, int amount, NetworkConnection networkConnection)
-    {
-        if ((MessageHeader)dataBuffer[0] == MessageHeader.Connect && !HandleConnectionAttempt(new UtpConnection(networkConnection, this)))
-            return;
+            serverConnections = new Dictionary<int, UtpConnection>();
+        }
 
-        if (connections.TryGetValue(networkConnection, out Connection connection) && !connection.IsNotConnected)
-            DataReceived?.Invoke(this, new DataReceivedEventArgs(dataBuffer, amount, connection));
+        private async Task OnJoinCode()
+        {
+            try
+            {
+                JoinCode = await RelayService.Instance.GetJoinCodeAsync(hostAllocation.AllocationId);
+                UIManager.instance.gameplayPanel.roomCodeText.text = JoinCode;
+            }
+            catch (RelayServiceException ex)
+            {
+                Debug.LogError(ex.Message + "\n" + ex.StackTrace);
+            }
+        }
+
+        void UpdateHost()
+        {
+            if (!hostDriver.IsCreated || !hostDriver.Bound)
+            {
+                return;
+            }
+
+            hostDriver.ScheduleUpdate().Complete();
+
+            List<int> deleteKeys = new List<int>();
+
+            foreach (KeyValuePair<int, UtpConnection> serverConnection in serverConnections)
+            {
+                if (!serverConnection.Value.NetworkConnection.IsCreated)
+                {
+                    Debug.Log("Stale connection removed");
+
+                    deleteKeys.Add(serverConnection.Key);
+                }
+            }
+
+            foreach (var deleteKey in deleteKeys)
+            {
+                serverConnections.Remove(deleteKey);
+            }
+
+            deleteKeys.Clear();
+
+            NetworkConnection incomingConnection;
+            while ((incomingConnection = hostDriver.Accept()) != default(NetworkConnection))
+            {
+                UtpConnection connection = new UtpConnection(incomingConnection, this, hostDriver);
+
+                serverConnections.Add(incomingConnection.InternalId, connection);
+
+                OnConnected(connection);
+            }
+
+            foreach (KeyValuePair<int, UtpConnection> serverConnection in serverConnections)
+            {
+                Assert.IsTrue(serverConnection.Value.NetworkConnection.IsCreated);
+
+                NetworkEvent.Type eventType;
+                while ((eventType = hostDriver.PopEventForConnection(serverConnection.Value.NetworkConnection, out var stream)) != NetworkEvent.Type.Empty)
+                {
+                    switch (eventType)
+                    {
+                        case NetworkEvent.Type.Data:
+
+                            Receive(serverConnection.Value, hostDriver, stream);
+
+                            break;
+                        case NetworkEvent.Type.Disconnect:
+
+                            if (serverConnections.TryGetValue(serverConnection.Value.NetworkConnection.InternalId, out UtpConnection connection))
+                            {
+                                OnDisconnected(connection, DisconnectReason.Disconnected);
+                            }
+
+                            serverConnection.Value.NetworkConnection = default(NetworkConnection);
+
+                            break;
+                    }
+                }
+            }
+        }
+
+        public void Close(Connection connection)
+        {
+            if (connection is UtpConnection uTPConnection)
+            {
+                if (serverConnections.TryGetValue(uTPConnection.NetworkConnection.InternalId, out UtpConnection serverConnection))
+                {
+                    hostDriver.Disconnect(serverConnection.NetworkConnection);
+
+                    serverConnection.NetworkConnection = default(NetworkConnection);
+                }
+            }
+        }
+
+        public void Poll()
+        {
+            UpdateHost();
+        }
+
+        public void Shutdown()
+        {
+            if (serverConnections.Count == 0)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<int, UtpConnection> serverConnection in serverConnections)
+            {
+                hostDriver.Disconnect(serverConnection.Value.NetworkConnection);
+
+                serverConnection.Value.NetworkConnection = default(NetworkConnection);
+            }
+
+            serverConnections.Clear();
+
+            hostDriver.Dispose();
+        }
+
+        protected internal virtual void OnConnected(Connection connection)
+        {
+            Connected?.Invoke(this, new ConnectedEventArgs(connection));
+        }
+
+        protected virtual void OnDisconnected(UtpConnection connection, DisconnectReason reason)
+        {
+            Disconnected?.Invoke(this, new DisconnectedEventArgs(connection, reason));
+        }
     }
 }

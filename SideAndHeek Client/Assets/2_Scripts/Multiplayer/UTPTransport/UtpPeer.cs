@@ -1,42 +1,50 @@
 using System;
-using Riptide;
 using Unity.Collections;
 using Unity.Networking.Transport;
+using UnityEngine;
 
-public abstract class UtpPeer
+namespace Riptide.Transports.UnityTransport
 {
-    public event EventHandler<Riptide.Transports.DisconnectedEventArgs> Disconnected;
-
-    public bool isRunning;
-
-    public IRelayNetwork RelayNetwork { get; set; }
-
-    public string hostLatestMessageReceived;
-    public bool isRelayConnected = false;
-
-    protected UtpPeer() {}
-
-    public void Poll()
+    internal class UtpPeer
     {
-        RelayNetwork?.Update();
-    }
+        public const string LogName = "UTP";
 
-    internal void Send(byte[] dataBuffer, int numBytes, UtpConnection connection)
-    {
-        if (isRunning)
+        public event EventHandler<DataReceivedEventArgs> DataReceived;
+
+        protected void Receive(UtpConnection fromConnection, NetworkDriver networkDriver, DataStreamReader stream)
         {
-            NativeArray<byte> bytes = new NativeArray<byte>(dataBuffer, Allocator.Persistent);
+            NativeArray<byte> nativeBuffer = new NativeArray<byte>(stream.Length - stream.GetBytesRead(), Allocator.Temp);
+            stream.ReadBytes(nativeBuffer);
 
-            RelayNetwork?.Send(bytes, connection.networkConnection);
+            byte[] buffer = new byte[nativeBuffer.Length];
+            NativeArray<byte>.Copy(nativeBuffer, buffer, nativeBuffer.Length);
+            nativeBuffer.Dispose();
 
-            bytes.Dispose();
+            OnDataReceived(buffer, buffer.Length, fromConnection);
         }
-    }
 
-    protected abstract void OnDataReceived(byte[] dataBuffer, int amount, NetworkConnection networkConnection);
+        internal unsafe void Send(byte[] dataBuffer, int numBytes, NetworkConnection toConnection, NetworkDriver networkDriver)
+        {
+            if (!toConnection.IsCreated)
+            {
+                Debug.LogError("Player isn't connected. No Host client to send message to.");
+                return;
+            }
 
-    protected virtual void OnDisconnected(NetworkConnection connection, DisconnectReason reason)
-    {
-        Disconnected?.Invoke(this, new Riptide.Transports.DisconnectedEventArgs(new UtpConnection(connection, this), reason));
+            if (networkDriver.BeginSend(toConnection, out var writer) == 0)
+            {
+                fixed (byte* bufferPtr = dataBuffer)
+                {
+                    writer.WriteBytes(bufferPtr, numBytes);
+                }
+
+                networkDriver.EndSend(writer);
+            }
+        }
+
+        protected virtual void OnDataReceived(byte[] dataBuffer, int amount, UtpConnection fromConnection)
+        {
+            DataReceived?.Invoke(this, new DataReceivedEventArgs(dataBuffer, amount, fromConnection));
+        }
     }
 }

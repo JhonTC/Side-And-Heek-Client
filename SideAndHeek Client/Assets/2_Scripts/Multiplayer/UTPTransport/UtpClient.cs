@@ -1,80 +1,171 @@
-using Riptide;
-using Riptide.Transports;
 using System;
+using System.Threading.Tasks;
 using Unity.Networking.Transport;
+using Unity.Networking.Transport.Relay;
+using Unity.Services.Relay;
+using Unity.Services.Relay.Models;
 using UnityEngine;
 
-public class UtpClient : UtpPeer, IClient
+namespace Riptide.Transports.UnityTransport
 {
-    public event EventHandler Connected;
-    public event EventHandler ConnectionFailed;
-    public event EventHandler<DataReceivedEventArgs> DataReceived;
-
-    private UtpConnection utpConnection;
-
-    public UtpClient() : base()
+    public class ConnectResult
     {
-        RelayNetwork = new RelayNetworkClient();
+        public bool Status;
+        public Connection Connection;
+        public string ConnectError;
     }
 
-    public bool Connect(string joinCode, out Connection connection, out string connectError)
+    internal class UtpClient : UtpPeer, IClient
     {
-        RelayNetworkClient client = RelayNetwork as RelayNetworkClient;
-        if (client == null)
+        public event EventHandler Connected;
+        public event EventHandler ConnectionFailed;
+        public event EventHandler<DisconnectedEventArgs> Disconnected;
+
+        private JoinAllocation playerAllocation;
+        private NetworkDriver playerDriver;
+        private UtpConnection uTPConnection;
+
+        public bool Connect(string hostAddress, out Connection connection, out string connectError)
         {
-            connectError = "RelayNetwork not of type RelayNetworkClient";
-            connection = null;
-            return false;
+            bool status = false;
+
+            UnityRelayConnect(out connection, out connectError, ref status);
+
+            return status;
         }
 
-        client.Connected += OnConnected;
-        client.DataReceived += OnDataReceived;
-        client.Disconnected += OnDisconnected;
-
-        connectError = $"Invalid Join Code: '{joinCode}'!";
-
-        isRunning = true;
-        client.OnJoin(joinCode);
-
-        connection = utpConnection = new UtpConnection(client.clientConnection, this);
-        return true;
-    }
-
-    public void Disconnect()
-    {
-        RelayNetwork?.End();
-
-        RelayNetworkClient client = RelayNetwork as RelayNetworkClient;
-        if (client != null)
+        public async Task<bool> PrepareConnect(string joinCode)
         {
-            client.Connected -= OnConnected;
-            client.DataReceived -= OnDataReceived;
-            client.Disconnected -= OnDisconnected;
-        }
-    }
+            if (String.IsNullOrEmpty(joinCode))
+            {
+                Debug.LogError("Please input a join code.");
 
-    protected virtual void OnConnected()
-    {
-        RelayNetworkClient client = RelayNetwork as RelayNetworkClient;
-        if (client != null)
+                return false;
+            }
+
+            try
+            {
+                playerAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
+            }
+            catch (RelayServiceException ex)
+            {
+                Debug.LogError(ex.Message + "\n" + ex.StackTrace);
+
+                return false;
+            }
+
+            var relayServerData = new RelayServerData(playerAllocation, "udp");
+
+            var settings = new NetworkSettings();
+            settings.WithRelayParameters(ref relayServerData);
+
+            playerDriver = NetworkDriver.Create(settings);
+
+            if (playerDriver.Bind(NetworkEndPoint.AnyIpv4) != 0)
+            {
+                Debug.LogError("Player client failed to bind");
+
+                return false;
+            }
+            else
+            {
+                Debug.Log("Player client bound to Relay server");
+                UIManager.instance.gameplayPanel.roomCodeText.text = joinCode;
+            }
+
+            return true;
+        }
+
+        private void UnityRelayConnect(out Connection connection, out string connectError, ref bool status)
         {
-            utpConnection.SetNetworkConnection(client.clientConnection);
+            NetworkConnection clientConnection = playerDriver.Connect();
+
+            if (clientConnection.IsCreated)
+            {
+                connection = uTPConnection = new UtpConnection(clientConnection, this, playerDriver);
+
+                connectError = "";
+                status = true;
+
+                ConnectTimeout();
+            }
+            else
+            {
+                connection = null;
+                connectError = "Failed to connect";
+                status = false;
+            }
         }
-        Connected?.Invoke(this, EventArgs.Empty);
-    }
 
-    protected virtual void OnConnectionFailed()
-    {
-        ConnectionFailed?.Invoke(this, EventArgs.Empty);
-    }
+        private async void ConnectTimeout()
+        {
+            Task timeOutTask = Task.Delay(6000);
+            await Task.WhenAny(timeOutTask);
 
-    protected override void OnDataReceived(byte[] dataBuffer, int amount, NetworkConnection networkConnection)
-    {
-        Debug.Log($"Recieve MessageHeader: {(MessageHeader)dataBuffer[0]}");
+            if (uTPConnection != null && !uTPConnection.IsConnected)
+                OnConnectionFailed();
+        }
 
-        Debug.Log($"Do connections match: {utpConnection.networkConnection.Equals(networkConnection)}");
-        Debug.Log(utpConnection.networkConnection.InternalId); Debug.Log(networkConnection.InternalId);
-        if (utpConnection.networkConnection.Equals(networkConnection))
-            DataReceived?.Invoke(this, new DataReceivedEventArgs(dataBuffer, amount, utpConnection));
+        void UpdatePlayer()
+        {
+            if (!playerDriver.IsCreated || !playerDriver.Bound)
+            {
+                return;
+            }
+
+            playerDriver.ScheduleUpdate().Complete();
+
+            NetworkEvent.Type eventType;
+            while ((eventType = uTPConnection.NetworkConnection.PopEvent(playerDriver, out var stream)) != NetworkEvent.Type.Empty)
+            {
+                switch (eventType)
+                {
+                    case NetworkEvent.Type.Data:
+                        Receive(uTPConnection, playerDriver, stream);
+                        break;
+                    case NetworkEvent.Type.Connect:
+                        Debug.Log("Player connected to the Host");
+                        OnConnected();
+                        break;
+                    case NetworkEvent.Type.Disconnect:
+                        Debug.Log("Player got disconnected from the Host");
+                        uTPConnection.NetworkConnection = default(NetworkConnection);
+
+                        OnDisconnected(DisconnectReason.Disconnected);
+
+                        break;
+                }
+            }
+        }
+
+        public void Poll()
+        {
+            if (uTPConnection != null)
+                UpdatePlayer();
+        }
+
+        public void Disconnect()
+        {
+            playerDriver.Disconnect(uTPConnection.NetworkConnection);
+
+            uTPConnection.NetworkConnection = default(NetworkConnection);
+
+            uTPConnection = null;
+        }
+
+        protected virtual void OnConnected()
+        {
+            Connected?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnConnectionFailed()
+        {
+            ConnectionFailed?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual void OnDisconnected(DisconnectReason reason)
+        {
+            Disconnected?.Invoke(this, new DisconnectedEventArgs(uTPConnection, reason));
+        }
     }
 }
