@@ -9,12 +9,21 @@ public class ClientPlayerMotor : PlayerMotor
 
     private Vector2 inputMovement = Vector2.zero;
 
+    [SerializeField] private FootCollisionHandler largeGroundColliderPrefab;
+
+    [Header("Movement Controller")]
+    public SimplePlayerController movementController;
+
     public override void Init(Player owner)
     {
         base.Init(owner);
 
         cameraMode = owner.cameraMode;
         SetupCameraMode();
+
+        movementController.Init(this);
+        movementController.largeGroundCollider = Instantiate(largeGroundColliderPrefab, transform);
+        movementController.feetMidpoint = owner.feetMidpoint;
     }
 
     public void MovePlayer() //for clientside prediction
@@ -48,14 +57,6 @@ public class ClientPlayerMotor : PlayerMotor
         }
     }
 
-    public void TogglePause(InputAction.CallbackContext value)
-    {
-        if (value.phase == InputActionPhase.Started)
-        {
-            UIManager.instance.TogglePanel(UIPanelType.Pause);
-        }
-    }
-
     private void SetupCameraMode()
     {
         switch (cameraMode)
@@ -75,51 +76,45 @@ public class ClientPlayerMotor : PlayerMotor
     {
         base.FixedUpdate();
 
-        if (cameraMode != owner.cameraMode)
-        {
-            cameraMode = owner.cameraMode;
-            SetupCameraMode();
-        }
-
-        float inputSpeed = 1;
-        float horizontal = inputMovement.x;
-        float vertical = inputMovement.y;
-
-        if (cameraMode == CameraMode.ThirdPerson)
-        {
-            inputSpeed = Mathf.Clamp(Mathf.Abs(horizontal) + Mathf.Abs(vertical), 0, 1);
-
-            float angle;
-            if (horizontal != 0 || vertical != 0)
-            {
-                angle = Mathf.Atan2(horizontal, vertical) * Mathf.Rad2Deg;
-                rotation = Quaternion.AngleAxis(angle, Vector3.up);
-            }
-            else
-            {
-                rotation = root.rotation;
-            }
-        }
-        /*else if (cameraMode == CameraMode.FirstPerson)
-        {
-            inputSpeed = vertical;
-
-            Quaternion tempRotation = Quaternion.Euler(new Vector3(0, yRot * playerManager.sensitivity, 0));
-            rotation = rotation * tempRotation;
-            playerManager.firstPersonCameraHolder.rotation = rotation;
-
-            tempRotation = playerManager.firstPersonCamera.transform.localRotation * Quaternion.Euler(new Vector3(xRot * playerManager.sensitivity * -1, 0, 0));
-            if (tempRotation.eulerAngles.x > -40 && tempRotation.eulerAngles.x < 40)
-                playerManager.firstPersonCamera.transform.localRotation = tempRotation;
-        }*/
         if (owner.IsLocal)
         {
+
+            if (cameraMode != owner.cameraMode)
+            {
+                cameraMode = owner.cameraMode;
+                SetupCameraMode();
+            }
+
+            float inputSpeed = 1;
+            float horizontal = inputMovement.x;
+            float vertical = inputMovement.y;
+
+            if (cameraMode == CameraMode.ThirdPerson)
+            {
+                inputSpeed = Mathf.Clamp(Mathf.Abs(horizontal) + Mathf.Abs(vertical), 0, 1);
+
+                float angle;
+                if (horizontal != 0 || vertical != 0)
+                {
+                    angle = Mathf.Atan2(horizontal, vertical) * Mathf.Rad2Deg;
+                    rotation = Quaternion.AngleAxis(angle, Vector3.up);
+                }
+                else
+                {
+                    rotation = root.rotation;
+                }
+            }
+
+            //movementController.isSneaking = isSneaking;
+            //movementController.CustomFixedUpdate(inputSpeed);
+            //movementController.SetRotation(rotation);
+
             ClientSend.PlayerInput(inputSpeed, new bool[] { isJumping, isFlopping, isSneaking }, rotation);
         }
-        //}
+    }
 
-        //clientside prediection
-        //MovePlayer();
-        //RotatePlayer();
+    public override SimplePlayerController GetMovementController()
+    {
+        return movementController;
     }
 }

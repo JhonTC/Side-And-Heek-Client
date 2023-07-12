@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerMotor : MonoBehaviour //make abstract?
 {
-    public Transform root;
+    public Rigidbody root;
     public Transform head;
     public Transform leftLeg;
     public Transform rightLeg;
@@ -31,7 +31,8 @@ public class PlayerMotor : MonoBehaviour //make abstract?
 
     public Player owner;
 
-    [SerializeField][Range(0, 1)] float predictionDampner = 1;
+    [SerializeField][Range(0f, 1f)] float predictionDampner = 1f;
+    [SerializeField][Range(0f, 1f)] float receivedMovementDampner = 1f;
 
     private Transform walkingEffect;
 
@@ -89,9 +90,22 @@ public class PlayerMotor : MonoBehaviour //make abstract?
         rotation = _rotation;
         otherInputs = _otherInputs;
     }
+
+    public void SetPlayerPositions(Vector3 _headPos, Vector3 _rightFootPos, Vector3 _leftFootPos)
+    {
+        root.position = Vector3.Lerp(root.position, _headPos, receivedMovementDampner);
+        rightFoot.position = Vector3.Lerp(rightFoot.position, _rightFootPos, receivedMovementDampner);
+        leftFoot.position = Vector3.Lerp(leftFoot.position, _leftFootPos, receivedMovementDampner);
+    }
+    public void SetPlayerRotations(Quaternion _rightFootRot, Quaternion _leftFootRot)
+    {
+        rightFoot.rotation = Quaternion.Lerp(rightFoot.rotation, _rightFootRot, receivedMovementDampner);
+        leftFoot.rotation = Quaternion.Lerp(leftFoot.rotation, _leftFootRot, receivedMovementDampner);
+    }
+
     public void SetPlayerPositions(Vector3 _headPos, Vector3 _rightFootPos, Vector3 _leftFootPos, Vector3 _rightLegPos, Vector3 _leftLegPos)
     {
-        root.position = _headPos;
+        root.position = Vector3.Lerp(root.position, _headPos, receivedMovementDampner);
         rightFoot.position = _rightFootPos;
         leftFoot.position = _leftFootPos;
         rightLeg.position = _rightLegPos;

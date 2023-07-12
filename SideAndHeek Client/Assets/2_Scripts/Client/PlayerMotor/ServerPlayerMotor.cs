@@ -43,9 +43,9 @@ public class ServerPlayerMotor : PlayerMotor
             movementController.SetRotation(rotation);
         }
 
+        ServerSend.PlayerState(owner, this, movementController);
         ServerSend.PlayerPositions(owner, movementController);
         ServerSend.PlayerRotations(owner, movementController);
-        ServerSend.PlayerState(owner, this, movementController);
     }
 
     public override bool GetCanKnockOutOthers() 

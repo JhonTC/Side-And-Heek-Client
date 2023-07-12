@@ -119,9 +119,9 @@ public class ClientServerPlayerMotor : PlayerMotor
         owner.HandlePlayerState(inputSpeed, movementController);
 
         //these messages are being sent to all, except the P2P client as it isnt registered as an actual client
+        ServerSend.PlayerState(owner, this, movementController);
         ServerSend.PlayerPositions(owner, movementController);
         ServerSend.PlayerRotations(owner, movementController);
-        ServerSend.PlayerState(owner, this, movementController);
     }
 
     public override bool GetCanKnockOutOthers()

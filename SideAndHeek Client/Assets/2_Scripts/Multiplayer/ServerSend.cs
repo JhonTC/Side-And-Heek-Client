@@ -44,13 +44,18 @@ public class ServerSend
             message.AddVector3(_movementController.root.position);
             message.AddVector3(_movementController.rightFootCollider.foot.position);
             message.AddVector3(_movementController.leftFootCollider.foot.position);
-            message.AddVector3(_movementController.rightLeg.position);
-            message.AddVector3(_movementController.leftLeg.position);
-
             message.AddQuaternion(_movementController.rightFootCollider.foot.rotation);
             message.AddQuaternion(_movementController.leftFootCollider.foot.rotation);
-            message.AddQuaternion(_movementController.rightLeg.rotation);
-            message.AddQuaternion(_movementController.leftLeg.rotation);
+
+            message.AddBool(_movementController.isFlopping);
+            if (_movementController.isFlopping)
+            {
+                message.AddVector3(_movementController.rightLeg.position);
+                message.AddVector3(_movementController.leftLeg.position);
+
+                message.AddQuaternion(_movementController.rightLeg.rotation);
+                message.AddQuaternion(_movementController.leftLeg.rotation);
+            }
 
             NetworkManager.Instance.Server.SendToAll(message);
         }

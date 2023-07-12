@@ -81,11 +81,6 @@ public class SimplePlayerController
             if (largeGroundCollider.isGrounded)
             {
                 root.AddForce((Vector3.up * jumpingForce) * jumpForceMultiplier);
-                //root.AddForceAtPosition(Vector3.up * jumpingForce / 2, leftFootCollider.foot.position);
-                //root.AddForceAtPosition(Vector3.up * jumpingForce / 2, rightFootCollider.foot.position);
-
-                //leftFootCollider.foot.AddForce(Vector3.up * jumpingForce/2);
-                //rightFootCollider.foot.AddForce(Vector3.up * jumpingForce/2);
 
                 ToggleActiveWalkingFoot();
 
@@ -220,8 +215,6 @@ public class SimplePlayerController
         } 
         else if (largeGroundCollider.isGrounded)
         {
-            //standingHeight = 1.55f;
-
             awfRigidBody.AddForceAtPosition(velocity, position);
             root.AddForce(velocity * 0.125f);
         }
@@ -229,7 +222,6 @@ public class SimplePlayerController
         {
             awfRigidBody.AddForceAtPosition(velocity * 0.5f, position);
             root.AddForce(velocity * 0.125f);
-            //standingHeight = 1.63f;
         }
 
         Vector3 footNewPos = otherWalkingFoot.transform.position;
@@ -258,12 +250,20 @@ public class SimplePlayerController
         {
             Vector3 footCentrePos = leftFootCollider.foot.position + (rightFootCollider.foot.position - leftFootCollider.foot.position) / 2;
 
-            Vector3 rayPosition = root.position;
+            Vector3 rayPosition = root.transform.position + root.transform.right * 0.341f;
             Vector3 rayDirection = Vector3.down;
             RaycastHit rayhit;
             if (Physics.Raycast(rayPosition, rayDirection, out rayhit, standingHeight, groundMask))
             {
-                root.AddForceAtPosition(Vector3.up * standingForce * 2, rayPosition);
+                //root.AddForceAtPosition(Vector3.up * standingForce * 2, rayPosition);
+                root.AddForceAtPosition(Vector3.up * standingForce, rayPosition);
+                Debug.DrawRay(rayPosition, rayDirection, Color.green, standingHeight);
+            }
+
+            rayPosition = root.transform.position + root.transform.right * -0.341f;
+            if (Physics.Raycast(rayPosition, rayDirection, out rayhit, standingHeight, groundMask))
+            {
+                root.AddForceAtPosition(Vector3.up * standingForce, rayPosition);
                 Debug.DrawRay(rayPosition, rayDirection, Color.green, standingHeight);
             }
 
@@ -298,15 +298,13 @@ public class SimplePlayerController
 
                     if (largeGroundCollider.isGrounded)
                     {
-                        //standingHeight = 1.55f;
                         awfRigidBody.AddForceAtPosition(force, position);
-                        //root.AddForce(force * 0.125f);
+                        root.AddForce(force * 0.125f);
                     }
                     else
                     {
                         awfRigidBody.AddForceAtPosition(force * 0.5f, position);
-                        //root.AddForce(force * 0.125f);
-                        //standingHeight = 1.63f;
+                        root.AddForce(force * 0.125f);
                     }
 
                     moveStageTimer += Time.fixedDeltaTime;

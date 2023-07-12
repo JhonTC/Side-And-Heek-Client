@@ -40,29 +40,35 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
     public static void PlayerPositions(Message message)
     {
         ushort _id = message.GetUShort();
-        Vector3 _headPosition = message.GetVector3();
-        Vector3 _rightFootPosition = message.GetVector3();
-        Vector3 _leftFootPosition = message.GetVector3();
-        Vector3 _rightLegPosition = message.GetVector3();
-        Vector3 _leftLegPosition = message.GetVector3();
-
-        Quaternion _rightFootRotation = message.GetQuaternion();
-        Quaternion _leftFootRotation = message.GetQuaternion();
-        Quaternion _rightLegRotation = message.GetQuaternion();
-        Quaternion _leftLegRotation = message.GetQuaternion();
 
         if (Player.list.ContainsKey(_id))
         {
             Player player = Player.list[_id];
-            if (player.isBodyActive) 
+            if (player.isBodyActive)
             {
-                player.playerMotor.SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
-                player.playerMotor.SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
+                Vector3 _headPosition = message.GetVector3();
+                Vector3 _rightFootPosition = message.GetVector3();
+                Vector3 _leftFootPosition = message.GetVector3();
+                Quaternion _rightFootRotation = message.GetQuaternion();
+                Quaternion _leftFootRotation = message.GetQuaternion();
+                bool _isFlopping = message.GetBool();
+                if (_isFlopping)
+                {
+                    Vector3 _rightLegPosition = message.GetVector3();
+                    Vector3 _leftLegPosition = message.GetVector3();
+
+                    Quaternion _rightLegRotation = message.GetQuaternion();
+                    Quaternion _leftLegRotation = message.GetQuaternion();
+
+                    player.playerMotor.SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition, _rightLegPosition, _leftLegPosition);
+                    player.playerMotor.SetPlayerRotations(_rightFootRotation, _leftFootRotation, _rightLegRotation, _leftLegRotation);
+                }
+                else
+                {
+                    player.playerMotor.SetPlayerPositions(_headPosition, _rightFootPosition, _leftFootPosition);
+                    player.playerMotor.SetPlayerRotations(_rightFootRotation, _leftFootRotation);
+                }
             }
-            
-        } else
-        {
-            Debug.Log($"No player with id {_id}");
         }
     }
 
@@ -103,7 +109,31 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
 
         if (Player.list.ContainsKey(_id))
         {
-            Player.list[_id].SetPlayerState(_isGrounded, _inputSpeed, _isJumping, _isFlopping, _isSneaking, _headCollided, _collisionVolume, _footCollided);
+            Player player = Player.list[_id];
+            player.SetPlayerState(_isGrounded, _inputSpeed, _isJumping, _isFlopping, _isSneaking, _headCollided, _collisionVolume, _footCollided);
+            if (player.isBodyActive)
+            {
+                SimplePlayerController movementController = player.playerMotor.GetMovementController();
+                if (movementController != null)
+                {
+                    if (_isJumping)
+                    {
+                        movementController.OnJump();
+                    }
+
+                    if (_isFlopping)
+                    {
+                        movementController.OnFlopKey(true);
+                    }
+                    else
+                    {
+                        movementController.OnFlopKeyUp();
+                    }
+
+                    movementController.isSneaking = _isSneaking;
+                    movementController.CustomFixedUpdate(_inputSpeed);
+                }
+            }
         }
         else
         {
