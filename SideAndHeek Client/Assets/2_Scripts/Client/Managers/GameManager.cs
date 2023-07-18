@@ -268,6 +268,9 @@ public class GameManager : MonoBehaviour
                 ChangeScene(recallSceneName, debugSceneLoad);
             } else
             {
+                UIManager.instance.CloseAllPanels(true);
+                UIManager.instance.DisplayPanel(UIPanelType.Gameplay);
+
                 debugSceneLoad = false;
             }
 
@@ -583,7 +586,7 @@ public class GameManager : MonoBehaviour
     {
         if (!_player.IsLocal) return;
 
-        UIManager.instance.CloseAllPanels();
+        UIManager.instance.CloseAllPanels(true);
         UIManager.instance.DisplayPanel(UIPanelType.Gameplay);
 
         sceneCamera.SetActive(false);

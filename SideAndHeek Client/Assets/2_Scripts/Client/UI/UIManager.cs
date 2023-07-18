@@ -220,10 +220,7 @@ public class UIManager : MonoBehaviour
         }
         otherActivePanels.Clear();
 
-        if (overrideInputToPlayerControls)
-        {
-            InputHandler.instance.SwitchInput("PlayerControls"); //Todo: make constant
-        }
+
     }
 
     public void RemovePlayerReady(ushort _playerId)
