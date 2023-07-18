@@ -89,6 +89,15 @@ public class ClientSend : MonoBehaviour
         NetworkManager.Instance.Client.Send(message);
     }
 
+    public static void RequestSceneChange(string sceneName, bool debugSceneLoad = false)
+    {
+        Message message = Message.Create(MessageSendMode.Reliable, ClientToServerId.requestSceneChange);
+        message.AddString(sceneName);
+        message.AddBool(debugSceneLoad);
+
+        NetworkManager.Instance.Client.Send(message);
+    }
+
     public static void Command(string command)
     {
         Debug.Log("Command");

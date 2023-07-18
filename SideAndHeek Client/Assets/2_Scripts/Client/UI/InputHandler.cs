@@ -142,4 +142,15 @@ public class InputHandler : MonoBehaviour
             }
         }
     }
+
+    public void ToggleDebug(InputAction.CallbackContext value)
+    {
+        if (!GameManager.instance.gameStarted && NetworkManager.IsConnected)
+        {
+            if (value.phase == InputActionPhase.Started)
+            {
+                UIManager.instance.TogglePanel(UIPanelType.Debug);
+            }
+        }
+    }
 }

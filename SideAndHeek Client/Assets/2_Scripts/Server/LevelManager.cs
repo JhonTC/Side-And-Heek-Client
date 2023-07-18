@@ -18,7 +18,6 @@ public class LevelManager : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Log(SceneManager.GetActiveScene().name);
         levelManagers.Add(sceneName, this);
     }
 
@@ -39,11 +38,9 @@ public class LevelManager : MonoBehaviour
 
     public void LoadScene(string _sceneName, LevelType type)
     {
-        if (SceneManager.GetActiveScene().name != _sceneName)
+        if (SceneManager.GetActiveScene().name != _sceneName && levelType == LevelType.Lobby)
         {
             SceneManager.LoadScene(_sceneName, LoadSceneMode.Additive);
-
-            this.enabled = false;
         }
     }
 

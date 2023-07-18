@@ -17,7 +17,8 @@ public enum UIPanelType
     Quit,
     Customisation,
     Game_Rules,
-    Spectate
+    Spectate,
+    Debug
 }
 
 public class UIManager : MonoBehaviour
@@ -34,6 +35,7 @@ public class UIManager : MonoBehaviour
     public GameRulesUI gameRulesPanel;
     public SpectateUI spectatePanel;
     public CurrencyUI currencyUI;
+    public DebugUI debugPanel;
 
     [SerializeField] private MeshRenderer[] readyGemRenderers;
     
@@ -77,6 +79,7 @@ public class UIManager : MonoBehaviour
 
         settingsPanel.Init();
         gameRulesPanel.Init();
+        debugPanel.Init();
     }
 
     private void InitPanelDictionary()
@@ -90,6 +93,7 @@ public class UIManager : MonoBehaviour
         panelDictionary.Add(customisationPanel.panelType, customisationPanel);
         panelDictionary.Add(gameRulesPanel.panelType, gameRulesPanel);
         panelDictionary.Add(spectatePanel.panelType, spectatePanel);
+        panelDictionary.Add(debugPanel.panelType, debugPanel);
     }
 
     private void FixedUpdate()
@@ -206,7 +210,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void CloseAllPanels()
+    public void CloseAllPanels(bool overrideInputToPlayerControls = false)
     {
         CloseHistoryPanels();
 
@@ -215,6 +219,11 @@ public class UIManager : MonoBehaviour
             panel.gameObject.SetActive(false);
         }
         otherActivePanels.Clear();
+
+        if (overrideInputToPlayerControls)
+        {
+            InputHandler.instance.SwitchInput("PlayerControls"); //Todo: make constant
+        }
     }
 
     public void RemovePlayerReady(ushort _playerId)

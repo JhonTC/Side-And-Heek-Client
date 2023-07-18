@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,8 +18,8 @@ public class GameManager : MonoBehaviour
 
     protected int currentTime = 0;
 
-    public string activeSceneName = "Lobby";
-    public string lobbyScene;
+    [HideInInspector] public string activeSceneName = "Lobby";
+    [HideInInspector] public string lobbySceneName = "Lobby";
 
     public GameObject gameStartCollider;
 
@@ -56,6 +57,10 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private Behaviour[] serverComponentsToDisable;
+
+    private bool debugSceneLoad = false;
+    private bool recallSceneLoad = false;
+    private string recallSceneName = "";
 
     private void Awake()
     {
@@ -159,7 +164,7 @@ public class GameManager : MonoBehaviour
         {
             if (NetworkManager.NetworkType != NetworkType.Client)
             {
-                player.TeleportPlayer(LevelManager.GetLevelManagerForScene("Lobby").GetNextSpawnpoint(!gameStarted && player.isHost));
+                player.TeleportPlayer(LevelManager.GetLevelManagerForScene(lobbySceneName).GetNextSpawnpoint(!gameStarted && player.isHost));
                 player.SetPlayerReady(false, false);
                 player.SetPlayerType(PlayerType.Default, false, false);
             }
@@ -203,11 +208,25 @@ public class GameManager : MonoBehaviour
     protected virtual void OnLevelFinishedLoading(Scene _scene, LoadSceneMode _loadSceneMode)
     {
         activeSceneName = _scene.name;
+        UIManager.instance.debugPanel.SetActiveSceneName(activeSceneName);
         SceneManager.SetActiveScene(_scene);
+
+        if (debugSceneLoad)
+        {
+            foreach (Player player in Player.list.Values)
+            {
+                player.TeleportPlayer(LevelManager.GetLevelManagerForScene(activeSceneName).GetNextSpawnpoint(false));
+            }
+
+            UIManager.instance.CloseAllPanels(true);
+
+            debugSceneLoad = false;
+            return;
+        }
 
         if (NetworkManager.NetworkType != NetworkType.Client)
         {
-            if (LevelManager.GetLevelManagerForScene(activeSceneName).levelType == LevelType.Map)
+            if (LevelManager.GetLevelManagerForScene(activeSceneName)?.levelType == LevelType.Map)
             {
                 gameStarted = true;
                 gameMode.GameStart();
@@ -216,7 +235,7 @@ public class GameManager : MonoBehaviour
 
         if (NetworkManager.NetworkType != NetworkType.ServerOnly)
         {
-            if (_scene.name != lobbyScene)
+            if (_scene.name != lobbySceneName)
             {
                 gameStarted = true;
                 gameStartCollider.SetActive(false);
@@ -238,7 +257,22 @@ public class GameManager : MonoBehaviour
     bool destoryItemSpawners;
     protected virtual void OnLevelFinishedUnloading(Scene _scene)
     {
-        activeSceneName = lobbyScene;
+        activeSceneName = lobbySceneName;
+        UIManager.instance.debugPanel.SetActiveSceneName(activeSceneName);
+
+        if (debugSceneLoad)
+        {
+            if (recallSceneLoad)
+            {
+                recallSceneLoad = false;
+                ChangeScene(recallSceneName, debugSceneLoad);
+            } else
+            {
+                debugSceneLoad = false;
+            }
+
+            return;
+        }
 
         foreach (Player player in Player.list.Values)
         {
@@ -372,11 +406,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
-
-
-
-
     public void TryStartGame(int _fromClient)
     {
         if (!tryStartGameActive)
@@ -387,8 +416,7 @@ public class GameManager : MonoBehaviour
 
                 tryStartGameActive = true;
 
-                LevelManager.GetLevelManagerForScene(activeSceneName).LoadScene(gameMode.sceneName, LevelType.Map);
-                ServerSend.ChangeScene(gameMode.sceneName);
+                ChangeScene(gameMode.sceneName);
             }
             else
             {
@@ -400,6 +428,35 @@ public class GameManager : MonoBehaviour
         {
             ServerSend.SendErrorResponse(ErrorResponseCode.NotAllPlayersReady); //TODO:Change to different message(game already trying to start)
             tryStartGameActive = false;
+        }
+    }
+
+    public void ChangeScene(string sceneName, bool _debugSceneLoad = false)
+    {
+        debugSceneLoad = _debugSceneLoad;
+
+        if (debugSceneLoad && activeSceneName != lobbySceneName)
+        {
+            foreach (Player player in Player.list.Values)
+            {
+                if (NetworkManager.NetworkType != NetworkType.Client)
+                {
+                    player.TeleportPlayer(LevelManager.GetLevelManagerForScene(lobbySceneName).GetNextSpawnpoint(!gameStarted && player.isHost));
+                }
+            }
+
+            if (sceneName != activeSceneName)
+            {
+                recallSceneLoad = true;
+                recallSceneName = sceneName;
+            }
+
+            SceneManager.UnloadSceneAsync(activeSceneName);
+            ServerSend.UnloadScene(activeSceneName);
+        } else
+        {
+            LevelManager.GetLevelManagerForScene(activeSceneName)?.LoadScene(sceneName, LevelType.Map);
+            ServerSend.ChangeScene(sceneName);
         }
     }
 

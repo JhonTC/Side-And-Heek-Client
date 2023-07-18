@@ -50,6 +50,7 @@ public enum ClientToServerId : ushort
     pickupSelected,
     itemUsed,
     gameRulesChanged,
+    requestSceneChange,
     command
 }
 
