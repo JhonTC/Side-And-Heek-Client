@@ -98,6 +98,12 @@ public class ServerHandle
         Debug.Log($"Game Rules Changed by player with id {fromClientId}");
     }
 
+    [MessageHandler((ushort)ClientToServerId.requestSceneChange)]
+    public static void RequestSceneChange(ushort fromClientId, Message message)
+    {
+        GameManager.instance.ChangeScene(message.GetString(), message.GetBool());
+    }
+
     [MessageHandler((ushort)ClientToServerId.command)]
     public static void Command(ushort fromClientId, Message message)
     {
