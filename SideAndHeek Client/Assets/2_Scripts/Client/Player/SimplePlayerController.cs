@@ -250,22 +250,22 @@ public class SimplePlayerController
         {
             Vector3 footCentrePos = leftFootCollider.foot.position + (rightFootCollider.foot.position - leftFootCollider.foot.position) / 2;
 
-            Vector3 rayPosition = root.transform.position + root.transform.right * 0.341f;
+            Vector3 rayPosition = root.transform.position;// + root.transform.right * 0.341f;
             Vector3 rayDirection = Vector3.down;
             RaycastHit rayhit;
             if (Physics.Raycast(rayPosition, rayDirection, out rayhit, standingHeight, groundMask))
             {
-                //root.AddForceAtPosition(Vector3.up * standingForce * 2, rayPosition);
-                root.AddForceAtPosition(Vector3.up * standingForce, rayPosition);
+                root.AddForceAtPosition(Vector3.up * standingForce * 2, rayPosition);
+                //root.AddForceAtPosition(Vector3.up * standingForce, rayPosition);
                 Debug.DrawRay(rayPosition, rayDirection, Color.green, standingHeight);
             }
 
-            rayPosition = root.transform.position + root.transform.right * -0.341f;
+            /*rayPosition = root.transform.position + root.transform.right * -0.341f;
             if (Physics.Raycast(rayPosition, rayDirection, out rayhit, standingHeight, groundMask))
             {
                 root.AddForceAtPosition(Vector3.up * standingForce, rayPosition);
                 Debug.DrawRay(rayPosition, rayDirection, Color.green, standingHeight);
-            }
+            }*/
 
             if (inputSpeed > 0 || isJumping)
             {

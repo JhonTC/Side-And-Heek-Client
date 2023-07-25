@@ -51,8 +51,8 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
                 Vector3 _leftFootPosition = message.GetVector3();
                 Quaternion _rightFootRotation = message.GetQuaternion();
                 Quaternion _leftFootRotation = message.GetQuaternion();
-                bool _isFlopping = message.GetBool();
-                if (_isFlopping)
+                bool recieveAllBones = message.GetBool();
+                if (recieveAllBones)
                 {
                     Vector3 _rightLegPosition = message.GetVector3();
                     Vector3 _leftLegPosition = message.GetVector3();
@@ -116,6 +116,7 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
                 SimplePlayerController movementController = player.playerMotor.GetMovementController();
                 if (movementController != null)
                 {
+                    /*
                     if (_isJumping)
                     {
                         movementController.OnJump();
@@ -131,7 +132,7 @@ public class ClientHandle : MonoBehaviour //todo: cleanup all function calls (We
                     }
 
                     movementController.isSneaking = _isSneaking;
-                    movementController.CustomFixedUpdate(_inputSpeed);
+                    movementController.CustomFixedUpdate(_inputSpeed);*/
                 }
             }
         }

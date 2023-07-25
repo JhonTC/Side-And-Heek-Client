@@ -30,12 +30,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 584985543679816693}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.341, y: -1.4319999, z: 0}
-  m_LocalScale: {x: 0.29999998, y: 0.29999998, z: 0.29999998}
+  m_LocalPosition: {x: 0, y: -2.04, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8832636745317305005}
-  m_Father: {fileID: 5215034645877695659}
+  m_Father: {fileID: 6582318008797008394}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5351373966539731810
@@ -231,7 +231,8 @@ Transform:
   m_LocalPosition: {x: 0.341, y: -0.81999993, z: 0}
   m_LocalScale: {x: 0.29999998, y: 0.29999998, z: 0.29999998}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 4812503524477548103}
   m_Father: {fileID: 5215034645877695659}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -875,12 +876,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6043852901225630487}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.341, y: -1.4319999, z: 0}
-  m_LocalScale: {x: 0.29999998, y: 0.29999998, z: 0.29999998}
+  m_LocalPosition: {x: 0, y: -2.04, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7787342202147718320}
-  m_Father: {fileID: 5215034645877695659}
+  m_Father: {fileID: 8751350537192000608}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5760673757394355340
@@ -1136,9 +1137,7 @@ Transform:
   m_Children:
   - {fileID: 489544524716531199}
   - {fileID: 6582318008797008394}
-  - {fileID: 2660043475699464716}
   - {fileID: 8751350537192000608}
-  - {fileID: 4812503524477548103}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1375,7 +1374,7 @@ MonoBehaviour:
     jumpingForce: 5000
     walkFootForwardForce: 100
     sneakFootForwardForce: 100
-    footVerticalForce: 150
+    footVerticalForce: 125
     flopForce: 4000
     footReturnSpeed: 5
     rootReturnSpeed: 10
@@ -1447,7 +1446,8 @@ Transform:
   m_LocalPosition: {x: -0.341, y: -0.81999993, z: 0}
   m_LocalScale: {x: 0.29999998, y: 0.29999998, z: 0.29999998}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2660043475699464716}
   m_Father: {fileID: 5215034645877695659}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

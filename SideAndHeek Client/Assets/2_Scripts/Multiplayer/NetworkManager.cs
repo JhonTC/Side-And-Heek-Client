@@ -98,9 +98,20 @@ public class NetworkManager : MonoBehaviour
 
     [SerializeField] private bool runAsServer = false; //for testing in editor
 
+
+    [SerializeField]
+    private bool simulateLatency = false;
+    private int initialLatencySimulationValue;
+    [Range(1, 50)]
+    public int latencySimulationValue;
+    public int tick = 0;
+
     private void Awake()
     {
         Instance = this;
+
+        initialLatencySimulationValue = Mathf.RoundToInt(1f / Time.fixedDeltaTime);
+        latencySimulationValue = initialLatencySimulationValue;
     }
 
     private async void Start()
@@ -133,14 +144,31 @@ public class NetworkManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (NetworkType == NetworkType.Client)
+        bool canUpdate = true;
+        if (simulateLatency)
         {
-            Client?.Update();
+            int latencySimulationTick = initialLatencySimulationValue - latencySimulationValue;
+            canUpdate = latencySimulationTick == 0 || (latencySimulationTick != 0 && tick % latencySimulationTick == 0);
         }
-        else
+
+        if (canUpdate)
         {
-            Server?.Update();
+            if (NetworkType == NetworkType.Client)
+            {
+                Client?.Update();
+            }
+            else
+            {
+                Server?.Update();
+            }
         }
+
+        if (tick == int.MaxValue)
+        {
+            tick = -1;
+        }
+
+        tick++;
     }
 
     private void OnApplicationQuit()

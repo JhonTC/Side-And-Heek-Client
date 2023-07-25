@@ -121,7 +121,7 @@ public class PlayerMotor : MonoBehaviour //make abstract?
 
     public void SetRootRotation(Quaternion _rootRotation)
     {
-        root.rotation = _rootRotation;
+        root.rotation = Quaternion.Lerp(root.rotation, _rootRotation, receivedMovementDampner);
     }
 
     public virtual bool GetCanKnockOutOthers() { return false; }

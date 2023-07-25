@@ -105,9 +105,23 @@ public class ClientPlayerMotor : PlayerMotor
                 }
             }
 
-            //movementController.isSneaking = isSneaking;
-            //movementController.CustomFixedUpdate(inputSpeed);
-            //movementController.SetRotation(rotation);
+            if (isJumping)
+            {
+                movementController.OnJump();
+            }
+
+            if (isFlopping)
+            {
+                movementController.OnFlopKey(true);
+            }
+            else
+            {
+                movementController.OnFlopKeyUp();
+            }
+
+            movementController.isSneaking = isSneaking;
+            movementController.CustomFixedUpdate(inputSpeed);
+            movementController.SetRotation(rotation);
 
             ClientSend.PlayerInput(inputSpeed, new bool[] { isJumping, isFlopping, isSneaking }, rotation);
         }

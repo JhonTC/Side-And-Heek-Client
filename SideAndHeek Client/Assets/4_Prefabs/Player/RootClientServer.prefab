@@ -114,9 +114,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 6268010764298407707}
   - {fileID: 2317291989130028104}
   - {fileID: 403621427402971352}
-  - {fileID: 6268010764298407707}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -344,6 +344,7 @@ MonoBehaviour:
   rotation: {x: 0, y: 0, z: 0, w: 1}
   owner: {fileID: 0}
   predictionDampner: 1
+  receivedMovementDampner: 1
   largeGroundColliderPrefab: {fileID: -8181243447509784849, guid: 6986b544f6efe814ba9ce87e23882a3c,
     type: 3}
   movementController:
