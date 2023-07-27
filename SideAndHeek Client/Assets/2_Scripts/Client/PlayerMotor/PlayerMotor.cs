@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -43,6 +44,7 @@ public class PlayerMotor : MonoBehaviour //make abstract?
         walkingEffect = owner.walkingDustParticles.transform;
         predictionDampner = owner.IsLocal ? predictionDampner : 1;
     }
+
 
     protected virtual void FixedUpdate()
     {

@@ -136,8 +136,7 @@ public class Player : MonoBehaviour
 
             Transform spawnpoint = LevelManager.GetLevelManagerForScene(GameManager.instance.activeSceneName).GetNextSpawnpoint(list.Count <= 0);
             player = Spawn(id, username, spawnpoint.position);
-            player.isAuthority = true;
-            player.IsLocal = true;
+            player.isAuthority = player.IsLocal;
 
             GameManager.instance.OnPlayerSpawned(player);
 
@@ -163,14 +162,14 @@ public class Player : MonoBehaviour
         {
             LocalPlayer = player;
             Camera.main.gameObject.SetActive(false);
-        }
 
-        if (NetworkManager.NetworkType == NetworkType.ClientServer)
-        {
-            string colourHexStr = $"#{PlayerPrefs.GetString("DefaultColour")}";
-            if (ColorUtility.TryParseHtmlString(colourHexStr, out Color savedColour))
+            if (NetworkManager.NetworkType == NetworkType.ClientServer)
             {
-                GameManager.instance.AttemptColourChange(id, savedColour, false);
+                string colourHexStr = $"#{PlayerPrefs.GetString("DefaultColour")}";
+                if (ColorUtility.TryParseHtmlString(colourHexStr, out Color savedColour))
+                {
+                    GameManager.instance.AttemptColourChange(id, savedColour, false);
+                }
             }
         }
 
@@ -377,10 +376,10 @@ public class Player : MonoBehaviour
                     motorPrefab = clientPlayerMotorPrefab;
                     break;
                 case NetworkType.ClientServer:
-                    if (IsLocal)
-                    {
+                    //if (IsLocal)
+                    //{
                         motorPrefab = clientServerPlayerMotorPrefab;
-                    }
+                    //}
                     break;
             }
 
@@ -475,6 +474,8 @@ public class Player : MonoBehaviour
                     {
                         mr.material = defaultEyeMaterial;
                     }
+
+                    mr.material.SetColor("_SkinColour", colour);
                 }
             }
 

@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 
 [Serializable]
-public class SimplePlayerController
+public class SimplePlayerController //todo: clean up this mess
 {
     [SerializeField] private float standingForce;
     [SerializeField] private float jumpingForce;
@@ -46,6 +47,8 @@ public class SimplePlayerController
 
     [HideInInspector] public Player owner;
 
+    [SerializeField] private EyeAnimator eyeAnimator;
+
     public void Init(PlayerMotor motor)
     {
         owner = motor.owner;
@@ -80,12 +83,7 @@ public class SimplePlayerController
         {
             if (largeGroundCollider.isGrounded)
             {
-                root.AddForce((Vector3.up * jumpingForce) * jumpForceMultiplier);
-                //root.AddForceAtPosition(Vector3.up * jumpingForce / 2, leftFootCollider.foot.position);
-                //root.AddForceAtPosition(Vector3.up * jumpingForce / 2, rightFootCollider.foot.position);
-
-                //leftFootCollider.foot.AddForce(Vector3.up * jumpingForce/2);
-                //rightFootCollider.foot.AddForce(Vector3.up * jumpingForce/2);
+                root.AddForce(Vector3.up * jumpingForce * jumpForceMultiplier);
 
                 ToggleActiveWalkingFoot();
 
@@ -115,6 +113,16 @@ public class SimplePlayerController
                 isFlopKeyDown = true;
             }
         }
+
+        eyeAnimator.Close(() =>
+        {
+            owner.StartCoroutine(eyeAnimator.InvokeAfterDelay(() =>
+            {
+                eyeAnimator.Open(eyeAnimator.currentStateId);
+            },
+            duration));
+        },
+        false);
 
         if (resetFlop)
         {
@@ -150,6 +158,8 @@ public class SimplePlayerController
             isFlopKeyDown = false;
         }
     }
+
+    
 
     [HideInInspector] public bool isSneaking = false;
 
@@ -195,6 +205,7 @@ public class SimplePlayerController
 
     public void CustomFixedUpdate(float _inputSpeed)
     {
+        eyeAnimator.Update();
         //inputSpeed = _inputSpeed;
         if (isFlopping)
         {

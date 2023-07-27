@@ -1,6 +1,7 @@
 ﻿using Riptide;
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class ServerHandle
 {
@@ -14,6 +15,8 @@ public class ServerHandle
     [MessageHandler((ushort)ClientToServerId.playerInput)]
     public static void SetInputs(ushort fromClientId, Message message)
     {
+        Debug.Log($"SetInputs fromClientId: {fromClientId}");
+
         float inputSpeed = message.GetFloat();
         bool[] _otherInputs = message.GetBools(3);
         Quaternion _rotation = message.GetQuaternion();
@@ -21,6 +24,7 @@ public class ServerHandle
         Player player = Player.list[fromClientId];
         if (player.isBodyActive) 
         {
+            Debug.Log($"InputSpeed: {inputSpeed}");
             player.playerMotor.SetInputs(inputSpeed, _otherInputs, _rotation);
         }
     }

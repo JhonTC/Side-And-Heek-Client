@@ -75,7 +75,7 @@ MonoBehaviour:
   materialType: 0
   defaultPlayerMaterial: {fileID: 2100000, guid: 55098341d5f310f4593009b030b73e43,
     type: 2}
-  defaultEyeMaterial: {fileID: 2100000, guid: 1b6d5a53da6e98f4fb9a9056cd9806ec, type: 2}
+  defaultEyeMaterial: {fileID: 2100000, guid: 8943ef2380916fe4fba9bdf517de7aa6, type: 2}
   invisiblePlayerLocalMaterial: {fileID: 2100000, guid: 924517d12d90fa044b54e79d0dfc2d10,
     type: 2}
   invisiblePlayerClientMaterial: {fileID: 2100000, guid: df19799750ecb8244bd32ef08db67e7a,

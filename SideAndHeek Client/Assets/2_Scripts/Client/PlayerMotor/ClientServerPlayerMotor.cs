@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -75,34 +76,37 @@ public class ClientServerPlayerMotor : PlayerMotor
             SetupCameraMode();
         }
 
-        inputSpeed = 1;
-        float horizontal = inputMovement.x;
-        float vertical = inputMovement.y;
-
-        if (cameraMode == CameraMode.ThirdPerson)
+        if (owner.IsLocal)
         {
-            inputSpeed = Mathf.Clamp(Mathf.Abs(horizontal) + Mathf.Abs(vertical), 0, 1);
+            inputSpeed = 1;
+            float horizontal = inputMovement.x;
+            float vertical = inputMovement.y;
 
-            float angle;
-            if (horizontal != 0 || vertical != 0)
+            if (cameraMode == CameraMode.ThirdPerson)
             {
-                angle = Mathf.Atan2(horizontal, vertical) * Mathf.Rad2Deg;
-                rotation = Quaternion.AngleAxis(angle, Vector3.up);
-            }
-            else
-            {
-                rotation = root.rotation;
+                inputSpeed = Mathf.Clamp(Mathf.Abs(horizontal) + Mathf.Abs(vertical), 0, 1);
+
+                float angle;
+                if (horizontal != 0 || vertical != 0)
+                {
+                    angle = Mathf.Atan2(horizontal, vertical) * Mathf.Rad2Deg;
+                    rotation = Quaternion.AngleAxis(angle, Vector3.up);
+                }
+                else
+                {
+                    rotation = root.rotation;
+                }
             }
         }
 
         if (isAcceptingInput)
         {
-            if (isJumping)
+            if (isJumping || otherInputs[0])
             {
                 movementController.OnJump();
             }
 
-            if (isFlopping)
+            if (isFlopping || otherInputs[1])
             {
                 movementController.OnFlopKey(true);
             }
@@ -111,7 +115,7 @@ public class ClientServerPlayerMotor : PlayerMotor
                 movementController.OnFlopKeyUp();
             }
 
-            movementController.isSneaking = isSneaking;
+            movementController.isSneaking = isSneaking || otherInputs[2];
             movementController.CustomFixedUpdate(inputSpeed);
             movementController.SetRotation(rotation);
         }
