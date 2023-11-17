@@ -21,7 +21,10 @@ public class GameManager : MonoBehaviour
 
     protected int currentTime = 0;
 
-    //J: GameType will be replaced with GameMode.
+    //J: GameType will be replaced with GameMode. 
+    /*J: GameMode will be an abstract or interface type which the actual scripts inherit from (e.g. DeathMatch_GameMode). 
+         It will include several variables: gameStarted, gameRules ect... 
+    */
     public GameType gameType;
 
     public string lobbyScene; //J: Change to private & move to LevelManager(It doesnt exist but I mention it more later).
