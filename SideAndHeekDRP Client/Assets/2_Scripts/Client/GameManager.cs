@@ -5,31 +5,37 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager instance;
-
+    public static GameManager instance; //J: Replace with custom Singleton Class that this GameManager inherits from - this will also handle the singleton setup in the Awake call below.
+    //J: Organise the variables into Public, Protected & Private with important variables first, followed by scene reference variables.
     public PickupCollection collection;
+
+    //J: GameRules should be GameMode specific so this shouldnt exist here.
     public GameRules gameRules;
 
+    //J: Pickups shouldnt be stored here(more on this below).
     public static Dictionary<int, PickupSpawner> pickupSpawners = new Dictionary<int, PickupSpawner>();
-    public PickupSpawner pickupSpawnerPrefab;
+    public PickupSpawner pickupSpawnerPrefab; //J: NetworkManager should have an array of spawnable network prefabs - this should be in there.
 
     public bool gameStarted = false;
     public bool gameEndInProgress = false;
 
     protected int currentTime = 0;
 
+    //J: GameType will be replaced with GameMode.
     public GameType gameType;
 
-    public string lobbyScene;
+    public string lobbyScene; //J: Change to private & move to LevelManager(It doesnt exist but I mention it more later).
 
-    public GameObject gameStartCollider;
+    public GameObject gameStartCollider; //J: Change to [SerialiseField] private.
 
+    //J: Feels like this is GameMode specific, but if it refers to the colours used in all gamemodes then should be renamed playerColours.
     [HideInInspector] public Color[] hiderColours;
 
+    //J: Create an AudioManager that the GameManager owns or has a reference to - think about single responsibility principle.
     private AudioSource music;
 
-    private void Awake()
-    {
+    private void Awake() 
+    {   //J: This will be handled in the inherited singleton class.
         if (instance == null)
         {
             instance = this;
@@ -45,7 +51,7 @@ public class GameManager : MonoBehaviour
 
     protected virtual void Start()
     {
-        music = GetComponent<AudioSource>();
+        music = GetComponent<AudioSource>(); //J: Add class attribute [RequireComponent(typeof(AudioSource)] or make this a [SerialiseField] private variable to be attached in the inspector.
         FadeMusic(false);
     }
 
@@ -74,7 +80,7 @@ public class GameManager : MonoBehaviour
         SceneManager.SetActiveScene(_scene);
 
         if (LobbyManager.players.Count > 0)
-        {
+        {   //J: This is GameMode a specific action as not all gamemodes will have a PlayerType of hider. GameModes should have their own class which has an OnLevelFinishedLoading function called from here.
             if (LobbyManager.instance.GetLocalPlayer().playerType == PlayerType.Hider) //TODO: Move this to PlayerManager, called when a player is teleported
             {
                 ResetLocalPlayerCamera();
@@ -82,8 +88,8 @@ public class GameManager : MonoBehaviour
         }
 
         if (_scene.name != lobbyScene)
-        {
-            gameStarted = true;
+        {   //J: Game Starting should be controlled by the specific GameMode.
+            gameStarted = true; 
             gameStartCollider.SetActive(false);
 
             foreach (PlayerManager player in LobbyManager.players.Values)
@@ -99,16 +105,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    bool destoryItemSpawners;
+    bool destoryItemSpawners; //J: Move to the top with the other variables and give private access modifier to make it more readable.
     protected virtual void OnLevelFinishedUnloading(Scene _scene)
-    {
+    {   
         if (destoryItemSpawners)
         {
             DestroyItemSpawners();
         }
 
         if (SceneManager.GetActiveScene().name == lobbyScene)
-        {
+        {   
             gameStartCollider.SetActive(true);
             foreach (PlayerManager player in LobbyManager.players.Values)
             {
@@ -119,6 +125,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    //J: Consider making a LevelManager to handle scene changes instead of GameManager - again, single responsibility principle.
     public void LoadScene(string sceneName, LoadSceneMode loadSceneMode)
     {
         if (SceneManager.GetActiveScene().name != sceneName)
@@ -126,7 +133,7 @@ public class GameManager : MonoBehaviour
             SceneManager.LoadScene(sceneName, loadSceneMode);
         }
     }
-
+    //J: Same as above.
     public void UnloadScene(string sceneName, bool _destoryItemSpawners)
     {
         destoryItemSpawners = _destoryItemSpawners;
@@ -134,7 +141,7 @@ public class GameManager : MonoBehaviour
     }
 
     
-
+    //J: Remove Functions as they are not doing anything.
     public void ResetLocalPlayerCamera() { ResetLocalPlayerCamera(Vector3.zero, false); }
     public void ResetLocalPlayerCamera(Vector3 _position, bool _useSentPosition)
     {
@@ -154,6 +161,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    //J: LevelManager/GameMode should work together to handle this - again, single responsibility principle.
     public void CreatePickupSpawner(int _spawnerId, Vector3 _position)
     {
         PickupSpawner _spawner = Instantiate(pickupSpawnerPrefab, _position, pickupSpawnerPrefab.transform.rotation);
@@ -161,7 +169,7 @@ public class GameManager : MonoBehaviour
 
         pickupSpawners.Add(_spawnerId, _spawner);
     }
-
+    //J: Same as above
     public void DestroyItemSpawners()
     {
         foreach (PickupSpawner spawner in pickupSpawners.Values)
@@ -174,6 +182,7 @@ public class GameManager : MonoBehaviour
         pickupSpawners.Clear();
     }
 
+    //J: Same as above Move to static Utils class. You can use GameManager.Instance.StartCorotine to call it.
     public void StartGameTimer(int _duration) 
     {
         StartCoroutine(GameTimeCountdown(_duration));
@@ -191,20 +200,21 @@ public class GameManager : MonoBehaviour
 
         UIManager.instance.SetMessage("Game Over", 2f, true);
     }
-
+    //J: GameRules should be GameMode specific so this shouldnt exist here other than to call the same function on the current gamemode.
     public void GameRulesChanged(GameRules _gameRules)
     {
         gameRules = _gameRules;
         UIManager.instance.gameRulesPanel.SetGameRules(gameRules);
     }
 
+    //J: As stated Earlier, the following functions should be in AudioManager Class and called from here.
     public void FadeMusic(bool fadeOut)
     {
         StartCoroutine(FadeMusic(fadeOut, 4));
     }
 
-    public float musicStartVolume;
-    float fadeTime;
+    public float musicStartVolume;  //J: Move to the top of new AudioManager class.
+    float fadeTime;  //J: Move to the top of new AudioManager class and give private access modifier to make it more readable.
     IEnumerator FadeMusic(bool fadeOut, float fadeDuration)
     {
         if (fadeOut)
@@ -238,12 +248,14 @@ public class GameManager : MonoBehaviour
     }
 }
 
+//J: NetworkManager should have an enum for Host, Client, Local. If Local is selected then the player is playing offline.
 public enum GameType
 {
     Singleplayer,
     Multiplayer
 }
 
+//J: num not used here, either delete or move to a more approproiate script.
 public enum FootstepType
 {
     Null,
